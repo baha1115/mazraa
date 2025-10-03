@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farmers — مزارع للإيجار</title>
+  <meta name="description" content="تصفح المزارع المتاحة للإيجار — صفّ حسب المنطقة والمدينة والسعر والمساحة." />
+  <link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    .vip-hero-slide{
+    position:relative;
+    min-height:360px;
+    border-radius:16px;
+    overflow:hidden;
+    background:#f6faf6;
+  }
+  @media (min-width:1024px){
+    .vip-hero-slide{ min-height:520px; }
+  }
+  .vip-hero-bg-img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover; object-position:center;
+    filter:brightness(.85);
+  }
+  .vip-hero-overlay{
+    position:absolute; inset:0;
+    background:linear-gradient(90deg, rgba(0,0,0,.35), rgba(0,0,0,.15) 40%, rgba(0,0,0,0) 70%);
+    
+  }
+  .vip-hero-body{
+   position: absolute; inset-inline: 1.2rem; inset-block-end: 1.1rem;
+   color: #fff;
+   display: grid; gap: .35rem;
+   text-align: flex-start; /* RTL مدعوم */
+  }
+  .vip-hero-badge{
+    display:inline-block; padding:.25rem .6rem; border-radius:999px;
+    background:#111; color:#fff; font-weight:700; letter-spacing:.5px;width: 50px;text-align: center;
+  }
+  .vip-hero-title{ font-size:clamp(20px,3vw,34px); margin:.25rem 0 0; }
+  .vip-hero-meta{ opacity:.95; font-size:clamp(14px,1.5vw,16px); }
+  .vip-hero-cta{
+    margin-top:.6rem; display:inline-block;
+    padding:.5rem .9rem; border-radius:10px;
+    background:#ffffff; color:#0f172a; text-decoration:none; font-weight:600;width: 150px;text-align: center;
+  }
+    /* تنسيقات خفيفة للدروب داون */
+    .filter-dropdown summary{
+      cursor:pointer; display:flex; align-items:center; gap:.5rem;
+      font-weight:600; user-select:none;
+    }
+    .filter-dropdown summary::after{
+      content:"▾"; transition:.2s; font-size: .9rem; opacity:.9;
+    }
+    .filter-dropdown[open] summary::after{ transform: rotate(180deg); }
+    .filters-form{ padding: .75rem 0 0; }
+  </style>
+</head>
+<body>
+<%
+  const _isAuth      = (typeof isAuth !== 'undefined') ? isAuth : false;
+  const _user        = (typeof user   !== 'undefined') ? user   : null;
+  const _currentPath = (typeof currentPath !== 'undefined') ? currentPath : '/rent';
+  const _farmsSSR    = (typeof farms !== 'undefined' && Array.isArray(farms)) ? farms : [];
+  function esc(x){ return String(x ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+  function num(n){ const v = Number(n); return Number.isFinite(v) ? v : 0; }
+%>
+
+<%- include('partials/navbar', { isAuth: _isAuth, user: _user, currentPath: _currentPath }) %>
+
+<a class="fab-whatsapp"
+   href="https://wa.me/21600000000?text=%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%85%D8%B2%D8%B1%D8%B9%D8%A9%20%D9%84%D9%84%D8%A5%D9%8A%D8%AC%D8%A7%D8%B1"
+   target="_blank" rel="noopener" aria-label="تواصل واتساب">
+  <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
+</a>
+
+
+<!-- VIP Rent Only -->
+<section id="vip-rent" class="vip-sale-section" aria-labelledby="vip-rent-title" hidden>
+  <div class="container">
+    <header class="section-header">
+      <h2 id="vip-rent-title">مزارع للإيجار — VIP</h2>
+      <p class="muted">عروض كبار الشخصيات تظهر هنا أولًا.</p>
+    </header>
+
+    <div class="swiper vip-swiper" dir="rtl">
+      <div class="swiper-wrapper" id="vipRentWrapper"><!-- slides injected by JS --></div>
+
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- الفلاتر: دروبداون + مدينة كإنبوت -->
+<section id="filters" class="section filters" aria-labelledby="filters-title">
+  <div class="container">
+    <details class="filter-dropdown">
+      <summary id="filters-title">تصفية النتائج</summary>
+      <form id="rent-filters" class="filters-form" action="#results" method="get" novalidate>
+        <div class="filters-grid">
+          <div class="field">
+            <label class="label" for="area">المنطقة</label>
+            <select id="area" name="area">
+              <option value="">جميع المناطق</option>
+              <option value="Damascus Countryside">ريف دمشق</option>
+              <option value="Hama">حماة</option>
+              <option value="Homs">حمص</option>
+              <option value="Daraa">درعا</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label" for="city">المدينة</label>
+            <input id="city" name="city" style="height: 2.6rem;    width: 100%;
+    padding: .75rem .9rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+"  type="text" placeholder="اكتب اسم المدينة" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="price-min">السعر (من)</label>
+            <input id="price-min" name="price_min" type="number" placeholder="مثال: 500" />
+          </div>
+          <div class="field">
+            <label class="label" for="price-max">السعر (إلى)</label>
+            <input id="price-max" name="price_max" type="number" placeholder="مثال: 2500" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="size-min">المساحة (من م²)</label>
+            <input id="size-min" name="size_min" type="number" placeholder="مثال: 5000" />
+          </div>
+          <div class="field">
+            <label class="label" for="size-max">المساحة (إلى م²)</label>
+            <input id="size-max" name="size_max" type="number" placeholder="مثال: 25000" />
+          </div>
+
+          
+
+          <div class="field field--actions">
+            <button class="btn btn-primary" type="submit">تطبيق</button>
+          </div>
+        </div>
+      </form>
+    </details>
+  </div>
+</section>
+
+<!-- النتائج -->
+<section id="results" class="section results" aria-labelledby="results-title">
+  <div class="container">
+    <header class="section-header">
+      <h2 id="results-title">مزارع للإيجار</h2>
+      <p class="muted">اضغط على البطاقة لفتح صفحة تفاصيل المزرعة.</p>
+    </header>
+
+    <div class="cards-grid" role="list" id="rentGrid">
+      <!-- يُملأ عبر السكربت. نعرض SSR كـ fallback -->
+      <% if (_farmsSSR.length) { _farmsSSR.forEach(farm => {
+           const cover = (Array.isArray(farm.photos) && farm.photos[0]) ? farm.photos[0] : '/Public/placeholder.jpg';
+           const tier  = farm.subscriptionTier || 'Basic';
+           const priceTxt = num(farm.price).toLocaleString();
+           const areaTxt  = esc(farm.area || '');
+           const cityTxt  = esc(farm.city || '');
+           const titleTxt = esc(farm.title || '—');
+           const status   = farm.status || 'pending';
+           const statusIsAvailable = (status === 'available' || status === 'approved');
+      %>
+        <article class="farm-card" role="listitem">
+          <a class="farm-link" href="/rent/farm/<%= farm._id %>" aria-label="عرض <%= titleTxt %>">
+           <figure class="farm-media">
+  <img src="<%= cover %>" alt="<%= titleTxt %>" loading="lazy" />
+  <% if (tier === 'VIP') { %>
+    <span class="badge badge--tier">VIP</span>
+  <% } else if (tier === 'Premium') { %>
+    <span class="badge badge--tier">مميز</span>
+  <% } %>
+  <% if (farm.videoUrl) { %>
+    <span class="badge badge--video">🎥 فيديو</span>
+  <% } %>
+</figure>
+
+            <div class="farm-body">
+              <h3 class="farm-title"><%= titleTxt %></h3>
+              <p class="farm-location"><%= areaTxt %> — <%= cityTxt %></p>
+              <p class="farm-price"><%= priceTxt ? (priceTxt + '$ / شهريًا') : '—' %></p>
+              <p class="farm-status <%= statusIsAvailable ? 'is-available' : 'is-rented' %>">
+                <%= statusIsAvailable ? 'متاحة' : 'غير متاحة' %>
+              </p>
+              <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
+            </div>
+          </a>
+        </article>
+      <% }) } %>
+    </div>
+  </div>
+</section>
+
+<footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
+  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+  <div class="footer-bottom">
+    <p class="copyright">© <script>document.write(new Date().getFullYear())</script> فارمرز — جميع الحقوق محفوظة.</p>
+  </div>
+</footer>
+
+<script type="module">
+  import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
+
+  const vipSection = document.getElementById('vip-rent');
+  const vipWrapper = document.getElementById('vipRentWrapper');
+  const rentGrid   = document.getElementById('rentGrid');
+  const form       = document.querySelector('#rent-filters'); // إن لديك فلاتر
+
+  const fmt = n => new Intl.NumberFormat('en').format(Number(n)||0);
+  const esc = s => (s??'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  async function fetchJSON(url){
+    const r = await fetch(url, { headers:{'Accept':'application/json'} });
+    const j = await r.json().catch(()=>({ok:false}));
+    if (!r.ok || !j.ok) throw new Error(j.msg || 'fetch error');
+    return j.data || [];
+  }
+
+  // كارت السلايدر الكبير (VIP)
+ function vipSlide(f){
+  // غطاء آمن + افتراضي من مجلدك الحقيقي
+  const cover =
+    (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0]
+    : '/Public/assests/farm4k.jpg'; // ← عدّل المسار الافتراضي حسب موجود عندك
+
+  const loc = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
+
+  return `
+    <div class="swiper-slide">
+      <article class="vip-hero-slide">
+        <img class="vip-hero-bg-img" src="${esc(cover)}" alt="${esc(f.title||'مزرعة')}" loading="lazy" />
+        <div class="vip-hero-overlay"></div>
+        <div class="vip-hero-body">
+          <span class="vip-hero-badge">VIP</span>
+          <h3 class="vip-hero-title">${esc(f.title||'—')}</h3>
+          <div class="vip-hero-meta">${loc} • ${fmt(f.size)} م² • $${fmt(f.price)} / شهريًا</div>
+          <a class="vip-hero-cta" href="/rent/farm/${f._id}">التفاصيل</a>
+        </div>
+      </article>
+    </div>`;
+}
+
+
+  // بادجات المستوى + الفيديو
+  function tierBadge(t){
+    if (t === 'VIP')     return '<span class="badge badge--tier">كبار الشخصيات (VIP)</span>';
+    if (t === 'Premium') return '<span class="badge badge--tier">مميز</span>';
+    return '';
+  }
+
+  // بطاقة الشبكة العامة
+  function cardItem(f){
+    const cover = Array.isArray(f.photos)&&f.photos[0] ? f.photos[0] : '/assets/farm-default.jpg';
+    const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
+
+    const tierName = f.ownerTier || f.subscriptionTier || '';
+    const tier     = tierBadge(tierName);
+    const video    = f.videoUrl ? '<span class="badge badge--video">🎥 فيديو</span>' : '';
+
+    return `
+      <article class="farm-card" role="listitem" data-id="${esc(f._id)}">
+        <a class="farm-link" href="/rent/farm/${esc(f._id)}" aria-label="${esc(f.title||'مزرعة')}">
+          <figure class="farm-media">
+            <img src="${esc(cover)}" alt="${esc(f.title||'مزرعة')}" loading="lazy" />
+            ${tier}${video}
+          </figure>
+          <div class="farm-body">
+            <h3 class="farm-title">${esc(f.title||'—')}</h3>
+            <p class="farm-location">${loc}</p>
+            <p class="farm-price">$${fmt(f.price)} / شهريًا</p>
+            <button class="btn btn-outline" type="button">التفاصيل</button>
+          </div>
+        </a>
+      </article>`;
+  }
+
+  function renderGrid(rows){
+    rentGrid.innerHTML = rows.length
+      ? rows.map(cardItem).join('')
+      : '<p class="muted">لا توجد نتائج مطابقة.</p>';
+  }
+
+  // فلاتر اختيارية من المصفوفة
+  let allRent = [];
+  function applyFilters(){
+    if (!form) return renderGrid(allRent);
+    const area = (form.area?.value||'').trim();
+    const city = (form.city?.value||'').trim(); // المدينة كإنبوت
+    const minP = parseFloat(form.price_min?.value);
+    const maxP = parseFloat(form.price_max?.value);
+
+    const rows = allRent.filter(f=>{
+      const okArea  = !area || f.area === area;
+      const okCity  = !city || (f.city||'').includes(city);
+      const price   = Number(f.price)||0;
+      const okPrice = (isNaN(minP) || price>=minP) && (isNaN(maxP) || price<=maxP);
+      return okArea && okCity && okPrice;
+    });
+    renderGrid(rows);
+  }
+
+  async function init(){
+    // 1) VIP للإيجار فقط
+    try{
+      const vip = await fetchJSON('/api/farms/rent?vipOnly=1');
+      if (vip.length){
+        vipSection.hidden = false;
+        vipWrapper.innerHTML = vip.map(vipSlide).join('');
+        new Swiper('.vip-swiper', {
+          loop: true,
+          centeredSlides: true,
+          slidesPerView: 1.02,
+          spaceBetween: 18,
+          watchOverflow: true,
+          pagination: { el: '.swiper-pagination', clickable: true },
+          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+          breakpoints: {
+            640:  { slidesPerView: 1.05, spaceBetween: 20 },
+            1024: { slidesPerView: 1.08, spaceBetween: 22 }
+          }
+        });
+      } else {
+        vipSection.hidden = true;
+      }
+    } catch(e){
+      console.warn('VIP rent fetch error:', e);
+      vipSection.hidden = true;
+    }
+    // 2) كل المزارع للإيجار (بعد الـ VIP)
+    try{
+      allRent = await fetchJSON('/api/farms/rent');
+      renderGrid(allRent);
+    } catch(e){
+      console.error(e);
+      rentGrid.innerHTML = `<p class="muted">تعذّر تحميل المزارع.</p>`;
+    }
+  }
+  form?.addEventListener('submit', (e)=>{ e.preventDefault(); applyFilters(); });
+  init();
+</script>
+
+
+</body>
+</html>

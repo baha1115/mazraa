@@ -1,0 +1,546 @@
+/* ======================================================================
+   Farmers — Rent & Farm Details Pages (Pure CSS)
+   Palette: Greens, Yellows, Whites + soft gradients
+   This single stylesheet styles BOTH: rent.html and farm.html
+   ====================================================================== */
+
+/* -------------------------------------------------
+   0) Root, Resets, Utilities
+   ------------------------------------------------- */
+
+:root{
+  /* Brand palette */
+  --green-900:#064e3b;
+  --green-800:#065f46;
+  --green-700:#047857;
+  --green-600:#059669;
+  --green-500:#10b981;
+  --green-100:#d1fae5;
+
+  --yellow-700:#a16207;
+  --yellow-600:#ca8a04;
+  --yellow-500:#eab308;
+  --yellow-100:#fef9c3;
+
+  --ink:#0f172a;
+  --ink-80:#1f2937;
+  --ink-70:#334155;
+  --ink-50:#64748b;
+
+  --white:#fff;
+  --bg:#f7faf7;
+
+  --radius-xs:8px;
+  --radius-sm:12px;
+  --radius:16px;
+  --radius-lg:22px;
+
+  --shadow-1:0 10px 26px rgba(2,44,34,.10);
+  --shadow-2:0 18px 44px rgba(2,44,34,.14);
+
+  --ring:0 0 0 3px rgba(5,150,105,.28);
+}
+
+*,
+*::before,
+*::after{box-sizing:border-box}
+
+html,body{height:100%}
+html{scroll-behavior:smooth}
+*{
+  margin: 0;
+  padding: 0;
+}
+body{
+  margin:0;
+  color:var(--ink);
+  font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  background:
+    radial-gradient(1200px 480px at -10% -10%, #ecfccb 0%, transparent 60%),
+    radial-gradient(900px 480px at 110% 0%, #fef9c3 0%, transparent 65%),
+    linear-gradient(#f7fff8, #fbfdf6);
+}
+
+img,svg{display:block;max-width:100%;height:auto}
+a{color:inherit;text-decoration:none}
+
+.container{width:min(1200px,92%);margin-inline:auto}
+
+.visually-hidden{
+  position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+
+.muted{color:var(--ink-50)}
+
+:where(a,button,input,select,textarea):focus-visible{
+  outline:none;box-shadow:var(--ring);border-radius:10px;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
+
+/* Hide content that is not approved (defense-in-depth; real control server-side) */
+[data-approved="false"]{display:none !important}
+
+/* -------------------------------------------------
+   1) Buttons
+   ------------------------------------------------- */
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:.55rem;padding:.7rem 1rem;border:1px solid transparent;
+  border-radius:var(--radius-sm);font-weight:700;cursor:pointer;
+  background:var(--white);transition:transform .18s ease, box-shadow .18s ease, background .18s ease, filter .18s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+
+.btn-primary{
+  color:#fff;background:linear-gradient(135deg, var(--green-600), var(--green-700));
+  box-shadow:0 10px 24px rgba(4,120,87,.20);
+  min-width:150px;width: 210px;
+}
+.btn-primary:hover{filter:brightness(.96)}
+
+.btn-outline{background:#fff;border-color:#d1d5db}
+.btn-outline:hover{background:#f3f4f6}
+
+.btn-subscribe{background:linear-gradient(135deg, var(--yellow-500), #ffe666);color:#1e2a1e}
+.btn-subscribe:hover{filter:brightness(.96)}
+
+.btn-signin{background:#fff;border-color:#d1d5db}
+.btn-signin:hover{background:#f8fafc}
+
+.btn-block{width:100%}
+
+/* -------------------------------------------------
+   2) Header / Nav (shared)
+   ------------------------------------------------- */
+
+#site-header{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(10px);
+  background:rgba(255,255,255,.88);
+  border-bottom:1px solid #e2e8f0;
+}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0}
+
+.brand{display:inline-flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.18rem}
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;color:#fff;display:grid;place-items:center;
+  background:
+    radial-gradient(90% 90% at 20% 20%, #ffffff88, transparent),
+    linear-gradient(135deg, var(--green-600), var(--yellow-500));
+  box-shadow:inset 0 -2px 6px rgba(0,0,0,.12);
+}
+
+.navlinks{display:flex;align-items:center;gap:1.25rem}
+.navlinks a{color:var(--ink-70);font-weight:600}
+.navlinks a:hover{color:var(--ink-80)}
+.navlinks a.is-active{color:var(--green-700)}
+
+.nav-cta{display:flex;align-items:center;gap:.6rem}
+
+.nav-toggle{display:none;background:0;border:0;padding:.25rem}
+.nav-toggle-bar{width:28px;height:3px;background:var(--ink);border-radius:2px;position:relative}
+.nav-toggle-bar::before,.nav-toggle-bar::after{
+  content:"";position:absolute;left:0;right:0;height:3px;background:var(--ink);border-radius:2px
+}
+.nav-toggle-bar::before{top:-8px}.nav-toggle-bar::after{top:8px}
+
+.mobile-menu{border-top:1px solid #e2e8f0;background:#fff}
+.mobile-menu nav{display:grid;gap:.8rem;padding:.9rem 1rem}
+#mobile-menu[hidden]{display:none !important}
+
+/* Floating WhatsApp Button */
+.fab-whatsapp{
+  position:fixed;right:18px;bottom:18px;z-index:60;width:56px;height:56px;border-radius:50%;
+  display:flex;place-items:center;background:#25D366;color:#fff;box-shadow:0 12px 28px rgba(0,0,0,.18);
+  transition:transform .18s ease, filter .18s ease;justify-content: center;align-items: center;
+}
+.fab-whatsapp:hover{transform:translateY(-2px);filter:brightness(.96)}
+.fab-whatsapp__icon{font-size:0}
+.fab-whatsapp::before{
+  content:"";display:block;width:26px;height:26px;background:#fff;
+  -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23000" viewBox="0 0 24 24"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.47 0 .1 5.37.1 11.96c0 2.11.55 4.19 1.59 6.02L0 24l6.22-1.63a11.9 11.9 0 0 0 5.84 1.49h.01c6.59 0 11.96-5.37 11.96-11.96 0-3.2-1.25-6.2-3.51-8.41ZM12.06 21.5h-.01a9.52 9.52 0 0 1-4.86-1.32l-.35-.2-3.69.96.99-3.6-.23-.37a9.5 9.5 0 1 1 8.15 4.53Zm5.5-7.19c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.19.3-.76.97-.93 1.17-.17.2-.34.22-.63.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.77-1.64-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.5-.17 0-.37-.02-.57-.02-.2 0-.52.07-.79.37-.27.3-1.03 1-1.03 2.43 0 1.43 1.06 2.82 1.2 3.02.15.2 2.08 3.17 5.05 4.45.71.31 1.27.49 1.7.63.71.22 1.36.19 1.87.11.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.19-.57-.34Z"/></svg>') center/contain no-repeat;
+          mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23000" viewBox="0 0 24 24"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.47 0 .1 5.37.1 11.96c0 2.11.55 4.19 1.59 6.02L0 24l6.22-1.63a11.9 11.9 0 0 0 5.84 1.49h.01c6.59 0 11.96-5.37 11.96-11.96 0-3.2-1.25-6.2-3.51-8.41ZM12.06 21.5h-.01a9.52 9.52 0 0 1-4.86-1.32l-.35-.2-3.69.96.99-3.6-.23-.37a9.5 9.5 0 1 1 8.15 4.53Zm5.5-7.19c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.19.3-.76.97-.93 1.17-.17.2-.34.22-.63.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.77-1.64-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.5-.17 0-.37-.02-.57-.02-.2 0-.52.07-.79.37-.27.3-1.03 1-1.03 2.43 0 1.43 1.06 2.82 1.2 3.02.15.2 2.08 3.17 5.05 4.45.71.31 1.27.49 1.7.63.71.22 1.36.19 1.87.11.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.19-.57-.34Z"/></svg>') center/contain no-repeat;
+}
+
+/* -------------------------------------------------
+   3) Sections
+   ------------------------------------------------- */
+
+.section{padding:3.2rem 0;scroll-margin-top:80px}
+.section-header{text-align:center;margin-bottom:1rem}
+
+/* -------------------------------------------------
+   4) Carousel (Featured on rent.html)
+   ------------------------------------------------- */
+
+/* Featured (keep padding if تحب نفس المسافات) */
+.featured { padding-top: 1.2rem; }
+
+/* Swiper container */
+/* حاوية السلايدر */
+/* -------------------------------------------------
+   3) HERO — Contractors Landing (carousel underlay)
+   ------------------------------------------------- */
+
+/* حجم معتدل للسلايدر */
+.gallery-swiper{
+  width: min(1100px, 95%);
+  height:60vh;   /* أصغر من قبل */
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+
+/* الشريحة: اجعلها حاوية مطلقة للـ overlay */
+.gallery-swiper .swiper-slide{
+  position: relative;                  /* مهم لطبقة النص */
+  background: #000;
+}
+
+/* الصورة تملأ السلايد */
+.gallery-swiper .swiper-slide > img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                    /* يمكن تحويلها contain لو عندك صور عمودية */
+  object-position: center;              /* تمركز أفضل */
+  filter: brightness(.88) saturate(1.05);
+}
+
+/* النص فوق الصورة بشكل ثابت وواضح */
+.gallery-swiper .slide-overlay{
+  position: absolute;
+  inset: auto 0 0 0;/* أسفل الشريحة */
+  padding: 1rem 1.25rem;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.6) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding-bottom: 100px;
+}
+
+.gallery-swiper .slide-title{
+  margin: 0 0 .25rem;
+  font-size: clamp(2rem, 3.2vw, 2.35rem);
+  font-weight: 800;
+}
+.gallery-swiper .slide-sub{
+  margin: 0;
+  font-size: .95rem;
+  color: #e9f7ef;
+}
+
+/* الأسهم أصغر قليلاً */
+.gallery-swiper .swiper-button-prev,
+.gallery-swiper .swiper-button-next{
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,.9);
+  color: #1b2a1c !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.gallery-swiper .swiper-button-prev::after,
+.gallery-swiper .swiper-button-next::after{ font-size: 16px; }
+/* النقاط */
+.gallery-swiper .swiper-pagination-bullet{
+  width: 9px; height: 9px; opacity: .8;
+  background: transparent; border: 1px solid #fff;
+}
+.gallery-swiper .swiper-pagination-bullet-active{
+  background: #fff; opacity: 1;
+}
+/* دعم RTL */
+html[dir="rtl"] .gallery-swiper{ direction: rtl; }
+
+
+
+.prose{max-width:75ch}
+.prose p{line-height:1.6}
+.prose ul{padding-left:1.2rem}
+.prose li{margin:.25rem 0}
+
+.tags{display:flex;flex-wrap:wrap;gap:.5rem;padding:0;margin:0;list-style:none}
+.tag{border:1px solid #e2e8f0;border-radius:999px;padding:.35rem .7rem;background:#fff}
+
+
+/* -------------------------------------------------
+   5) Filters (rent.html)
+   ------------------------------------------------- */
+
+.filters-form{margin-top:.6rem}
+.filters-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:end
+}
+.field{display:grid;gap:.35rem}
+.label{font-weight:800;color:var(--ink-80)}
+input[type="number"], select{
+  width:100%;padding:.75rem .9rem;border:1px solid #e2e8f0;border-radius:12px;background:#fff;color:var(--ink);
+  transition:box-shadow .18s ease, border-color .18s ease
+}
+input:focus, select:focus{outline:none;border-color:transparent;box-shadow:var(--ring)}
+.field--actions{align-self:stretch;display:flex;align-items:flex-end}
+
+/* -------------------------------------------------
+   6) Cards Grid (rent.html)
+   ------------------------------------------------- */
+
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
+.farm-card{
+  border:1px solid #e2e8f0;border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-1);overflow:hidden;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease
+}
+.farm-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-2);border-color:#dbeafe}
+.farm-link{display:grid;grid-template-rows:auto 1fr;height:100%}
+
+.farm-media{position:relative;aspect-ratio:16/9;background:#0b1a13}
+.farm-media img{width:100%;height:100%;object-fit:cover}
+.badge{
+  position:absolute;z-index:2;top:10px;left:10px;padding:.25rem .5rem;border-radius:999px;font-size:.8rem;font-weight:800;
+  background:var(--green-100);color:var(--green-700)
+}
+.badge--video{left:auto;right:10px;background:linear-gradient(135deg, var(--yellow-500), #ffe566);color:#1b2a1c}
+.badge--tier{background:linear-gradient(135deg, var(--green-600), var(--green-700));color:#fff}
+
+.farm-body{display:grid;gap:.35rem;padding:1rem}
+.farm-title{margin:0;font-size:1.15rem}
+.farm-location{color:var(--ink-50)}
+.farm-price{font-weight:800}
+.farm-status{font-weight:800}
+.farm-status.is-available{color:var(--green-700)}
+.farm-status.is-rented{color:#991b1b}
+
+/* Staggered entrance (CSS-only hint) */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.cards-grid .farm-card{opacity:0;animation:fadeUp .6s ease forwards}
+.cards-grid .farm-card:nth-child(1){animation-delay:.05s}
+.cards-grid .farm-card:nth-child(2){animation-delay:.12s}
+.cards-grid .farm-card:nth-child(3){animation-delay:.18s}
+.cards-grid .farm-card:nth-child(4){animation-delay:.24s}
+
+/* -------------------------------------------------
+   7) Promotional Banner (rent.html)
+   ------------------------------------------------- */
+
+.promo-banner{
+  display:grid;grid-template-columns:1.1fr .9fr;gap:1rem;align-items:center;
+  border:1px solid #e2e8f0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:var(--shadow-2)
+}
+.promo-media{aspect-ratio:16/9;background:#0b1a13}
+.promo-media img{width:100%;height:100%;object-fit:cover}
+.promo-body{padding:1rem 1.2rem;display:flex;flex-direction: column;align-items: center;justify-content: center;gap: 1rem;}
+.promo-text{color:var(--ink-70)}
+
+/* -------------------------------------------------
+   8) Breadcrumb (farm.html)
+   ------------------------------------------------- */
+
+.breadcrumb{border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background:#fff}
+.breadcrumb ol{
+  margin:.6rem 0;padding:0;display:flex;gap:.5rem;list-style:none;color:var(--ink-50);font-size:.95rem
+}
+.breadcrumb li+li::before{content:"/";margin-right:.5rem;color:#cbd5e1}
+.breadcrumb a{color:var(--green-700);font-weight:600}
+.breadcrumb a:hover{text-decoration:underline}
+
+/* -------------------------------------------------
+   9) Farm Hero (farm.html)
+   ------------------------------------------------- */
+
+.farm-hero{
+  background:
+    radial-gradient(800px 400px at -10% 110%, rgba(16,185,129,.18), transparent 55%),
+    radial-gradient(800px 400px at 110% -10%, rgba(234,179,8,.18), transparent 55%);
+}
+.farm-hero__inner{padding:2rem 0}
+.farm-name{margin:.1rem 0 .2rem;font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:800}
+.farm-location{color:var(--ink-50);margin:.1rem 0 .5rem}
+.farm-summary{display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;padding:0;margin:0 0 .8rem;list-style:none}
+.farm-summary li{background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:.35rem .7rem}
+.status.is-available{color:var(--green-700);font-weight:800}
+.status.is-rented{color:#991b1b;font-weight:800}
+.tier{color:#0b3e2b;font-weight:800}
+
+/* -------------------------------------------------
+   10) Gallery (farm.html)
+   ------------------------------------------------- */
+
+.gallery-slider{
+  position:relative;border:1px solid #e2e8f0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:var(--shadow-1)
+}
+.gallery-track{display:flex;transform:translateX(0)}
+.gallery-slide{flex:0 0 100%;padding:0;margin:0}
+.gallery-slide img{width:100%;height:420px;object-fit:cover;background:#0b1a13}
+.gallery-slide figcaption{padding:.6rem 1rem;color:var(--ink-70);background:#fff}
+
+.gallery-controls{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 .5rem;pointer-events:none}
+.gallery-prev,.gallery-next{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.9);display:grid;place-items:center;cursor:pointer}
+
+.gallery-thumbs{display:flex;gap:.4rem;justify-content:center;padding:.5rem;background:#fff;border-top:1px solid #e2e8f0}
+.thumb{width:28px;height:28px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer}
+.thumb.is-active{background:linear-gradient(135deg, var(--green-600), var(--green-700));border-color:transparent}
+
+/* -------------------------------------------------
+   11) Video (farm.html)
+   ------------------------------------------------- */
+.video{
+  max-width:600px;height:auto;
+  padding: 0;
+  margin-right: 160px;
+  
+}
+.video .container{
+  width: 100%;
+  height: 100%;
+  display: flex;flex-direction: column;align-items:flex-start;gap:1rem;
+  
+}
+.video-frame{
+  border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#000;box-shadow:var(--shadow-1);
+  width: 100%;height: 100%;
+}
+.video-frame iframe{width:100%;height:40vh;object-fit:cover;opacity:.92}
+
+/* -------------------------------------------------
+   12) Description prose (farm.html)
+   ------------------------------------------------- */
+
+.prose{max-width:75ch}
+.prose p{line-height:1.6}
+.prose ul{padding-left:1.2rem}
+.prose li{margin:.25rem 0}
+
+/* -------------------------------------------------
+   13) Map (farm.html)
+   ------------------------------------------------- */
+
+.map-placeholder{
+  border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#eef7ef;box-shadow:var(--shadow-1)
+}
+.map-placeholder img{width:100%;height:360px;object-fit:cover}
+
+/* -------------------------------------------------
+   14) Contact (farm.html)
+   ------------------------------------------------- */
+
+.contact-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+
+/* -------------------------------------------------
+   15) Footer (shared)
+   ------------------------------------------------- */
+
+#site-footer{background:#fff;border-top:1px solid #e2e8f0}
+.footer-bottom{
+  display:flex;justify-content:space-between;align-items:center;gap:.8rem;
+  padding:1rem 0;color:var(--ink-70);font-size:.95rem
+}
+.copy,.credit{margin:0}
+
+/* -------------------------------------------------
+   16) Responsive
+   ------------------------------------------------- */
+
+@media (max-width:1080px){
+  .filters-grid{grid-template-columns:repeat(3,1fr)}
+  .promo-banner{grid-template-columns:1fr}
+}
+
+@media (max-width:960px){
+  .navlinks,.nav-cta{display:none}
+  .nav-toggle{display:inline-grid}
+  
+  .filters-grid{grid-template-columns:repeat(2,1fr)}
+  .cards-grid{grid-template-columns:1fr}
+  .gallery-slide img{height:320px}
+}
+
+@media (max-width:560px){
+  .filters-grid{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;text-align:center}
+  .video{margin-right: 0px;margin: 0 10px;}
+}
+
+/* -------------------------------------------------
+   17) Nice-to-have micro-interactions
+   ------------------------------------------------- */
+
+.farm-card:hover .btn-outline{filter:brightness(.96)}
+.btn:active{transform:translateY(0)}
+
+/* Footer (RTL) — Farmers *//* Footer RTL — بسيط ومتجاوب */
+.farm-footer{
+  --g600:#059669; --g700:#047857; --y500:#eab308;
+  --ink:#0f172a; --ink50:#64748b;
+  background:
+    radial-gradient(800px 320px at 110% -10%, #fef9c3 0%, transparent 60%),
+    radial-gradient(800px 320px at -10% 120%, #ecfccb 0%, transparent 60%),
+    linear-gradient(#ffffff, #fbfdf6);
+  color:var(--ink);
+  border-top:1px solid #e5e7eb;
+  padding: 2rem 0 1rem;
+  font-family: inherit;
+}
+.farm-footer .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+
+/* الشبكة العلوية */
+.farm-footer .footer-top{
+  width:100%;
+  margin-inline:auto;
+  display:grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: .2rem;
+  padding: 1rem;
+}
+
+/* الشعار */
+.footer-brand{display:flex;gap:.75rem}
+.logo-mark{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--g600),var(--y500));
+}
+.brand-name{font-size:1.05rem}
+.brand-desc{margin:.25rem 0;color:var(--ink50);line-height:1.6}
+
+/* الروابط */
+.footer-links{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.footer-title{margin:0 0 .5rem;font-size:1rem;font-weight:800}
+.footer-links ul{list-style:none;margin:0;padding:0;display:grid;gap:.35rem;}
+.footer-links a{color:var(--ink);text-decoration:none}
+.footer-links a:hover{color:var(--g700)}
+.contact a{word-break:break-word}
+
+/* الشريط السفلي */
+.footer-bottom{
+  width:min(1200px,92%);margin:1rem auto 0;
+  padding-top:.8rem;border-top:1px solid #e5e7eb;
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;
+}
+.social{display:flex;gap:.45rem}
+.s-link{
+  width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#0b513a;background:#e8f9f0;border:1px solid #c7f1df;
+}
+.s-link:hover{background:#dff6ea}
+.copyright{margin:0}
+.mini-links{display:flex;align-items:center;gap:.45rem}
+.mini-links a{text-decoration:none;color:var(--ink)}
+.mini-links a:hover{color:var(--g700)}
+.dot{color:#d1d5db}
+
+/* تجاوب */
+@media (max-width: 980px){
+  .farm-footer .footer-top{grid-template-columns: 1fr 1fr;gap:1rem}
+  .footer-links{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width: 640px){
+  .farm-footer .footer-top{grid-template-columns: 1fr}
+  .footer-links{grid-template-columns:repeat(2,1fr)}
+}

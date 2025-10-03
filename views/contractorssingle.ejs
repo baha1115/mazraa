@@ -1,0 +1,302 @@
+<!-- File: contractor.html (Individual Contractor Details) -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Farm — Contractor Details</title>
+  <meta name="description" content="See a contractor’s portfolio, services, coverage areas, and request service." />
+  <!-- To enable Arabic RTL globally later, change dir="ltr" to dir="rtl" on <html> -->
+    <link rel="stylesheet" href="../Public/styles/contractorsstyle.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+  <!-- link rel="stylesheet" href="contractor.css" -->
+</head>
+<body>
+  <!-- Header -->
+  <header id="site-header" data-rtl-support="true">
+    <div class="container nav">
+  <a class="brand" href="index.html#home" aria-label="الصفحة الرئيسية لمزرعتي">
+    <span class="brand-mark" aria-hidden="true">🌾</span>
+    <span class="brand-name">مزرعتي</span>
+  </a>
+  <nav class="navlinks" aria-label="القائمة الرئيسية">
+    <a href="index.html#home">الرئيسية</a>
+    <a href="index.html#sales">مزارع للبيع</a>
+    <a href="rent.html">مزارع للإيجار</a>
+    <a href="index.html#add-farm">أضف مزرعتك</a>
+    <a href="index.html#about">من نحن</a>
+  </nav>
+  <div class="nav-cta">
+    <a class="btn btn-primary" href="contractors.html#list">تصفح المقاولين</a>
+  </div>
+  <button class="nav-toggle" aria-label="فتح القائمة" aria-controls="mobile-menu" aria-expanded="false">
+    <span class="nav-toggle-bar" aria-hidden="true"></span>
+  </button>
+</div>
+
+    <div id="mobile-menu" class="mobile-menu" hidden>
+  <nav aria-label="القائمة الجانبية للجوال">
+    <a href="index.html#home">الرئيسية</a>
+    <a href="index.html#sales">مزارع للبيع</a>
+    <a href="rent.html">مزارع للإيجار</a>
+    <a href="index.html#add-farm">أضف مزرعتك</a>
+    <a href="index.html#about">من نحن</a>
+    <a href="contractors.html#list">تصفح المقاولين</a>
+  </nav>
+</div>
+
+  </header>
+  <!-- Floating WhatsApp Button -->
+  <a
+    class="fab-whatsapp"
+    href="https://wa.me/21600000000?text=Hello%20My%20Farm%2C%20I%27d%20like%20to%20request%20a%20service"
+    target="_blank"
+    rel="noopener"
+    aria-label="Chat on WhatsApp"
+  >
+    <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
+  </a>
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <div class="container">
+      <ol>
+        <li><a href="index.html#home">الرئيسية</a></li>
+        <li><a href="contractors.html">المقاولين</a></li>
+        <li aria-current="page">تفاصيل المقاول</li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Header block / Summary -->
+  <header class="contractor-hero">
+  <div class="container contractor-hero__inner">
+    <div class="hero-top">
+      <div class="a avatar--lg">
+        <img src="../Public/assests/seller.webp" alt="صورة أحمد نداف" />
+      </div>
+      <div class="hero-copy">
+        <h1 class="name">أحمد نداف</h1>
+        <p class="specialization">كهربائي زراعي</p>
+        <p class="region">ريف دمشق</p>
+        <ul class="stats" role="list" style="width: 100%;display: flex;justify-content: center;align-items:flex-start;flex-direction: column;margin-bottom:-1rem;">
+          <li><strong>الخبرة:</strong> أكثر من 7 سنوات</li>
+          <li><strong>الاشتراك:</strong> <span class="tier">VIP</span></li>
+          <li><strong>التقييم:</strong> ⭐ 4.8</li>
+        </ul>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#request">طلب خدمة</a>
+          <a class="btn btn-outline" href="tel:+21600000000">اتصل: +216 00 000 000</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+  <!-- 1) Gallery of Previous Work -->
+  <section id="gallery" class="section gallery" aria-labelledby="gallery-title">
+  <div class="container">
+    <h2 id="gallery-title" style="margin-bottom: 1rem;">الاعمال السابقة:</h2>
+
+    <!-- Swiper main -->
+    <div class="swiper gallery-swiper" aria-label="صور المعرض">
+      <div class="swiper-wrapper">
+        <!-- Slide 1 -->
+        <div class="swiper-slide">
+          <img src="../Public/assests/farm4k.jpg" alt="تركيب لوحة كهربائية في مزرعة" loading="eager" />
+          <div class="slide-overlay">
+            <h3 class="slide-title">تركيب لوحة كهربائية</h3>
+            <p class="slide-sub">تنفيذ آمن وفق المعايير، مع تمديدات محمية</p>
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="swiper-slide">
+          <img src="../Public/assests/farm4k3.jpg" alt="أسلاك التحكم بمضخة الري" loading="lazy" />
+          <div class="slide-overlay">
+            <h3 class="slide-title">أسلاك تحكم بمضخة الري</h3>
+            <p class="slide-sub">لوحة حماية وأتمتة لضمان التشغيل المستمر</p>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="swiper-slide">
+          <img src="../Public/assests/farm4k2.jpg" alt="دمج عاكس طاقة شمسية" loading="lazy" />
+          <div class="slide-overlay">
+            <h3 class="slide-title">دمج عاكس طاقة شمسية</h3>
+            <p class="slide-sub">ربط احترافي بين الألواح والعاكس والمضخات</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+
+      <!-- Dots -->
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- 2) Description of Services -->
+ <section id="services" class="section services" aria-labelledby="services-title">
+  <div class="container">
+    <h2 id="services-title">الخدمات المقدمة</h2>
+    <article class="prose">
+      <ul>
+        <li>تصميم وتركيب الأنظمة الكهربائية للمزارع</li>
+        <li>لوحات تحكم المضخات، الحماية والأتمتة</li>
+        <li>تمديد الألواح الشمسية ودمج العواكس</li>
+        <li>تشخيص وفحص السلامة لمعدات المزارع</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<!-- 3) المناطق المشمولة -->
+<section id="coverage" class="section coverage" aria-labelledby="coverage-title">
+  <div class="container">
+    <h2 id="coverage-title">المناطق المشمولة</h2>
+    <ul class="tags" role="list">
+      <li class="tag">ريف دمشق</li>
+      <li class="tag">حماة</li>
+      <li class="tag">حمص</li>
+      <li class="tag">درعا</li>
+    </ul>
+  </div>
+</section>
+
+
+  <!-- 4) Request Service (Quick Form) -->
+  <section id="request" class="section request" aria-labelledby="request-title">
+  <div class="container">
+    <h2 id="request-title">طلب خدمة</h2>
+    <p class="muted">املأ بياناتك وسنتواصل معك في أقرب وقت.</p>
+
+    <form id="request-form" action="/request" method="post" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label class="label" for="rq-name">الاسم</label>
+          <input id="rq-name" class="input" name="name" type="text" placeholder="اكتب اسمك" required />
+        </div>
+
+        <div class="field">
+          <label class="label" for="rq-phone">رقم الهاتف</label>
+          <input id="rq-phone" class="input" name="phone" type="tel" placeholder="+216 XX XXX XXX" required />
+        </div>
+
+        <div class="field">
+          <label class="label" for="rq-service">نوع الخدمة</label>
+          <select id="rq-service" name="service" required>
+            <option value="">اختر الخدمة</option>
+            <option value="Electricity">كهرباء</option>
+            <option value="Pumps">مضخات</option>
+            <option value="Solar Energy">طاقة شمسية</option>
+            <option value="Construction">بناء</option>
+            <option value="Diagnostics">تشخيص فني</option>
+            <option value="Irrigation">ري</option>
+          </select>
+        </div>
+
+        <div class="field field--full">
+          <label class="label" for="rq-desc">وصف مختصر</label>
+          <textarea id="rq-desc" class="input" name="description" rows="4" placeholder="صف طلبك بشكل مختصر"></textarea>
+        </div>
+
+        <div class="field field--actions">
+          <button class="btn btn-primary" type="submit">إرسال</button>
+          <a class="btn btn-outline" href="https://wa.me/21600000000?text=أحتاج%20خدمة%20زراعية" target="_blank" rel="noopener">طلب عبر واتساب</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+  <!-- 5) Promotional Banner (Bottom) -->
+  <section id="promo" class="section promo" aria-labelledby="promo-title">
+  <div class="container">
+    <article class="promo-banner" data-controlled-by="admin">
+      <div class="promo-media">
+        <img src="../Public/assests/farm4k1.jpg" alt="عرض خاص: ترقية الطاقة الشمسية + تحكم بالمضخات" loading="lazy" />
+      </div>
+      <div class="promo-body">
+        <h3 id="promo-title">عرض خاص: ترقية الطاقة الشمسية + تحكم بالمضخات</h3>
+        <p class="promo-text">خصم باقة لمشتركي VIP. الكمية محدودة.</p>
+        <a class="btn btn-primary" href="contractors.html#list">عرض المقاولين</a>
+      </div>
+    </article>
+  </div>
+</section>
+ <footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
+  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+  <div class="footer-top">
+    <!-- الشعار والوصف المختصر -->
+    <div class="footer-brand">
+      <div class="logo-mark" aria-hidden="true">🌿</div>
+      <div>
+        <strong class="brand-name">فارمرز</strong>
+        <p class="brand-desc">
+          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
+        </p>
+      </div>
+    </div>
+    <!-- روابط سريعة -->
+    <nav class="footer-links" aria-label="روابط سريعة">
+      <div>
+        <h3 class="footer-title">تصفح</h3>
+        <ul>
+          <li><a href="/sale.html">مزارع للبيع</a></li>
+          <li><a href="/rent.html">مزارع للإيجار</a></li>
+          <li><a href="/contractors.html">المقاولون</a></li>
+          <li><a href="/plans.html">الاشتراكات</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">الدعم</h3>
+        <ul>
+          <li><a href="/about.html">من نحن</a></li>
+          <li><a href="/faq.html">الأسئلة الشائعة</a></li>
+          <li><a href="/policy.html">سياسة الخصوصية</a></li>
+          <li><a href="/terms.html">الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">تواصل</h3>
+        <ul class="contact">
+          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
+          <li><a href="tel:+963900000000">+963 900 000</a></li>
+          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="social" aria-label="شبكات اجتماعية">
+      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
+      </a>
+    </div>
+
+    <p class="copyright">
+      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
+    </p>
+
+    <div class="mini-links">
+      <a href="/policy.html">الخصوصية</a>
+      <span class="dot" aria-hidden="true">•</span>
+      <a href="/terms.html">الشروط</a>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+   <script src="../Public/contractorsingle.js"></script>
+</body>
+</html>

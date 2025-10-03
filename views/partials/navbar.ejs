@@ -1,0 +1,150 @@
+<% /* views/partials/navbar.ejs */ %>
+<header class="nvx-header" dir="rtl">
+  <div class="nvx-container">
+    <!-- العلامة/اللوجو -->
+    <a class="nvx-brand" href="/" aria-label="الرئيسية">
+      <span class="nvx-brand-mark" aria-hidden="true">🌿</span>
+      <span class="nvx-brand-name">Farmers</span>
+    </a>
+
+    <!-- روابط عامة (تظهر للجميع) -->
+    <nav class="nvx-links" aria-label="روابط عامة">
+      <a class="nvx-link" href="/">الرئيسية</a>
+      <a class="nvx-link" href="/farms/sale">مزارع للبيع</a>
+      <a class="nvx-link" href="/farms/rent">مزارع للإيجار</a>
+      <a class="nvx-link" href="/contractors">المقاولون</a>
+      <a class="nvx-link" href="/bundles">مجموعات الأراضي</a>
+    </nav>
+
+    <!-- إجراءات (تختلف حسب حالة الدخول) -->
+    <div class="nvx-actions">
+      <% if (!isAuth) { %>
+        <a class="nvx-btn nvx-btn--ghost" href="/login">تسجيل الدخول</a>
+        <a class="nvx-btn nvx-btn--primary" href="/signup">حساب جديد</a>
+      <% } else { %>
+        <a class="nvx-link" href="/plans">الاشتراكات</a>
+        <% if (isAdmin) { %>
+          <a class="nvx-badge" href="/admin">لوحة التحكم</a>
+        <% } else if (isContractor) { %>
+          <a class="nvx-badge" href="/dashboard/contractor">لوحة المقاول</a>
+        <% } else if (isOwner) { %>
+          <a class="nvx-badge" href="/dashboard/owner">لوحة المالك</a>
+        <% } else { %>
+          <a class="nvx-badge" href="/profile">لوحة التحكم</a>
+        <% } %>
+        <form class="nvx-logout" action="/logout" method="post">
+          <button type="submit" class="nvx-linklike">تسجيل الخروج</button>
+        </form>
+      <% } %>
+    </div>
+    <!-- زر الهامبرغر -->
+    <button class="nvx-toggle" aria-label="فتح القائمة" aria-controls="nvx-mobile" aria-expanded="false">
+      <span class="nvx-toggle-bar" aria-hidden="true"></span>
+      <span class="nvx-toggle-bar" aria-hidden="true"></span>
+      <span class="nvx-toggle-bar" aria-hidden="true"></span>
+    </button>
+  </div>
+  <!-- قائمة الجوال -->
+  <div id="nvx-mobile" class="nvx-mobile" hidden>
+    <nav class="nvx-mobile-nav" aria-label="قائمة الجوال">
+      <!-- نفس الروابط العامة -->
+      <a class="nvx-mobile-link" href="/">الرئيسية</a>
+      <a class="nvx-mobile-link" href="/farms/sale">مزارع للبيع</a>
+      <a class="nvx-mobile-link" href="/farms/rent">مزارع للإيجار</a>
+      <a class="nvx-mobile-link" href="/contractors">المقاولون</a>
+      <a class="nvx-mobile-link" href="/bundles">مجموعات الأراضي</a>
+
+      <hr class="nvx-sep">
+
+      <% if (!isAuth) { %>
+        <a class="nvx-mobile-btn nvx-mobile-btn--ghost" href="/login">تسجيل الدخول</a>
+        <a class="nvx-mobile-btn nvx-mobile-btn--primary" href="/signup">حساب جديد</a>
+      <% } else { %>
+        <a class="nvx-mobile-link" href="/plans">الاشتراكات</a>
+        <% if (isAdmin) { %>
+          <a class="nvx-mobile-link nvx-mobile-link--accent" href="/admin">لوحة التحكم</a>
+        <% } else if (isContractor) { %>
+          <a class="nvx-mobile-link nvx-mobile-link--accent" href="/dashboard/contractor">لوحة المقاول</a>
+        <% } else if (isOwner) { %>
+          <a class="nvx-mobile-link nvx-mobile-link--accent" href="/dashboard/owner">لوحة المالك</a>
+        <% } else { %>
+          <a class="nvx-mobile-link nvx-mobile-link--accent" href="/profile">لوحة التحكم</a>
+        <% } %>
+        <form class="nvx-mobile-logout" action="/logout" method="post">
+          <button type="submit" class="nvx-mobile-linklike">تسجيل الخروج</button>
+        </form>
+      <% } %>
+    </nav>
+  </div>
+</header>
+
+<style>
+/* ===== NVX NAVBAR (RTL-ready, namespaced) ===== */
+.nvx-header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb}
+.nvx-container{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.nvx-brand{display:flex;align-items:center;gap:8px;font-weight:700;color:#0b1a13;text-decoration:none;white-space:nowrap}
+.nvx-brand-mark{font-size:1.1rem}
+.nvx-brand-name{font-size:1.05rem}
+
+.nvx-links{display:flex;align-items:center;gap:12px;margin-inline-start:18px}
+.nvx-link{color:#0b1a13;text-decoration:none;padding:6px 8px;border-radius:8px}
+.nvx-link:hover{background:#f3f4f6}
+
+.nvx-actions{margin-inline-start:auto;display:flex;align-items:center;gap:12px}
+.nvx-badge{background:#0b1a13;color:#fff;text-decoration:none;padding:6px 10px;border-radius:999px}
+.nvx-btn{padding:6px 10px;border-radius:10px;text-decoration:none;display:inline-block}
+.nvx-btn--primary{background:#22c55e;color:#0b1a13;font-weight:600;border:1px solid #16a34a}
+.nvx-btn--ghost{border:1px solid #e5e7eb;color:#0b1a13;background:#fff}
+.nvx-linklike{background:none;border:none;padding:6px 8px;color:#ef4444;cursor:pointer}
+.nvx-logout{display:inline}
+
+.nvx-toggle{display:none;width:40px;height:40px;align-items:center;justify-content:center;margin-inline-start:12px;background:#fff;border:1px solid #e5e7eb;border-radius:10px}
+.nvx-toggle-bar{display:block;width:22px;height:2px;background:#0b1a13;border-radius:2px}
+.nvx-toggle-bar+.nvx-toggle-bar{margin-top:4px}
+
+/* Mobile panel */
+.nvx-mobile{border-top:1px solid #e5e7eb;background:#fff}
+.nvx-mobile-nav{display:grid;padding:8px 16px}
+.nvx-mobile-link{padding:10px 8px;border-radius:8px;text-decoration:none;color:#0b1a13}
+.nvx-mobile-link:hover{background:#f3f4f6}
+.nvx-mobile-link--accent{font-weight:600}
+.nvx-mobile-btn{padding:10px 8px;border-radius:10px;text-align:center;text-decoration:none;margin-top:6px}
+.nvx-mobile-btn--primary{background:#22c55e;color:#0b1a13;font-weight:600;border:1px solid #16a34a}
+.nvx-mobile-btn--ghost{border:1px solid #e5e7eb;background:#fff;color:#0b1a13}
+.nvx-mobile-linklike{background:none;border:1px solid #fee2e2;color:#b91c1c;border-radius:8px;padding:10px;margin-top:8px;cursor:pointer}
+.nvx-sep{border:none;border-top:1px dashed #e5e7eb;margin:6px 0}
+
+/* Responsive */
+@media (max-width: 1040px){
+  .nvx-links{display:none}
+  .nvx-actions{display:none}
+  .nvx-toggle{display:inline-flex}
+}
+</style>
+
+<script>
+(function(){
+  const btn  = document.querySelector('.nvx-toggle');
+  const menu = document.getElementById('nvx-mobile');
+  if (!btn || !menu) return;
+
+  const close = () => {
+    if (!menu.hasAttribute('hidden')) menu.setAttribute('hidden','');
+    btn.setAttribute('aria-expanded','false');
+  };
+  const toggle = () => {
+    const open = !menu.hasAttribute('hidden');
+    if (open) { menu.setAttribute('hidden',''); } else { menu.removeAttribute('hidden'); }
+    btn.setAttribute('aria-expanded', String(!open));
+  };
+  btn.addEventListener('click', toggle);
+  // اغلق القائمة عند الضغط على أي رابط/زر داخلها
+  menu.addEventListener('click', (e)=>{
+    const a = e.target.closest('a,button');
+    if (a) close();
+  });
+  // اغلق عند توسعة الشاشة للديسكتوب
+  const mq = window.matchMedia('(min-width: 1041px)');
+  mq.addEventListener?.('change', ()=>{ if (mq.matches) close(); });
+})();
+</script>

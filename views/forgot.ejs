@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>استرجاع كلمة المرور</title>
+  <style>
+    body{font-family:system-ui; background:#f7f7f8; padding:1rem}
+    .container{width:min(520px,92%);margin-inline:auto;background:#fff;border-radius:14px;padding:1rem 1.2rem;box-shadow:0 10px 24px rgba(0,0,0,.06)}
+    .field{display:grid;gap:.4rem;margin:.6rem 0}
+    label{font-weight:700}
+    input{padding:.7rem .9rem;border:1px solid #ddd;border-radius:10px}
+    .btn{display:inline-block;margin-top:.6rem;padding:.7rem 1rem;border-radius:10px;border:1px solid #1d6c3b;background:#1d6c3b;color:#fff;font-weight:800;text-decoration:none}
+    .muted{color:#6b7280}
+    .alert{padding:.8rem 1rem;border-radius:10px;margin-bottom:.8rem;border:1px solid transparent}
+    .success{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+    .error{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+    .info{background:#eff6ff;color:#1e3a8a;border-color:#bfdbfe}
+    .error {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <% if (typeof msg !== 'undefined' && msg) { %>
+      <div class="alert <%= type || 'info' %>"><%= msg %></div>
+    <% } %>
+
+    <h1>استرجاع كلمة المرور</h1>
+    <p class="muted">أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.</p>
+
+    <form method="post" action="/auth/forgot" novalidate>
+     <div class="field">
+  <label for="email">البريد الإلكتروني</label>
+  <input id="email" type="email" name="email" value="<%= old?.email || '' %>">
+  <% if (errors?.email) { %>
+    <p class="error"><%= errors.email %></p>
+  <% } %>
+</div>
+
+      <button class="btn" type="submit">إرسال رابط الاسترجاع</button>
+    </form>
+
+    <p style="margin-top:1rem">
+      <a href="/auth?tab=login">العودة لتسجيل الدخول</a>
+    </p>
+  </div>
+</body>
+</html>

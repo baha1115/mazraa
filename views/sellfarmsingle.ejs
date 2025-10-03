@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title><%= farm ? (farm.title + ' — التفاصيل') : 'المزرعة غير موجودة' %></title>
+  <meta name="description" content="تفاصيل المزرعة: الصور، الفيديو، الوصف، الموقع، السعر والحالة."/>
+  <!-- عدّل المسار حسب مشروعك -->
+  <link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css"/>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+  <!-- Swiper CSS (للمعرض) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+  <style>
+    /* لمسات بسيطة */
+    .status.is-available{color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;padding:.1rem .45rem;border-radius:999px}
+    .status.is-rented{color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:.1rem .45rem;border-radius:999px}
+    .badge--tier{display:inline-block;padding:.2rem .5rem;border-radius:999px;border:1px solid #ddd;background:#fafafa;font-size:.85rem}
+    .vip{background:#111;color:#fff;border-color:#111}
+    .premium{background:#f59e0b;color:#fff;border-color:#f59e0b}
+    .gallery .swiper{--swiper-navigation-color:#111;--swiper-pagination-color:#111}
+    .map-placeholder img{max-width:100%;height:auto;border-radius:12px}
+      /* ارتفاع واضح للخريطة */
+  #leafletMap { width: 100%; height: 380px; border-radius: 12px; }
+  /* إن أردت إخفاء الصورة القديمة عند تفعيل الخريطة */
+  .map-placeholder img.static-map { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== الهيدر البسيط (عدّل الروابط حسب مشروعك) ===== -->
+<%- include('partials/navbar') %>
+  <!-- زر واتساب دائم -->
+  <a class="fab-whatsapp"
+     href="https://wa.me/<%= ((farm && farm.ownerInfo && farm.ownerInfo.whatsapp) ? farm.ownerInfo.whatsapp : '21600000000').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + (farm? farm.title : '—')) %>"
+     target="_blank" rel="noopener" aria-label="الدردشة عبر واتساب">
+    <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
+  </a>
+
+  <!-- مسار التصفح -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <div class="container">
+      <ol>
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/sale">للبيع</a></li>
+        <li aria-current="page"><%= farm ? farm.title : 'غير موجود' %></li>
+      </ol>
+    </div>
+  </nav>
+
+  <% if (!farm) { %>
+    <section class="section">
+      <div class="container">
+        <h1>المزرعة غير موجودة</h1>
+        <p class="muted">عذرًا، لم نعثر على المزرعة المطلوبة.</p>
+        <a class="btn btn-outline" href="/sale">العودة إلى مزارع للبيع</a>
+      </div>
+    </section>
+  <% } else { %>
+
+  <!-- العنوان والملخص -->
+  <header class="farm-hero">
+    <div class="container farm-hero__inner">
+      <div class="farm-hero__copy">
+        <h1 class="farm-name"><%= farm.title %></h1>
+        <p class="farm-location"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
+        <ul class="farm-summary" role="list">
+          <li><strong>السعر:</strong> <%= Intl.NumberFormat('en').format(Number(farm.price)||0) %>$</li>
+          <li><strong>المساحة:</strong> <%= Intl.NumberFormat('en').format(Number(farm.size)||0) %> م²</li>
+          <li>
+            <strong>الحالة:</strong>
+            <% const isRented = (farm.status||'available').toLowerCase() === 'rented'; %>
+            <span class="status <%= isRented ? 'is-rented' : 'is-available' %>"><%= isRented ? 'مؤجّرة' : 'متاحة' %></span>
+          </li>
+          
+        </ul>
+        <div class="farm-actions">
+         
+          <a class="btn btn-outline"
+             href="https://wa.me/<%= ((farm && farm.ownerInfo && farm.ownerInfo.whatsapp) ? farm.ownerInfo.whatsapp : '21600000000').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>"
+             target="_blank" rel="noopener" style="background-color: #065f46;color:white ;" >تواصل عبر واتساب</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- المعرض -->
+  <section id="gallery" class="section gallery" aria-labelledby="gallery-title">
+    <div class="container">
+      <h2 id="gallery-title" style="margin-bottom:1rem">الصور:</h2>
+      <div class="swiper gallery-swiper" aria-label="صور المزرعة">
+        <div class="swiper-wrapper" id="galleryMain">
+          <% const photos = (Array.isArray(farm.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg']; %>
+          <% photos.forEach(function(src){ %>
+            <div class="swiper-slide">
+              <img src="<%= src %>" alt="<%= farm.title %>" loading="lazy"/>
+            </div>
+          <% }) %>
+        </div>
+        <div class="swiper-button-prev" aria-label="السابق"></div>
+        <div class="swiper-button-next" aria-label="التالي"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- الفيديو (اختياري) -->
+  <% const __videoUrl = (farm.videoUrl||'').trim(); %>
+  <% if (__videoUrl) { %>
+  <section id="videoSection" class="section video" aria-labelledby="video-title">
+    <div class="container">
+      <h2 id="video-title">فيديو تفصيلي:</h2>
+      <div class="video-frame" id="videoFrame">
+        <!-- سيُحقن تلقائيًا حسب نوع الرابط -->
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- الوصف -->
+  <section id="description" class="section description" aria-labelledby="desc-title">
+    <div class="container">
+      <h2 id="desc-title">الوصف الكامل:</h2>
+      <article class="prose">
+        <p><%= (farm.description||'لا يوجد وصف مفصّل.') %></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- الموقع -->
+  <section id="map" class="section map" aria-labelledby="map-title">
+  <div class="container">
+    <h2 id="map-title" style="margin-bottom: 1rem;" >الموقع على الخريطة:</h2>
+
+    <!-- إن كانت لديك صورة احتياطية، أبقها داخل الـ placeholder (ستُخفى عند رسم الخريطة) -->
+    <div class="map-placeholder" id="mapPlaceholder"
+         data-lat="<%= farm?.location?.lat || '' %>"
+         data-lng="<%= farm?.location?.lng || '' %>"
+         data-address="<%= (farm?.location?.address || '').replace(/"/g,'&quot;') %>">
+      <img class="static-map" src="/Public/assests/location.jpg" alt="خريطة تقريبية" loading="lazy"/>
+    </div>
+
+    <!-- عنصر الخريطة الحي -->
+    <div id="leafletMap" aria-label="خريطة OpenStreetMap"></div>
+  </div>
+</section>
+
+  <!-- تواصل -->
+
+
+  <% } /* نهاية if(farm) */ %>
+
+  <!-- الفوتر (اختياري اختصرته) -->
+  <footer class="farm-footer" dir="rtl">
+    <div class="container">
+      <p class="copyright">© <%= new Date().getFullYear() %> فارمرز — جميع الحقوق محفوظة.</p>
+    </div>
+  </footer>
+<script
+  defer
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+  <!-- Swiper JS -->
+  <script type="module">
+    import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
+    new Swiper('.gallery-swiper', {
+      loop: true,
+      slidesPerView: 1,
+      spaceBetween: 12,
+      pagination: { el: '.swiper-pagination', clickable: true },
+      navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+    });
+  </script>
+
+  <!-- مُهيّئ الفيديو البسيط -->
+  <script>
+    (function(){
+      const frame = document.getElementById('videoFrame');
+      if (!frame) return;
+
+      // آمن: نقرأ مباشرة من farm.videoUrl حتى لو لم تُمرَّر متغيرات وسيطة
+      const url = <%- JSON.stringify((farm && farm.videoUrl) ? farm.videoUrl : '') %>;
+      if (!url) return;
+
+      function esc(s){return (s||'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+
+      try{
+        const u = new URL(url);
+        if (u.hostname.includes('youtu.be')) {
+          const id = u.pathname.slice(1);
+          frame.innerHTML = '<iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube" frameborder="0" allowfullscreen></iframe>';
+          return;
+        }
+        if (u.hostname.includes('youtube.com')) {
+          const id = u.searchParams.get('v');
+          if (id){
+            frame.innerHTML = '<iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube" frameborder="0" allowfullscreen></iframe>';
+            return;
+          }
+        }
+      }catch(_){}
+
+      if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(url)) {
+        frame.innerHTML = '<video controls style="width:100%;border-radius:12px"><source src="'+esc(url)+'"></video>';
+      } else {
+        frame.innerHTML = '<a class="btn btn-outline" href="'+esc(url)+'" target="_blank" rel="noopener">فتح الفيديو</a>';
+      }
+    })();
+  </script>
+  <script>
+(function () {
+  // انتظر تحميل Leaflet (لأننا استخدمنا defer)
+  function ready(fn){ document.readyState!=='loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
+
+  ready(function(){
+    // التقط الإحداثيات من الـ data-attributes
+    var box = document.getElementById('mapPlaceholder');
+    var mapEl = document.getElementById('leafletMap');
+    if (!box || !mapEl || typeof L === 'undefined') return;
+
+    var lat = parseFloat(box.dataset.lat);
+    var lng = parseFloat(box.dataset.lng);
+    var addr = box.dataset.address || '';
+
+    var hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+    if (!hasCoords) {
+      // لا توجد إحداثيات -> اترك الصورة الاحتياطية
+      return;
+    }
+
+    // أنشئ الخريطة
+    var map = L.map(mapEl, {
+      center: [lat, lng],
+      zoom: 14
+    });
+
+    // طبقة البلاط من OSM (HTTPS)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // ضع ماركر على الموقع
+    var marker = L.marker([lat, lng]).addTo(map);
+    if (addr) marker.bindPopup(addr);
+
+    // لو كان العنصر داخل تبويب/سلايدر، أعد حساب المقاسات
+    setTimeout(function(){ map.invalidateSize(); }, 200);
+
+    // أخفِ الصورة الثابتة (اختياري)
+    var img = box.querySelector('img.static-map');
+    if (img) img.style.display = 'none';
+  });
+})();
+</script>
+
+</body>
+</html>

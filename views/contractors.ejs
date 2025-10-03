@@ -1,0 +1,190 @@
+<!-- views/contractors.ejs -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>فارمرز — المقاولون</title>
+  <meta name="description" content="ابحث عن مقاولين موثوقين: كهرباء، مضخات، طاقة شمسية، بناء ريفي، تشخيص فني، وأنظمة الري." />
+  <!-- غيّر المسارات حسب إعداد الستاتيك لديك -->
+  <link rel="stylesheet" href="/Public/styles/contractorsstyle.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+</head>
+<body>
+
+  <!-- Navbar مع تمييز صفحة المقاولين -->
+  <%- include('partials/navbar', { isAuth: (typeof isAuth!=='undefined'?isAuth:false), user: (typeof user!=='undefined'?user:null), active: 'contractors' }) %>
+
+  <!-- صندوق التنبيهات (تُستخدمه السكربتات إن وُجدت) -->
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- زر واتساب عائم (اختياري) -->
+  <a class="fab-whatsapp"
+     href="https://wa.me/21600000000?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%20%D9%81%D8%A7%D8%B1%D9%85%D8%B1%D8%B2%D8%8C%20%D8%A3%D8%AD%D8%AA%D8%A7%D8%AC%20%D9%85%D9%82%D8%A7%D9%88%D9%84"
+     target="_blank" rel="noopener" aria-label="الدردشة عبر واتساب">
+    <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
+  </a>
+
+  <!-- ========== سلايدر دعائي (اختياري) ========== -->
+  <section id="gallery" class="section gallery" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="swiper gallery-swiper" aria-label="صور المعرض">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide">
+            <img src="/Public/assests/farm4k.jpg" alt="تركيب لوحة كهربائية في مزرعة" loading="eager" />
+            <div class="slide-overlay">
+              <h3 class="slide-title">تركيب لوحة كهربائية</h3>
+              <p class="slide-sub">تنفيذ آمن وفق المعايير، مع تمديدات محمية</p>
+              <a class="btn btn-primary" href="#list">تصفح المقاولين الآن</a>
+            </div>
+          </div>
+          <div class="swiper-slide">
+            <img src="/Public/assests/farm4k3.jpg" alt="أسلاك التحكم بمضخة الري" loading="lazy" />
+            <div class="slide-overlay">
+              <h3 class="slide-title">أسلاك تحكم بمضخة الري</h3>
+              <p class="slide-sub">لوحة حماية وأتمتة لضمان التشغيل المستمر</p>
+              <a class="btn btn-primary" href="#list">تصفح المقاولين الآن</a>
+            </div>
+          </div>
+          <div class="swiper-slide">
+            <img src="/Public/assests/farm4k2.jpg" alt="دمج عاكس طاقة شمسية" loading="lazy" />
+            <div class="slide-overlay">
+              <h3 class="slide-title">دمج عاكس طاقة شمسية</h3>
+              <p class="slide-sub">ربط احترافي بين الألواح والعاكس والمضخات</p>
+              <a class="btn btn-primary" href="#list">تصفح المقاولين الآن</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-button-prev" aria-label="السابق"></div>
+        <div class="swiper-button-next" aria-label="التالي"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== فلترة المقاولين ========== -->
+  <section id="filters" class="section filters" aria-labelledby="filters-title">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="filters-title">فلترة المقاولين</h2>
+        <p class="muted">ابحث حسب التخصص والمنطقة.</p>
+      </header>
+
+      <!-- مجرد فورم واجهة؛ يمكنك ربطه بـ GET /contractors?specialization=&region= -->
+      <form id="contractor-filters" class="filters-form" action="#list" method="get" novalidate>
+        <div class="filters-grid">
+          <div class="field">
+            <label class="label" for="specialization">اختر التخصص</label>
+            <select id="specialization" name="specialization">
+              <option value="">جميع التخصصات</option>
+              <option value="Electricity">كهرباء</option>
+              <option value="Pumps">مضخات</option>
+              <option value="Solar Energy">طاقة شمسية</option>
+              <option value="Construction">بناء</option>
+              <option value="Diagnostics">تشخيص فني</option>
+              <option value="Irrigation">ري</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label" for="region">اختر المنطقة</label>
+            <select id="region" name="region">
+              <option value="">جميع المناطق</option>
+              <option value="Damascus Countryside">ريف دمشق</option>
+              <option value="Hama">حماة</option>
+              <option value="Homs">حمص</option>
+              <option value="Daraa">درعا</option>
+              <option value="Riyadh">الرياض</option>
+              <option value="Qassim">القصيم</option>
+            </select>
+          </div>
+
+          <div class="field field--actions">
+            <button class="btn btn-primary" type="submit">ابحث</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========== قائمة المقاولين (VIP/Premium أولاً) ========== -->
+  <section id="list" class="section list" aria-labelledby="list-title">
+    <div class="container">
+      <header class="section-header">
+        <h2 id="list-title">المقاولون المتاحون</h2>
+        <p class="muted">يظهر مشتركو VIP و Premium أولاً.</p>
+      </header>
+
+      <% const items = Array.isArray(contractors) ? contractors : []; %>
+
+      <% if (!items.length) { %>
+        <p class="muted">لا توجد نتائج حالياً.</p>
+      <% } else { %>
+        <div class="cards-grid" role="list">
+          <% items.forEach(function(c){ %>
+            <article class="contractor-card" role="listitem"
+                     data-id="<%= c._id %>"
+                     data-approved="<%= c.approved %>"
+                     data-subscription="<%= c.subscriptionTier || 'Basic' %>"
+                     data-specialization="<%= c.specialization || '' %>"
+                     data-region="<%= c.region || '' %>">
+
+              <a class="contractor-link" href="/contractor/<%= c._id %>" aria-label="فتح صفحة المقاول: <%= c.name %>">
+                <header class="contractor-head">
+                  <figure class="avatar">
+                    <img src="<%= c.avatar %>" alt="صورة <%= c.name %>" loading="lazy" />
+                  </figure>
+                  <div class="head-info">
+                    <h3 class="name"><%= c.name || '—' %></h3>
+                    <p class="specialization"><%= c.specialization || '—' %></p>
+                    <p class="region"><%= c.region || '—' %></p>
+                  </div>
+                  <span class="badge badge--tier"><%= c.subscriptionTier || 'Basic' %></span>
+                  <% if (c.featured) { %><span class="badge badge--featured">مميّز</span><% } %>
+                </header>
+                <div class="contractor-body">
+                  <button class="btn btn-outline" type="button">صفحة المقاول</button>
+                </div>
+              </a>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- ========== بانر ترويجي سفلي (اختياري) ========== -->
+  <section id="promo" class="section promo" aria-labelledby="promo-title">
+    <div class="container">
+      <article class="promo-banner" data-controlled-by="admin">
+        <div class="promo-media">
+          <img src="/Public/assets/contractors/promo-01.jpg" alt="مقاول VIP — عرض تركيب طاقة شمسية + مضخة" loading="lazy" />
+        </div>
+        <div class="promo-body">
+          <h3 id="promo-title">مقاول VIP: باقة الطاقة الشمسية + المضخات</h3>
+          <p class="promo-text">تسعير خاص لمزارع الطاقة الشمسية مع مضخات الآبار العميقة المدمجة. عرض لفترة محدودة.</p>
+          <a class="btn btn-primary" href="/contractor/C002">عرض التفاصيل</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Footer مبسّط -->
+  <footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
+    <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+    <div class="footer-bottom">
+      <p class="copyright">
+        © <span id="year-placeholder"><script>document.write(new Date().getFullYear())</script></span> فارمرز — جميع الحقوق محفوظة.
+      </p>
+    </div>
+  </footer>
+
+  <!-- سكربتات -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="../Public/contractors.js"></script>
+</body>
+</html>
+
+
+
