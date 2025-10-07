@@ -13,6 +13,8 @@ const userSchema = new Schema({
   // 🔹 الحقول الناقصة (المشكلة):
   subscriptionTier: { type: String, enum: ['Basic','Premium','VIP'], default: 'Basic' },
   plan:             { type: String, enum: ['Basic','Premium','VIP'], default: 'Basic' }, // اختياري للتوافق
+ // ⭐ جديد:
+  subscriptionUntil: { type: Date, default: null },
 
   password: { type: String, required: true, minlength: 6 },
   resetPasswordToken: { type: String },

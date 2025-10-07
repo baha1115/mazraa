@@ -1,0 +1,17 @@
+<% if (promoContractors && promoContractors.enabled) { %>
+<section id="promo" class="section promo" aria-labelledby="promo-title">
+  <div class="container">
+    <article class="promo-banner" data-controlled-by="admin">
+      <div class="promo-media">
+        <img src="<%= promoContractors.img || '/Public/assets/contractors/promo-01.jpg' %>"
+             alt="<%= promoContractors.title || 'عرض ترويجي' %>" loading="lazy" />
+      </div>
+      <div class="promo-body">
+        <h3 id="promo-title"><%= promoContractors.title || 'عنوان ترويجي' %></h3>
+        <p class="promo-text"><%= promoContractors.text || '' %></p>
+        <a class="btn btn-primary" href="<%= promoContractors.link || '/contractors' %>">عرض التفاصيل</a>
+      </div>
+    </article>
+  </div>
+</section>
+<% } %>

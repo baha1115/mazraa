@@ -15,6 +15,9 @@ const FarmSchema = new mongoose.Schema({
   city: String,
   size: Number,
   price: Number,
+// ضمن مخطط Farm
+views: { type: Number, default: 0 },
+
 
   photos: [String],
 

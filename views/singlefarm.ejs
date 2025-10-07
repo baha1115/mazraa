@@ -8,33 +8,137 @@
   <link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
   <style>
+    
+  /* Lightbox */
+  .lb-overlay{
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.88);
+    display: none;            /* يظهر عند فتحه */
+    align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .lb-overlay.is-open{ display:flex; }
+  .lb-img{
+    max-width: 92vw; max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    object-fit: contain;
+    background: #111;
+  }
+  .lb-close, .lb-prev, .lb-next{
+    position: absolute;
+    top: 16px;
+    width: 42px; height: 42px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(255,255,255,.14);
+    color: #fff; font-size: 22px; line-height: 42px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: background .2s ease;
+  }
+  .lb-close:hover, .lb-prev:hover, .lb-next:hover{ background: rgba(255,255,255,.24); }
+  .lb-close{ inset-inline-end: 16px; }
+  .lb-prev, .lb-next{
+    top: 50%; transform: translateY(-50%);
+  }
+  .lb-prev{ inset-inline-start: 18px; }
+  .lb-next{ inset-inline-end: 18px; }
+  @media (max-width:640px){
+    .lb-close, .lb-prev, .lb-next{ width: 38px; height: 38px; font-size: 20px; }
+  }
+
+
     .status.is-available{color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;padding:.1rem .45rem;border-radius:999px}
     .status.is-rented{color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:.1rem .45rem;border-radius:999px}
     .badge--tier{display:inline-block;padding:.2rem .5rem;border-radius:999px;border:1px solid #ddd;background:#fafafa;font-size:.85rem}
     .vip{background:#111;color:#fff;border-color:#111}
     .premium{background:#f59e0b;color:#fff;border-color:#f59e0b}
     #map { height: 380px; border-radius: 12px; overflow: hidden; }
+
+.vip-hero-slide{
+  position: relative;
+  height: 50vh;           /* عدّل إن أردت */
+  min-height: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+/* الصورة يجب أن تملأ السلايد */
+.vip-hero-img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* مهم جداً */
+  display: block;
+}
+
+/* التراكب فوق الصورة */
+.vip-hero-overlay{
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.1));
+}
+
+/* نص السلايد */
+.vip-hero-body{
+  position: absolute;
+  inset-inline: 1.2rem;
+  inset-block-end: 1.1rem;
+  color: #fff;
+  display: grid; gap: .35rem;
+  text-align: start;
+}
+.vip-hero-cta{
+  background-color: #e5e7eb;
+  color: #111;
+  padding: 0.5rem;
+  width: 150px;
+  text-align: center;
+  border-radius: 5px;
+}
   </style>
   <!-- Leaflet (اختياري للخريطة الحية) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
-  <!-- هيدر مختصر -->
-  <header id="site-header">
-    <div class="container nav">
-      <a class="brand" href="/" aria-label="الصفحة الرئيسية">
-        <span class="brand-mark" aria-hidden="true">🌿</span>
-        <span class="brand-name">المزارعون</span>
-      </a>
-      <nav class="navlinks" aria-label="رئيسي">
-        <a href="/sale">مزارع للبيع</a>
-        <a href="/rent" aria-current="page">للإيجار</a>
-        <a href="/contractors">المقاولون</a>
-        <a href="/plans">الاشتراك</a>
-      </nav>
-    </div>
-  </header>
+<%
+function assetPath(u){
+  u = (u||'').toString().trim();
+  // 1) اترك الـdata: URI كما هو
+  if (/^data:/i.test(u)) return u;
 
+  // 2) إن كان URL كامل
+  if (/^https?:\/\//i.test(u)) return u;
+
+  // 3) تصحيح المسارات المحلية
+  u = u.replace(/\\/g,'/');                 // backslashes → slashes
+  u = u.replace(/^\/?Public\//, '/public/') // Public → public
+       .replace(/\/assests\//gi, '/assets/');
+
+  // 4) مسارات مقبولة كما هي
+  if (u.startsWith('/uploads/')) return u;
+  if (u.startsWith('/public/'))  return u;
+  if (u.startsWith('/assets/'))  return '/public' + u;
+
+  // 5) أي شيء يبدأ بـ/ نضيف له /public
+  if (u.startsWith('/')) return '/public' + u;
+
+  // 6) وإلا نعتبره ملفاً محلياً داخل uploads أو public حسب تنظيمك
+  return '/uploads/' + u; // أو '/public/' + u إذا كانت أصولك هناك
+}
+// حوّل sameOwnerFarms إلى قائمة آمنة للاستخدام
+const ownerList     = Array.isArray(sameOwnerFarms) ? sameOwnerFarms : [];
+const hasOwnerFarms = ownerList.length > 0;
+%>
+
+
+
+
+
+ <%- include('partials/navbar') %>
   <% if (!farm) { %>
     <section class="section">
       <div class="container">
@@ -59,7 +163,8 @@
             <% const rented = String(farm.status||'available').toLowerCase()==='rented'; %>
             <span class="status <%= rented ? 'is-rented' : 'is-available' %>"><%= rented ? 'غير متاحة' : 'متاحة' %></span>
           </li>
-     
+     <li><strong>المشاهدات:</strong> <%= Number((typeof viewsCount!=='undefined' ? viewsCount : (farm?.views||0)) ).toLocaleString('en') %></li>
+
         </ul>
         <div class="farm-actions">
           
@@ -105,7 +210,7 @@
   <!-- الوصف -->
   <section id="description" class="section description" aria-labelledby="desc-title">
     <div class="container">
-      <h2 id="desc-title"  style="margin-bottom:1rem">الوصف الكامل:</h2>
+      <h2 id="desc-title" style="margin-bottom:1rem;border-bottom:1px solid black;">الوصف الكامل:</h2>
       <article class="prose">
         <p><%= (farm.description||'لا يوجد وصف مفصّل.') %></p>
       </article>
@@ -123,12 +228,132 @@
  
 
   <% } %>
+<% if (hasOwnerFarms) { %>
+<section class="section" aria-labelledby="owner-farms-title">
+  <div class="container">
+    <header class="section-header" style="margin-bottom:.75rem">
+      <h2 id="owner-farms-title">مزارع أخرى لنفس المالك</h2>
+      <p class="muted">قد تهمّك هذه المزارع من نفس المالك.</p>
+    </header>
 
-  <footer class="farm-footer" dir="rtl">
-    <div class="container">
-      <p class="copyright">© <%= new Date().getFullYear() %> فارمرز — جميع الحقوق محفوظة.</p>
+    <div class="swiper vip-swiper" dir="rtl">
+      <div class="swiper-wrapper">
+        <% ownerList.forEach(function(f){
+             const raw   = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
+             const cover = assetPath(raw);
+             const loc   = f.city ? ((f.area||'') + ' — ' + f.city) : (f.area||'—');
+             const link  = (String(f.kind||'').toLowerCase()==='rent') ? ('/rent/farm/' + f._id) : ('/farm/' + f._id);
+             const vws   = Number(f.views||0);
+        %>
+          <div class="swiper-slide">
+            <article class="vip-hero-slide">
+              <img
+  class="vip-hero-img"
+  src="<%= assetPath(raw) %>"
+  alt="<%= f.title || 'مزرعة' %>"
+  loading="lazy"
+  onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+
+              <div class="vip-hero-overlay"></div>
+              <div class="vip-hero-body">
+                <h3 class="vip-hero-title"><%= f.title || '—' %></h3>
+                <div class="vip-hero-meta">
+                  <%= loc %> • <%= Number(f.size||0).toLocaleString('en') %> م² • $<%= Number(f.price||0).toLocaleString('en') %>
+                  <span class="meta-views">• 👁️ <%= vws.toLocaleString('en') %></span>
+                </div>
+                <a class="vip-hero-cta" href="<%= link %>">التفاصيل</a>
+              </div>
+            </article>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+      <div class="swiper-pagination"></div>
     </div>
-  </footer>
+  </div>
+</section>
+<% } %>
+
+
+<%- include('partials/top-rent',  { items: (topRent || []) }) %>
+<%- include('partials/promo', { promoContractors }) %>
+  <!--
+
+   ========================
+       الفوتر
+   ======================== -->
+<footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
+  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+
+  <div class="footer-top">
+    <!-- الشعار والوصف المختصر -->
+    <div class="footer-brand">
+      <div class="logo-mark" aria-hidden="true">🌿</div>
+      <div>
+        <strong class="brand-name">فارمرز</strong>
+        <p class="brand-desc">
+          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
+        </p>
+      </div>
+    </div>
+
+    <!-- روابط سريعة -->
+    <nav class="footer-links" aria-label="روابط سريعة">
+      <div>
+        <h3 class="footer-title">تصفح</h3>
+        <ul>
+          <li><a href="/sale">مزارع للبيع</a></li>
+          <li><a href="/rent">مزارع للإيجار</a></li>
+          <li><a href="/contractors">المقاولون</a></li>
+          <li><a href="/plans">الاشتراكات</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">الدعم</h3>
+        <ul>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/about">الأسئلة الشائعة</a></li>
+          <li><a href="/about">سياسة الخصوصية</a></li>
+          <li><a href="/about">الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">تواصل</h3>
+        <ul class="contact">
+          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
+          <li><a href="tel:+963900000000">+963 900 000</a></li>
+          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="social" aria-label="شبكات اجتماعية">
+      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
+      </a>
+    </div>
+
+    <p class="copyright">
+      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
+    </p>
+
+    <div class="mini-links">
+      <a href="/about">الخصوصية</a>
+      <span class="dot" aria-hidden="true">•</span>
+      <a href="/about">الشروط</a>
+    </div>
+  </div>
+</footer>
 
   <script type="module">
     import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
@@ -140,7 +365,19 @@
       navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
     });
   </script>
-
+<script type="module">
+  import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
+  new Swiper('.vip-swiper', {
+    loop: true,
+    centeredSlides: true,
+    slidesPerView: 1.02,
+    spaceBetween: 18,
+    watchOverflow: true,
+    pagination: { el: '.swiper-pagination', clickable: true },
+    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    breakpoints: { 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
+  });
+</script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // فيديو

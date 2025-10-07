@@ -119,10 +119,10 @@
     <nav class="menu">
       <button class="menu__item is-active" data-view="farms">أراضٍ بانتظار الموافقة</button>
       <button class="menu__item" data-view="contractors">ملفات المقاولين</button>
-      <button class="menu__item" data-view="banners">طلبات بانرات</button>
+      <button class="menu__item" data-view="banners" style="display: none;">طلبات بانرات</button>
       <button class="menu__item" data-view="subs">الاشتراكات والصلاحيات</button>
-      <button class="menu__item" data-view="history">سجلّ التعديلات</button>
-      <button class="menu__item" data-view="settings">إعدادات المشرف</button>
+      <button class="menu__item" data-view="history" style="display: none;">سجلّ التعديلات</button>
+      <button class="menu__item" data-view="settings">إضافة بانرات</button>
     </nav>
     <div class="sidebar__foot">© <span data-year></span> Farmers</div>
   </aside>
@@ -162,7 +162,7 @@
 </section>
 
     <!-- 3) Banners -->
-    <section id="view-banners" class="panel">
+    <section id="view-banners" class="panel" style="display: none;">
       <div class="head"><h2>طلبات البانرات الإعلانية</h2></div>
       <div class="table-wrap">
         <table>
@@ -185,30 +185,52 @@
     </section>
 
     <!-- 5) History -->
-    <section id="view-history" class="panel">
+    <section id="view-history" class="panel" style="display: none;">
       <div class="head"><h2>سجلّ التعديلات والموافقات</h2></div>
       <div id="historyList" class="card"></div>
       <button id="clearHistory" class="btn btn--ghost btn--sm" style="margin-top:.6rem">تفريغ السجل</button>
     </section>
+<% var _promo = (typeof promo !== 'undefined' && promo) ? promo : {}; %>
 
     <!-- 6) Admin settings -->
-    <section id="view-settings" class="panel">
-      <div class="head"><h2>إعدادات المشرف</h2></div>
-      <form id="adminSettings" class="card" style="display:grid;gap:.7rem;max-width:560px">
-        <label><span class="muted">اسم المشرف</span><input name="name" class="input" placeholder="Admin"></label>
-        <label><span class="muted">إشعارات البريد</span>
-          <select name="noti" class="input">
-            <option value="all">الكل</option><option value="important">المهم فقط</option><option value="none">بدون</option>
-          </select>
-        </label>
-        <div style="display:flex;gap:.5rem">
-          <button class="btn btn--ok" type="submit">حفظ</button>
-          <button class="btn btn--ghost" type="reset">إرجاع</button>
-        </div>
-      </form>
-    </section>
+    <!-- 6) Admin settings -->
+<section id="view-settings" class="panel">
+  <div class="head"><h2>إضافة بانرات</h2></div>
 
-  </section>
+  <form method="post" action="/admin/promo/contractors"
+        class="card" style="display:grid;gap:.6rem;max-width:560px">
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      <input type="checkbox" name="enabled" <%= _promo.enabled ? 'checked' : '' %> />
+      تفعيل
+    </label>
+
+    <div>
+      <label class="muted">صورة</label>
+      <input class="input" name="img" value="<%= _promo.img || '' %>" />
+    </div>
+
+    <div>
+      <label class="muted">العنوان</label>
+      <input class="input" name="title" value="<%= _promo.title || '' %>" />
+    </div>
+
+    <div>
+      <label class="muted">النص</label>
+      <textarea class="input" name="text" rows="4"><%= _promo.text || '' %></textarea>
+    </div>
+
+    <div>
+      <label class="muted">الرابط</label>
+      <input class="input" name="link" value="<%= _promo.link || '' %>" />
+    </div>
+
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn--ok" type="submit">حفظ</button>
+      <button class="btn btn--ghost" type="reset">إلغاء</button>
+    </div>
+  </form>
+</section>
+
 </main>
 
 <!-- Drawer -->
@@ -881,6 +903,7 @@ subsBody?.addEventListener('submit', async (e)=>{
   qs('#logoutBtn')?.addEventListener('click', ()=> toast('تم تسجيل الخروج (تجريبي)','warn'));
 })();
 </script>
+
 
 
 </body>

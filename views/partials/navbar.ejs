@@ -4,16 +4,16 @@
     <!-- العلامة/اللوجو -->
     <a class="nvx-brand" href="/" aria-label="الرئيسية">
       <span class="nvx-brand-mark" aria-hidden="true">🌿</span>
-      <span class="nvx-brand-name">Farmers</span>
+      <span class="nvx-brand-name">مزرعتي</span>
     </a>
 
     <!-- روابط عامة (تظهر للجميع) -->
     <nav class="nvx-links" aria-label="روابط عامة">
       <a class="nvx-link" href="/">الرئيسية</a>
-      <a class="nvx-link" href="/farms/sale">مزارع للبيع</a>
-      <a class="nvx-link" href="/farms/rent">مزارع للإيجار</a>
+      <a class="nvx-link" href="/about">من نحن</a>
+      <a class="nvx-link" href="/sale">مزارع للبيع</a>
+      <a class="nvx-link" href="/rent">مزارع للإيجار</a>
       <a class="nvx-link" href="/contractors">المقاولون</a>
-      <a class="nvx-link" href="/bundles">مجموعات الأراضي</a>
     </nav>
 
     <!-- إجراءات (تختلف حسب حالة الدخول) -->
@@ -30,7 +30,7 @@
         <% } else if (isOwner) { %>
           <a class="nvx-badge" href="/dashboard/owner">لوحة المالك</a>
         <% } else { %>
-          <a class="nvx-badge" href="/profile">لوحة التحكم</a>
+          <a class="nvx-badge" href="/dashboard/owner">لوحة التحكم</a>
         <% } %>
         <form class="nvx-logout" action="/logout" method="post">
           <button type="submit" class="nvx-linklike">تسجيل الخروج</button>
@@ -38,21 +38,22 @@
       <% } %>
     </div>
     <!-- زر الهامبرغر -->
-    <button class="nvx-toggle" aria-label="فتح القائمة" aria-controls="nvx-mobile" aria-expanded="false">
-      <span class="nvx-toggle-bar" aria-hidden="true"></span>
-      <span class="nvx-toggle-bar" aria-hidden="true"></span>
-      <span class="nvx-toggle-bar" aria-hidden="true"></span>
-    </button>
+    <div class="cc" style="position: absolute;left:10px;">
+     <button class="nvx-toggle" aria-label="فتح القائمة" aria-controls="nvx-mobile" aria-expanded="false">
+     <span class="nvx-burger" aria-hidden="true"></span>
+     </button>
+    </div>
+
   </div>
   <!-- قائمة الجوال -->
   <div id="nvx-mobile" class="nvx-mobile" hidden>
     <nav class="nvx-mobile-nav" aria-label="قائمة الجوال">
       <!-- نفس الروابط العامة -->
       <a class="nvx-mobile-link" href="/">الرئيسية</a>
-      <a class="nvx-mobile-link" href="/farms/sale">مزارع للبيع</a>
-      <a class="nvx-mobile-link" href="/farms/rent">مزارع للإيجار</a>
+       <a class="nvx-link" href="/about">من نحن</a>
+      <a class="nvx-mobile-link" href="/sale">مزارع للبيع</a>
+      <a class="nvx-mobile-link" href="/rent">مزارع للإيجار</a>
       <a class="nvx-mobile-link" href="/contractors">المقاولون</a>
-      <a class="nvx-mobile-link" href="/bundles">مجموعات الأراضي</a>
 
       <hr class="nvx-sep">
 
@@ -98,7 +99,7 @@
 .nvx-linklike{background:none;border:none;padding:6px 8px;color:#ef4444;cursor:pointer}
 .nvx-logout{display:inline}
 
-.nvx-toggle{display:none;width:40px;height:40px;align-items:center;justify-content:center;margin-inline-start:12px;background:#fff;border:1px solid #e5e7eb;border-radius:10px}
+.nvx-toggle{display:none;width:40px;height:40px;align-items:center;justify-content:center;background:#fff;border:1px solid #e5e7eb;border-radius:10px}
 .nvx-toggle-bar{display:block;width:22px;height:2px;background:#0b1a13;border-radius:2px}
 .nvx-toggle-bar+.nvx-toggle-bar{margin-top:4px}
 
@@ -118,8 +119,23 @@
 @media (max-width: 1040px){
   .nvx-links{display:none}
   .nvx-actions{display:none}
-  .nvx-toggle{display:inline-flex}
+  .nvx-toggle{display:inline-flex; width:44px; height:44px; align-items:center; justify-content:center;
+  background:#fff; border:1px solid #e5e7eb; border-radius:10px; }
+
+.nvx-burger{
+  position:relative;
+  width:24px; height:2px;
+  background:#0b1a13; border-radius:2px;
 }
+.nvx-burger::before, .nvx-burger::after{
+  content:""; position:absolute; left:0;
+  width:24px; height:2px; background:#0b1a13; border-radius:2px;
+}
+.nvx-burger::before{ top:-6px; }
+.nvx-burger::after { top: 6px; }
+}
+
+
 </style>
 
 <script>

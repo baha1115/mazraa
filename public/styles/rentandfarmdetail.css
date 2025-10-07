@@ -544,3 +544,9 @@ input:focus, select:focus{outline:none;border-color:transparent;box-shadow:var(-
   .farm-footer .footer-top{grid-template-columns: 1fr}
   .footer-links{grid-template-columns:repeat(2,1fr)}
 }
+.section-title {
+  display: block;
+  margin-bottom: 1rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid #111; /* خط واضح */
+}

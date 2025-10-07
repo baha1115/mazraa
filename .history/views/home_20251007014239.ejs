@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html  lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المزارع - مزارع للبيع والإيجار</title>
+  <meta name="description" content="Farmers: List your farm, reach buyers and renters, and grow your business." />
+  <link rel="stylesheet" href="../Public/styles/homestyle.css">
+</head>
+<body>
+  <!-- ========================
+       1) Header
+       ======================== -->
+
+<%- include('partials/navbar') %>
+  <!-- Floating WhatsApp Button (position with CSS later) -->
+  <a
+    class="fab-whatsapp"
+    href="https://wa.me/21600000000?text=Hello%20Farmers%2C%20I%27m%20interested%20in%20listing%20a%20farm"
+    target="_blank"
+    rel="noopener"
+    aria-label="Chat on WhatsApp"
+  >
+    <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
+  </a>
+
+  <!-- ========================
+       2) Hero Section
+       ======================== -->
+  <main id="home" class="hero" aria-labelledby="hero-title">
+    <!-- Add background image via CSS later; using this image reference -->
+    <figure class="hero-media">
+      <img src="../Public/assests/landscape.jpg" alt="Beautiful Syrian farm landscape" />
+      <figcaption class="visually-hidden">مزرعة سورية ذات مناظر خلابة مع بساتين وأشعة الشمس الدافئة.</figcaption>
+    </figure>
+
+    <!-- Decorative layers for future mouse interactivity (parallax/tilt) -->
+    <div class="hero-layer hero-layer--green" aria-hidden="true" data-parallax depth="0.2"></div>
+    <div class="hero-layer hero-layer--yellow" aria-hidden="true" data-parallax depth="0.4"></div>
+
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <h1 id="hero-title" class="hero-title">
+          هل لديك مزرعة؟ <span class="accent">انضم الآن</span> وابدأ في عرضه على المشترين والمستأجرين
+        </h1>
+        <p class="hero-lead">
+          قم بإنشاء حساب البائع الخاص بك، وأضف صور المزرعة وتفاصيلها، وتواصل مع المشترين والمستأجرين الحقيقيين بسرعة وسهولة.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/signup.html">سجل الآن كبائع</a>
+          <a class="btn btn-outline" href="/sell">اكتشف المزارع</a>
+        </div>
+      </div>
+    </div>
+  </main>
+<!-- ===== Quick-links cards (قبل الاشتراكات) ===== -->
+<section id="quick-links" class="section quick-links" aria-labelledby="quick-links-title">
+  <div class="container">
+    <h2 id="quick-links-title" class="section-title" style="text-align: center;">تصفح الأقسام الشائعة</h2>
+
+    <div class="cards-row" role="list">
+      <!-- Card 1: مزارع للبيع -->
+      <article class="ql-card" role="listitem">
+        <a class="ql-link" href="/sell" aria-label="اذهب إلى مزارع للبيع">
+          <div class="ql-media">
+            <img src="../Public/assests/farm4k1.jpg" alt="مزارع للبيع" loading="lazy" />
+            <div class="ql-badge">مزارع للبيع</div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Card 2: مزارع للكراء -->
+      <article class="ql-card" role="listitem">
+        <a class="ql-link" href="/rent" aria-label="اذهب إلى مزارع للكراء">
+          <div class="ql-media">
+            <img src="../Public/assests/farm4k2.jpg" alt="مزارع للكراء" loading="lazy" />
+            <div class="ql-badge">مزارع للكراء</div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Card 3: المقاولون -->
+      <article class="ql-card" role="listitem">
+        <a class="ql-link" href="/contractors" aria-label="اذهب إلى المقاولون">
+          <div class="ql-media">
+            <img src="../Public/assests/electricity.webp" alt="المقاولون" loading="lazy" />
+            <div class="ql-badge">المقاولون</div>
+          </div>
+        </a>
+      </article>
+    </div>
+  </div>
+</section>
+
+  
+  <!-- ========================
+       4) Efficiency, Skills & Experience
+       ======================== -->
+ <section id="metrics" class="section metrics" aria-labelledby="metrics-title">
+  <div class="container metrics-inner">
+    <div class="metrics-copy">
+      <h2 id="metrics-title">كفاءتنا ومهاراتنا وخبرتنا</h2>
+      <p class="muted">
+        نجمع بين الخبرة السوقية والتقنيات الحديثة لنقدم أداءً لا مثيل له
+        للبائعين والمشترين في جميع أنحاء المنطقة.
+      </p>
+
+      <ul class="kpi-grid" role="list">
+        <li class="kpi" role="listitem">
+          <span class="kpi-icon" aria-hidden="true">✓</span>
+          <div class="kpi-info">
+            <p class="kpi-label">متوسط الوقت لأول عميل محتمل</p>
+            <p class="kpi-value" data-counter="48">48 ساعة</p>
+          </div>
+        </li>
+        <li class="kpi" role="listitem">
+          <span class="kpi-icon" aria-hidden="true">✓</span>
+          <div class="kpi-info">
+            <p class="kpi-label">شركاء موثوقون</p>
+            <p class="kpi-value" data-counter="120">+120</p>
+          </div>
+        </li>
+        <li class="kpi" role="listitem">
+          <span class="kpi-icon" aria-hidden="true">✓</span>
+          <div class="kpi-info">
+            <p class="kpi-label">رضا العملاء</p>
+            <p class="kpi-value" data-counter="96">96%</p>
+          </div>
+        </li>
+        <li class="kpi" role="listitem">
+          <span class="kpi-icon" aria-hidden="true">✓</span>
+          <div class="kpi-info">
+            <p class="kpi-label">المدن المشمولة</p>
+            <p class="kpi-value" data-counter="20">+20</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- المهارات مع عناصر تقدم -->
+    <aside class="skills" aria-label="المهارات">
+      <h3 class="skills-title">المهارات</h3>
+      <ul class="skills-list" role="list">
+        <li class="skill" role="listitem">
+          <div class="skill-head"><span>الكفاءة</span><span>95%</span></div>
+          <progress class="skill-meter" value="95" max="100">95%</progress>
+        </li>
+        <li class="skill" role="listitem">
+          <div class="skill-head"><span>الدقة</span><span>92%</span></div>
+          <progress class="skill-meter" value="92" max="100">92%</progress>
+        </li>
+        <li class="skill" role="listitem">
+          <div class="skill-head"><span>السرعة</span><span>90%</span></div>
+          <progress class="skill-meter" value="90" max="100">90%</progress>
+        </li>
+        <li class="skill" role="listitem">
+          <div class="skill-head"><span>نطاق التغطية</span><span>88%</span></div>
+          <progress class="skill-meter" value="88" max="100">88%</progress>
+        </li>
+        <li class="skill" role="listitem">
+          <div class="skill-head"><span>الدعم</span><span>94%</span></div>
+          <progress class="skill-meter" value="94" max="100">94%</progress>
+        </li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+  <!-- ========================
+       5) Testimonials (Customers’ Opinions)
+       ======================== -->
+ <section id="testimonials" class="section testimonials" aria-labelledby="testimonials-title">
+  <div class="container">
+    <header class="section-header">
+      <h2 id="testimonials-title">ماذا يقول عملاؤنا</h2>
+      <p class="muted">آراء حقيقية من البائعين، المشترين، والشركاء</p>
+    </header>
+
+    <div class="testimonial-grid" role="list">
+      <article class="testimonial" role="listitem" aria-labelledby="t1-name">
+        <header class="testimonial-head">
+          <img src="../Public/assests/pumpmen.webp" alt="">
+          <div>
+            <strong id="t1-name">أجمد العظمة</strong>
+            <div class="testimonial-role">بائع مزرعة، حمص</div>
+             <div class="stars" aria-label="5 نجوم">★★★★★</div>
+          </div>
+         
+        </header>
+        <blockquote class="testimonial-quote">
+          “فارمرز سهّل عليّ عملية إدراج مزرعتي. حصلت على عملاء محتملين بجودة عالية خلال أيام!”
+        </blockquote>
+      </article>
+
+      <article class="testimonial" role="listitem" aria-labelledby="t2-name">
+        <header class="testimonial-head">
+          <img src="../Public/assests/electrician.jpg" alt="">
+          <div>
+            <strong id="t2-name">امين مراش</strong>
+            <div class="testimonial-role">مشتري، حماة</div>
+            <div class="stars" aria-label="5 نجوم">★★★★★</div>
+          </div>
+          
+        </header>
+        <blockquote class="testimonial-quote">
+          “أعجبتني الواجهة البسيطة والفلاتر السريعة. وجدت الأرض المثالية خلال أسبوع واحد فقط.”
+        </blockquote>
+      </article>
+
+      <article class="testimonial" role="listitem" aria-labelledby="t3-name">
+        <header class="testimonial-head">
+          <img src="../Public/assests/men.webp" alt="">
+          <div>
+            <strong id="t3-name">علي المرادي</strong>
+            <div class="testimonial-role">شريكة وكالة</div>
+            <div class="stars" aria-label="4 نجوم">★★★★☆</div>
+          </div>
+          
+        </header>
+        <blockquote class="testimonial-quote">
+          “التحليلات المميزة ساعدتنا على تسعير العقار بشكل صحيح والبيع أسرع. أوصي به بشدة.”
+        </blockquote>
+      </article>
+    </div>
+
+    <!-- CTA تحت التقييمات -->
+    <div class="cta">
+      <div class="cta-box">
+        <h3 class="cta-title">هل أنت مستعد للنمو مع منصة مزارع؟</h3>
+        <p class="cta-sub">انضم إلى آلاف الأشخاص الذين يثقون بمنصتنا لإدراج وتأجير المزارع.</p>
+        <div class="cta-actions">
+          <a class="btn btn-outline" href="/signup">ابدأ مجانًا</a>
+          <a class="btn btn-subscribe" href="/plans">شاهد الباقات</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--
+
+   ========================
+       الفوتر
+   ======================== -->
+<footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
+  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+
+  <div class="footer-top">
+    <!-- الشعار والوصف المختصر -->
+    <div class="footer-brand">
+      <div class="logo-mark" aria-hidden="true">🌿</div>
+      <div>
+        <strong class="brand-name">مزرعتي</strong>
+        <p class="brand-desc">
+          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
+        </p>
+      </div>
+    </div>
+
+    <!-- روابط سريعة -->
+    <nav class="footer-links" aria-label="روابط سريعة">
+      <div>
+        <h3 class="footer-title">تصفح</h3>
+        <ul>
+          <li><a href="/sale">مزارع للبيع</a></li>
+          <li><a href="/rent">مزارع للإيجار</a></li>
+          <li><a href="/contractors">المقاولون</a></li>
+          <li><a href="/plans">الاشتراكات</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">الدعم</h3>
+        <ul>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/about">الأسئلة الشائعة</a></li>
+          <li><a href="/about">سياسة الخصوصية</a></li>
+          <li><a href="/about">الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">تواصل</h3>
+        <ul class="contact">
+          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
+          <li><a href="tel:+963900000000">+963 900 000</a></li>
+          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="social" aria-label="شبكات اجتماعية">
+      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
+      </a>
+    </div>
+
+    <p class="copyright">
+      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
+    </p>
+
+    <div class="mini-links">
+      <a href="/about">الخصوصية</a>
+      <span class="dot" aria-hidden="true">•</span>
+      <a href="/about">الشروط</a>
+    </div>
+  </div>
+</footer>
+
+  <script src="../Public/homejava.js"></script>
+</body>
+</html>

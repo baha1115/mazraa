@@ -23,7 +23,17 @@ const ContractorRequestSchema = new mongoose.Schema({
   reviewNote: { type: String, default: '' },
   approvedAt: { type: Date, default: null },
   rejectedAt: { type: Date, default: null },
-  subscriptionTier: { type:String, enum:['Basic','Premium','VIP'], default:'Basic' }
+  subscriptionTier: { type:String, enum:['Basic','Premium','VIP'], default:'Basic' }, 
+  // ⭐ التقييمات
+  ratingAvg:   { type: Number, default: 0 },  // معدل التقييم (0..5)
+  ratingCount: { type: Number, default: 0 },  // عدد التقييمات
+  ratings: [{
+    user:     { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: false },
+    value:    { type: Number, min: 1, max: 5, required: true },
+    ip:       { type: String, default: '' },      // لتقليل التكرار من نفس IP (اختياري)
+    ua:       { type: String, default: '' },      // المتصفح (اختياري)
+    createdAt:{ type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('ContractorRequest', ContractorRequestSchema);

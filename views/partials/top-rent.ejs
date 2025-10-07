@@ -1,0 +1,29 @@
+<% const list = Array.isArray(items) ? items : []; %>
+<section class="section">
+  <div class="container">
+    <h3>أكثر مزارع الإيجار مشاهدة</h3>
+    <% if (!list.length) { %>
+      <p class="muted">لا توجد عناصر.</p>
+    <% } else { %>
+      <div class="cards-grid">
+        <% list.forEach(f => { %>
+          <article class="farm-card">
+            <a class="farm-link" href="/rent/farm/<%= f._id %>">
+              <figure class="farm-media">
+                <img src="<%= (Array.isArray(f.photos)&&f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg' %>" alt="<%= f.title %>" />
+              </figure>
+              <div class="farm-body">
+                <h4 class="farm-title"><%= f.title %></h4>
+                <p class="farm-location"><%= f.city ? ((f.area||'') + ' — ' + f.city) : (f.area||'—') %></p>
+                <p class="farm-price">$<%= Number(f.price||0).toLocaleString('en') %> / شهريًا</p>
+                <div class="card-meta">
+                  👁️ <%= Number(f.views||0).toLocaleString('en') %>
+                </div>
+              </div>
+            </a>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>

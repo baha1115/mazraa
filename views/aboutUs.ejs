@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>عن المنصة وسياسات الاستخدام | استراحتي / Farmers</title>
+<meta name="description" content="من نحن، سياسة الخصوصية، سياسة الاستخدام وإخلاء المسؤولية، الأسئلة الشائعة، سياسة النشر والإعلانات، نموذج الإبلاغ، ومحتوى المدونة — منصة استراحتي.">
+<style>
+  :root{
+    --g700:#047857; --g600:#059669; --g500:#10b981;
+    --y600:#ca8a04; --y500:#eab308; --y400:#facc15;
+    --ink:#0f172a; --ink70:#334155; --ink50:#64748b; --muted:#6b7280;
+    --bg:#f8fff9; --card:#ffffff; --line:#e5e7eb;
+    --radius:16px; --shadow:0 10px 26px rgba(2,44,34,.08);
+    --ring:0 0 0 3px rgba(5,150,105,.28);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:
+      radial-gradient(900px 360px at -10% 120%, #ecfccb 0%, transparent 60%),
+      radial-gradient(900px 360px at 110% -10%, #fef9c3 0%, transparent 60%),
+      linear-gradient(#fbfefb,#f9fcf3);
+    color:var(--ink);
+    font:16px/1.7 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  .container{width:min(1100px,92%);margin-inline:auto}
+
+  /* Header */
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    background:rgba(255,255,255,.85); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar__in{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0}
+  .brand{display:flex;align-items:center;gap:.6rem;font-weight:900}
+  .brand__mark{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;
+    background:linear-gradient(135deg,var(--g600),var(--y500));}
+  .nav{display:flex;gap:.6rem;flex-wrap:wrap}
+  .nav a{padding:.45rem .7rem;border-radius:999px;border:1px solid transparent}
+  .nav a:hover{background:#ffffff}
+  .nav a.is-active{background:linear-gradient(135deg,var(--g600),var(--g700));color:#fff}
+
+  /* Hero */
+  .hero{position:relative;overflow:hidden}
+  .hero__in{display:grid;grid-template-columns:1.2fr .8fr;gap:1rem;align-items:center;padding:2rem 0}
+  .hero h1{margin:0 0 .6rem;font-size:clamp(1.5rem,2.5vw,2.2rem);line-height:1.2}
+  .hero p{margin:.2rem 0 1rem;color:var(--ink50)}
+  .cta{display:flex;gap:.6rem;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1rem;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-weight:800;cursor:pointer}
+  .btn--primary{background:linear-gradient(135deg,var(--g600),var(--g700));color:#fff;border-color:transparent;box-shadow:0 10px 24px rgba(4,120,87,.18)}
+  .badge{display:inline-flex;align-items:center;gap:.35rem;background:#fff;border:1px solid #d1d5db;border-radius:999px;padding:.25rem .6rem;font-weight:800;color:#065f46}
+  .hero__art{
+    border-radius:16px;overflow:hidden;min-height:220px;
+    background:
+      linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.25)),
+      url('../public/assests/farm4k1.jpg') center/cover no-repeat;
+    box-shadow:var(--shadow);
+  }
+
+  /* Sections */
+  section.page{padding:1rem 0 2rem}
+  .grid{display:grid;grid-template-columns:260px 1fr;gap:1rem}
+  .toc{position:sticky;top:74px;align-self:start;border:1px solid var(--line);background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:.7rem}
+  .toc h3{margin:.2rem .4rem .5rem;font-size:1rem}
+  .toc a{display:block;padding:.45rem .6rem;border-radius:10px;color:var(--ink70)}
+  .toc a:hover{background:#f9fafb}
+  .toc a.active{background:linear-gradient(135deg,var(--g600),var(--g700));color:#fff}
+
+  .content{min-width:0;display:grid;gap:1rem}
+  .card{border:1px solid var(--line);background:var(--card);border-radius:16px;box-shadow:var(--shadow)}
+  .card__in{padding:1rem}
+  .card h2,.card h3{margin:.3rem 0 .5rem}
+  .muted{color:var(--muted)}
+
+  /* Accordion */
+  .acc{border-top:1px dashed var(--line);margin-top:.5rem}
+  .acc__item{border-bottom:1px dashed var(--line)}
+  .acc__btn{width:100%;text-align:inherit;background:#fff;border:0;padding:.75rem .1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .acc__btn:hover{background:#f9fafb}
+  .acc__btn span{font-weight:800}
+  .acc__icon{transform:rotate(0);transition:transform .2s ease}
+  .acc__item.is-open .acc__icon{transform:rotate(180deg)}
+  .acc__panel{max-height:0;overflow:hidden;transition:max-height .25s ease}
+  .acc__panel > div{padding:.6rem .1rem 1rem}
+
+  /* Report form */
+  form.report label{display:block;margin:.5rem 0 .25rem;font-weight:800;color:var(--ink70)}
+  form.report input, form.report select, form.report textarea{width:100%;padding:.6rem .8rem;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+  form.report .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem}
+
+  /* Footer */
+  .footer{border-top:1px solid var(--line);padding:1rem 0;color:var(--ink50);text-align:center}
+
+  @media (max-width:980px){
+    .hero__in{grid-template-columns:1fr}
+    .grid{grid-template-columns:1fr}
+    .toc{position:static}
+  }
+
+  :focus-visible{outline:none;box-shadow:var(--ring)}
+</style>
+</head>
+<body>
+
+<%- include('partials/navbar') %>
+<section class="hero">
+  <div class="container hero__in">
+    <div>
+      <span class="badge">شفافية • بساطة • دعم محلي</span>
+      <h1>نعرض المزارع والاستراحات والخدمات الزراعية — لنجعل الوصول أسهل بلا وسطاء</h1>
+      <p>منصة سورية تربط أصحاب المزارع والاستراحات والمقاولين بالباحثين عن التأجير أو الخدمات. نحن لا نبيع ولا نؤجر؛ مهمتنا تسهيل الوصول فقط.</p>
+      <div class="cta">
+        <a href="#join" class="btn btn--primary">انضم كمعلن</a>
+        <a href="#faq" class="btn">الأسئلة الشائعة</a>
+      </div>
+    </div>
+    <div class="hero__art" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="container grid">
+    <!-- TOC -->
+    <aside class="toc" id="toc">
+      <h3>محتويات الصفحة</h3>
+      <a href="#about" class="toc-link active">من نحن</a>
+      <a href="#terms" class="toc-link">سياسة الاستخدام وإخلاء المسؤولية</a>
+      <a href="#privacy" class="toc-link">سياسة الخصوصية</a>
+      <a href="#faq" class="toc-link">الأسئلة الشائعة</a>
+      <a href="#join" class="toc-link">انضم كمعلن</a>
+      <a href="#ads-policy" class="toc-link">سياسة النشر والإعلانات</a>
+      <a href="#report" class="toc-link">نموذج الإبلاغ</a>
+      <a href="#blog" class="toc-link">المدونة</a>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- من نحن -->
+      <article class="card" id="about">
+        <div class="card__in">
+          <h2>من نحن</h2>
+          <p><strong>استراحتي</strong> هي منصة رقمية سورية تهدف إلى ربط أصحاب المزارع والاستراحات والمقاولين مباشرةً مع الباحثين عن أماكن للاسترخاء أو خدمات زراعية وهندسية، دون وسطاء أو تعقيدات.</p>
+          <p>نحن لا نبيع ولا نؤجر، بل نعرض فقط. مهمتنا تسهيل الوصول، وليس التدخل في الاتفاقات.</p>
+
+          <h3>رؤيتنا</h3>
+          <p>بناء مجتمع رقمي موثوق يربط بين أصحاب العقارات الريفية والمستخدمين بطريقة شفافة وعملية، مع احترام خصوصية الجميع.</p>
+
+          <h3>ماذا نقدم؟</h3>
+          <ul>
+            <li>عرض مزارع واستراحات للإيجار اليومي أو الموسمي</li>
+            <li>عرض خدمات المقاولين الزراعيين والهندسيين</li>
+            <li>واجهة سهلة الاستخدام لرفع الإعلانات وتصفحها</li>
+            <li>دعم فني وتسويقي للمعلنين المحليين</li>
+          </ul>
+
+          <h3>قيمنا</h3>
+          <ul>
+            <li>الشفافية</li><li>البساطة</li><li>دعم السوق المحلي</li><li>احترام الخصوصية</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- سياسة الاستخدام -->
+      <article class="card" id="terms">
+        <div class="card__in">
+          <h2>سياسة الاستخدام وإخلاء المسؤولية</h2>
+          <p>موقع "استراحتي" هو منصة إلكترونية لعرض المزارع، الاستراحات، والمقاولين، ويهدف إلى تسهيل التواصل بين المعلنين والمستخدمين. لا يقدم الموقع أي خدمات بيع أو تأجير مباشرة، ولا يتدخل في تفاصيل الاتفاقات بين الأطراف.</p>
+
+          <div class="acc">
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>إخلاء المسؤولية القانونية</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+              <div class="acc__panel"><div>
+                <ul>
+                  <li>الموقع غير مسؤول عن دقة المعلومات المعروضة من قبل المعلنين.</li>
+                  <li>الموقع لا يتحمل أي مسؤولية عن جودة العقارات أو الخدمات أو التزام الأطراف بالاتفاقات.</li>
+                  <li>جميع التعاملات تتم خارج نطاق مسؤولية الموقع، ويُعتبر المستخدم مسؤولًا كاملًا عن قراراته.</li>
+                </ul>
+              </div></div>
+            </div>
+
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>المحتوى والإعلانات</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+              <div class="acc__panel"><div>
+                <ul>
+                  <li>يُسمح للمستخدمين بعرض مزارعهم أو خدماتهم وفقًا لشروط الاستخدام.</li>
+                  <li>الموقع يحتفظ بحق حذف أو تعديل أي إعلان يخالف القوانين أو يسبب ضررًا للمستخدمين.</li>
+                </ul>
+              </div></div>
+            </div>
+
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>النزاعات بين الأطراف</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+              <div class="acc__panel"><div>
+                <p>في حال حدوث أي نزاع بين المعلن والمستخدم، فإن الموقع لا يتدخل ولا يتحمل أي تبعات قانونية أو مالية. يُنصح المستخدمون بإبرام عقود واضحة ومكتوبة عند الاتفاق على البيع أو الإيجار.</p>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- الخصوصية -->
+      <article class="card" id="privacy">
+        <div class="card__in">
+          <h2>سياسة الخصوصية</h2>
+          <p>نحن في "استراحتي" نلتزم بحماية خصوصية مستخدمينا. لا نقوم بجمع أي معلومات شخصية دون موافقة المستخدم، ولا نشارك البيانات مع أي جهة خارجية.</p>
+          <h3>المعلومات التي نجمعها</h3>
+          <ul>
+            <li>الاسم والبريد الإلكتروني عند التسجيل</li>
+            <li>معلومات الإعلان مثل الصور والموقع والسعر</li>
+          </ul>
+          <h3>استخدام المعلومات</h3>
+          <ul>
+            <li>تحسين تجربة المستخدم</li>
+            <li>عرض الإعلانات بشكل مناسب</li>
+            <li>التواصل مع المستخدمين عند الحاجة</li>
+          </ul>
+          <h3>حماية البيانات</h3>
+          <p>نستخدم تقنيات حماية حديثة لضمان عدم الوصول غير المصرح به إلى بيانات المستخدمين.</p>
+        </div>
+      </article>
+
+      <!-- FAQ -->
+      <article class="card" id="faq">
+        <div class="card__in">
+          <h2>الأسئلة الشائعة</h2>
+          <div class="acc">
+            <!-- مجموعة من العناصر -->
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>هل الموقع مسؤول عن العقود أو الدفع؟</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+              <div class="acc__panel"><div>لا، الموقع فقط يعرض الإعلانات ولا يتدخل في أي اتفاق مالي أو قانوني.</div></div>
+            </div>
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>كيف أضيف إعلانًا؟</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>يمكنك التسجيل كمعلن، ثم الدخول إلى لوحة التحكم ورفع إعلانك بسهولة.</div></div>
+            </div>
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>هل يمكنني تعديل أو حذف إعلاني؟</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>نعم، من خلال لوحة التحكم الخاصة بك.</div></div>
+            </div>
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>هل يمكنني التواصل مع المعلن؟</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>نعم، كل إعلان يحتوي على وسيلة تواصل مباشرة مع صاحبه.</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- انضم كمعلن -->
+      <article class="card" id="join">
+        <div class="card__in">
+          <h2>انضم كمعلن</h2>
+          <p>هل تمتلك مزرعة، استراحة، أو تقدم خدمات زراعية وهندسية؟ منصة "استراحتي" تمنحك فرصة عرض خدماتك أمام جمهور محلي مهتم، بطريقة سهلة وآمنة.</p>
+
+          <h3>📌 خطوات التسجيل</h3>
+          <ol>
+            <li>أنشئ حسابك كمعلن عبر صفحة التسجيل</li>
+            <li>أضف إعلانك مع الصور والموقع والسعر</li>
+            <li>تابع الطلبات والتواصل مع العملاء مباشرة</li>
+          </ol>
+
+          <h3>✅ مزايا الانضمام</h3>
+          <ul>
+            <li>عرض مجاني لأول إعلان</li>
+            <li>لوحة تحكم سهلة لإدارة الإعلانات</li>
+            <li>دعم فني وتسويقي عند الطلب</li>
+            <li>إمكانية الترويج لإعلاناتك داخل المنصة</li>
+          </ul>
+
+          <h3>⚠️ شروط النشر</h3>
+          <ul>
+            <li>يجب أن تكون الصور واقعية وحديثة</li>
+            <li>يُمنع نشر معلومات مضللة أو غير دقيقة</li>
+            <li>المعلن مسؤول عن أي اتفاق يتم خارج المنصة</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- سياسة النشر والإعلانات -->
+      <article class="card" id="ads-policy">
+        <div class="card__in">
+          <h2>سياسة النشر والإعلانات</h2>
+          <p>نحرص على تقديم محتوى موثوق وآمن لجميع المستخدمين. لذلك نضع هذه السياسة لضمان جودة الإعلانات المنشورة وحماية المستخدمين من أي محتوى مضلل أو مخالف.</p>
+
+          <div class="grid" style="grid-template-columns:1fr 1fr;">
+            <div>
+              <h3>✅ يُسمح بالنشر</h3>
+              <ul>
+                <li>الإعلانات التي تخص مزارع أو استراحات أو خدمات زراعية وهندسية حقيقية</li>
+                <li>صور واقعية وحديثة للعقار أو الخدمة</li>
+                <li>معلومات دقيقة وواضحة عن الموقع، السعر، والخدمات المتوفرة</li>
+              </ul>
+            </div>
+            <div>
+              <h3>❌ يُمنع النشر</h3>
+              <ul>
+                <li>الإعلانات الوهمية أو غير الدقيقة</li>
+                <li>استخدام صور مزيفة أو مأخوذة من الإنترنت دون إذن</li>
+                <li>نشر محتوى مسيء أو مخالف للأخلاق العامة</li>
+                <li>الإعلانات التي تحتوي على معلومات اتصال غير صحيحة</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3>⚠️ إجراءات الموقع</h3>
+          <ul>
+            <li>قد يتم تعديل أو حذف أي إعلان يخالف السياسة دون إشعار مسبق</li>
+            <li>يمكن حظر الحسابات التي تكرر المخالفات</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- نموذج الإبلاغ -->
+      <article class="card" id="report">
+        <div class="card__in">
+          <h2>الإبلاغ عن محتوى مخالف</h2>
+          <p>إذا لاحظت إعلانًا يحتوي على معلومات غير دقيقة، صور مزيفة، أو محتوى مسيء، استخدم النموذج التالي لإبلاغنا، وسنتخذ الإجراء المناسب خلال 48 ساعة.</p>
+          <form class="report" id="reportForm" novalidate>
+            <label for="adLink">رابط الإعلان</label>
+            <input type="url" id="adLink" name="adLink" placeholder="أدخل رابط الإعلان هنا" required>
+
+            <label for="reason">سبب الإبلاغ</label>
+            <select id="reason" name="reason" required>
+              <option value="">اختر السبب</option>
+              <option value="fake">معلومات مزيفة</option>
+              <option value="offensive">محتوى مسيء</option>
+              <option value="copyright">انتهاك حقوق ملكية</option>
+              <option value="spam">إعلان مزعج أو مكرر</option>
+            </select>
+
+            <label for="details">تفاصيل إضافية (اختياري)</label>
+            <textarea id="details" name="details" rows="4" placeholder="اكتب أي تفاصيل تساعدنا في التحقق..."></textarea>
+
+            <div class="actions">
+              <button type="submit" class="btn btn--primary">إرسال البلاغ</button>
+              <button type="reset" class="btn">تفريغ</button>
+            </div>
+            <p class="muted" id="reportMsg" hidden>تم استلام بلاغك، شكرًا لتعاونك.</p>
+          </form>
+        </div>
+      </article>
+
+      <!-- المدونة (أقسام متعددة في أكورديون) -->
+      <article class="card" id="blog">
+        <div class="card__in">
+          <h2>المدونة</h2>
+
+          <!-- القسم الأول -->
+          <div class="acc">
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>تصميم المزارع في سوريا – الأسئلة الشائعة</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>
+                <h3>كيف أبدأ تصميم مزرعة صغيرة؟</h3><p>ابدأ بتحديد الهدف من المزرعة ... ثم تقسيم الأرض حسب الاستخدامات.</p>
+                <h3>أفضل طريقة لتقسيم المساحة؟</h3><p>قسّم المساحة إلى مناطق واضحة ... مراعاة اتجاه الشمس والرياح.</p>
+                <h3>سور المزرعة؟</h3><p>يفضل وجود سور لحماية المزرعة وتنظيم الدخول.</p>
+                <h3>أرضيات الجلسات؟</h3><p>الأرضيات الحجرية أو البلاط الخشن مناسبة ومقاومة للحرارة.</p>
+                <h3>استخدام الخشب؟</h3><p>نعم، يمنح طابعًا طبيعيًا للجلسات والمداخل.</p>
+                <h3>اتجاه الشمس وأهمية الظل؟</h3><p>لتوزيع الظلال ومواقع الزراعة والجلسات.</p>
+                <h3>مناطق مظللة؟</h3><p>ضرورية خصوصًا في الصيف.</p>
+                <h3>أشجار ظل مناسبة؟</h3><p>التوت، الكينا، والصفصاف.</p>
+                <h3>مسبح؟</h3><p>غير ضروري لكن يزيد الطلب.</p>
+                <h3>تصميم مدخل؟</h3><p>بوابة بسيطة، إنارة، وأشجار جانبية.</p>
+                <h3>شكل U أو دائري؟</h3><p>ممكن مع تخطيط دقيق.</p>
+                <h3>جلسة عائلية؟</h3><p>جلسة مظللة، طاولة كبيرة، إنارة خافتة.</p>
+                <h3>ملعب/بيت بلاستيكي/طاقة شمسية/دورات مياه/مطبخ خارجي/شواء/خيمة بدوية</h3>
+              </div></div>
+            </div>
+
+            <!-- القسم الثاني -->
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>شكل وتخطيط المزارع – الأسئلة الشائعة</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>
+                <p>الشكل المستطيل الأكثر استخدامًا... توزيع المرافق، الممرات، الإنارة، المستويات…</p>
+              </div></div>
+            </div>
+
+            <!-- القسم الثالث -->
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>الإضافات والمرافق في المزارع</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>
+                <p>المسبح، الشواء، المطبخ الخارجي، ألعاب الأطفال، ملعب صغير، جلسات مظللة، إنارة ليلية…</p>
+              </div></div>
+            </div>
+
+            <!-- القسم الرابع -->
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>تأجير المزارع في سوريا</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>
+                <p>سجّل وأضف إعلانًا بالصور والسعر والتواريخ… التأجير اليومي/الشتوي/بدون مسبح… مناطق مطلوبة مثل ريف دمشق…</p>
+              </div></div>
+            </div>
+
+            <!-- القسم الخامس إلى العاشر (مجمّع اختصارًا) -->
+            <div class="acc__item">
+              <button class="acc__btn" type="button"><span>أنواع المزارع، التجهيز، التصوير، التسويق، الإدارة اليومية، الأنشطة</span><svg class="acc__icon" width="18" height="18" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="acc__panel"><div>
+                <ul>
+                  <li>أنواع المزارع: إنتاجية، ترفيهية، تعليمية، عضوية، متعددة الاستخدام</li>
+                  <li>تجهيز الاستقبال: نظافة، جلسات، مياه وكهرباء، لافتات</li>
+                  <li>تصوير المزرعة: توقيت ملائم، صور شاملة، فيديو، تصوير جوي</li>
+                  <li>التسويق: المنصة، شبكات التواصل، عروض خاصة، التقييمات</li>
+                  <li>الإدارة اليومية: جدول تنظيف، حارس، أعطال طارئة، حجوزات</li>
+                  <li>الأنشطة الترفيهية: شواء، سباحة، ألعاب جماعية، رحلات مدرسية</li>
+                </ul>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+
+<script>
+  // تفعيل أكورديون
+  document.querySelectorAll('.acc__btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const item = btn.closest('.acc__item');
+      const panel = item.querySelector('.acc__panel');
+      const open = item.classList.contains('is-open');
+      // اغلق الباقي داخل نفس المجموعة
+      item.parentElement.querySelectorAll('.acc__item').forEach(i=>{
+        i.classList.remove('is-open');
+        const p = i.querySelector('.acc__panel');
+        p.style.maxHeight = null;
+      });
+      // افتح الحالي إن لم يكن مفتوحًا
+      if (!open){
+        item.classList.add('is-open');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // تحديث الروابط الفعالة بالتنقّل
+  const sections = ['about','terms','privacy','faq','join','ads-policy','report','blog'].map(id=>document.getElementById(id));
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const topLinks = document.querySelectorAll('.nav a');
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(ent=>{
+      if(ent.isIntersecting){
+        const id = ent.target.id;
+        tocLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+id));
+        topLinks.forEach(a=>a.classList.toggle('is-active', a.getAttribute('href')==='#'+id));
+      }
+    })
+  }, {rootMargin:'-40% 0px -55% 0px', threshold:0});
+  sections.forEach(s=>obs.observe(s));
+  // تقرير البلاغ (تغذية راجعة بسيطة بدون خادم)
+  const reportForm = document.getElementById('reportForm');
+  reportForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const link = reportForm.adLink.value.trim();
+    const reason = reportForm.reason.value;
+    if(!link || !reason){ alert('يرجى تعبئة الحقول المطلوبة'); return; }
+    document.getElementById('reportMsg').hidden = false;
+    reportForm.reset();
+  });
+</script>
+</body>
+</html>

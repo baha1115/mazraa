@@ -6,6 +6,7 @@ const Farm = require('../models/farmModel');
 const Contractor = require('../models/contactorsModel');
 const User = require('../models/usermodels');
 const SubscriptionRequest = require('../models/subscriptionRequest');
+const PromoConfig = require('../models/PromoConfig');
 // استخدم مايلرين منفصلين مع أسماء مستعارة واضحة
 const { sendMail: sendFarmMail } = require('../utils/mailer');   // SMTP للأراضي
 const { sendMail: sendContractorMail } = require('../utils/mailer2'); // SMTP للمقاولين
@@ -285,6 +286,10 @@ router.patch('/subscriptions/:id/approve', requireAdmin, async (req, res) => {
           plan: r.plan              // ← إبقها للتوافق (اختياري)
         }
       });
+      await ContractorRequest.updateMany(
+        { user: r.user._id },
+        { $set: { subscriptionTier: r.plan || 'Basic' } }
+      );
     }
   } catch (e) {
     console.error('Failed to update user subscription:', e);
@@ -304,6 +309,49 @@ router.patch('/subscriptions/:id/reject', requireAdmin, async (req, res) => {
 
   if (!r) return res.status(404).json({ ok:false, msg:'Not found' });
   res.json({ ok:true, msg:'Rejected', data:r });
+});
+// صفحة لوحة الأدمن الأساسية
+router.get('/', requireAdmin, async (req, res) => {
+  const Promo = require('../models/PromoConfig'); // انتبه للاسم الصحيح
+  const promo = await Promo.findOne({ key: 'contractors' }).lean();
+  res.render('adminDashbord', {
+    user: req.session.user,
+    promo: promo || {}   // ← مهم جداً
+  });
+});
+
+// صفحة إدارة برومو (إن وجدت)
+router.get('/promo/contractors', requireAdmin, async (req,res)=>{
+  const Promo = require('../models/PromoConfig');
+  const promo = await Promo.findOne({ key:'contractors' }).lean();
+  // اعرض نفس الداشبورد أو صفحة خاصة — الأهم تمرير promo
+  res.render('adminDashbord', {
+    user: req.session.user,
+    promo: promo || {}
+  });
+});
+
+// حفظ إعدادات البرومو
+router.post('/promo/contractors', requireAdmin, async (req,res)=>{
+  const Promo = require('../models/PromoConfig');
+  const payload = {
+    enabled: req.body.enabled === 'on',
+    img: (req.body.img||'').trim(),
+    title: (req.body.title||'').trim(),
+    text: (req.body.text||'').trim(),
+    link: (req.body.link||'').trim(),
+  };
+  await Promo.findOneAndUpdate(
+    { key:'contractors' },
+    { $set: payload, $setOnInsert: { key:'contractors' } },
+    { upsert:true }
+  );
+  // رجّع للوحة الأدمن مع تحميل promo من جديد
+  const fresh = await Promo.findOne({ key:'contractors' }).lean();
+  res.render('adminDashbord', {
+    user: req.session.user,
+    promo: fresh || {}
+  });
 });
 
 module.exports = router;

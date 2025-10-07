@@ -9,6 +9,10 @@
   <link rel="stylesheet" href="../Public/styles/rentandfarmdetail.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
   <style>
+  .pager{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+  .pager button{min-width:38px;height:38px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;cursor:pointer}
+  .pager button.is-active{background:#111827;color:#fff;border-color:#111827}
+  .pager button[disabled]{opacity:.5;cursor:not-allowed}
   .vip-sale-section .badge-tier {background:#111827;color:#fff;padding:.15rem .45rem;border-radius:999px;font-size:.85rem}
   .vip-slide-card {position:relative;overflow:hidden;border-radius:12px;border:1px solid #e5e7eb}
   .vip-slide-card img {width:100%;height:260px;object-fit:cover;display:block}
@@ -61,6 +65,10 @@
   opacity: .95;
   font-size: .98rem;
 }
+.card-meta {display:flex; gap:.6rem; align-items:center; margin-top:.25rem; font-size:.9rem; color:#6b7280;}
+.card-meta .meta-views{display:inline-flex; align-items:center; gap:.25rem; white-space:nowrap}
+.card-meta .dot{opacity:.35}
+.vip-hero-meta .meta-views{margin-inline-start:.5rem; opacity:.95}
 
 /* بادج صغيرة لتمييز VIP إن رغبت */
 .vip-hero-badge {
@@ -125,6 +133,7 @@
 <body>
   <!-- Header -->
  <%- include('partials/navbar') %>
+ 
 
   <!-- Floating WhatsApp Button -->
   <a
@@ -224,14 +233,7 @@
             <input id="size-max" name="size_max" type="number" placeholder="مثال: 25000" />
           </div>
 
-          <!-- الحالة -->
-          <div class="field">
-            <label class="label" for="status">الحالة</label>
-            <select id="status" name="status">
-              <option value="available-only" selected>المتاح فقط</option>
-              <option value="all">الكل</option>
-            </select>
-          </div>
+        
 
           <!-- زر -->
           <div class="field field--actions">
@@ -252,28 +254,19 @@
     </header>
 
     <div class="cards-grid" id="saleGrid" role="list"><!-- يملؤها السكربت --></div>
+    <nav id="pager" class="pager" aria-label="التصفح بالصفحات" hidden></nav>
   </div>
 </section>
 
 
   <!-- 5) Promotional Banner -->
-  <section id="promo" class="section promo" aria-labelledby="promo-title">
-    <div class="container">
-      <article class="promo-banner" data-controlled-by="admin">
-        <div class="promo-media">
-          <img src="../Public/assests/farm4k1.jpg" alt="VIP Spotlight — Integrated Greenhouse Project" loading="lazy" />
-        </div>
-        <div class="promo-body">
-          <h3 id="promo-title">تسليط الضوء VIP: مشروع البيوت المحمية المتكاملة</h3>
-<p class="promo-text">بيوت محمية عالية الإنتاجية وموفرة للمياه متاحة للإيجار الموسمي في ريف دمشق. خصم لفترة محدودة على العقود طويلة الأجل.</p>
-<a class="btn btn-primary" href="farm.html?id=F005">عرض التفاصيل</a>
+  
+<%- include('partials/promo', { promoContractors }) %>
+  <!--
 
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <!-- Footer -->
+   ========================
+       الفوتر
+   ======================== -->
 <footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
   <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
 
@@ -282,7 +275,7 @@
     <div class="footer-brand">
       <div class="logo-mark" aria-hidden="true">🌿</div>
       <div>
-        <strong class="brand-name">فارمرز</strong>
+        <strong class="brand-name">مزرعتي</strong>
         <p class="brand-desc">
           منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
         </p>
@@ -294,19 +287,19 @@
       <div>
         <h3 class="footer-title">تصفح</h3>
         <ul>
-          <li><a href="/sale.html">مزارع للبيع</a></li>
-          <li><a href="/rent.html">مزارع للإيجار</a></li>
-          <li><a href="/contractors.html">المقاولون</a></li>
-          <li><a href="/plans.html">الاشتراكات</a></li>
+          <li><a href="/sale">مزارع للبيع</a></li>
+          <li><a href="/rent">مزارع للإيجار</a></li>
+          <li><a href="/contractors">المقاولون</a></li>
+          <li><a href="/plans">الاشتراكات</a></li>
         </ul>
       </div>
       <div>
         <h3 class="footer-title">الدعم</h3>
         <ul>
-          <li><a href="/about.html">من نحن</a></li>
-          <li><a href="/faq.html">الأسئلة الشائعة</a></li>
-          <li><a href="/policy.html">سياسة الخصوصية</a></li>
-          <li><a href="/terms.html">الشروط والأحكام</a></li>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/about">الأسئلة الشائعة</a></li>
+          <li><a href="/about">سياسة الخصوصية</a></li>
+          <li><a href="/about">الشروط والأحكام</a></li>
         </ul>
       </div>
       <div>
@@ -338,28 +331,30 @@
     </p>
 
     <div class="mini-links">
-      <a href="/policy.html">الخصوصية</a>
+      <a href="/about">الخصوصية</a>
       <span class="dot" aria-hidden="true">•</span>
-      <a href="/terms.html">الشروط</a>
+      <a href="/about">الشروط</a>
     </div>
   </div>
 </footer>
 
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="../Public/rent.js"></script>
 <script type="module">
   import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
 
-  /* ===== عناصر الصفحة ===== */
-  const vipSection = document.getElementById('vip-sale');          // سكشن السويبر
-  const vipWrapper = document.getElementById('vipSwiperWrapper');  // .swiper-wrapper
-  const saleGrid   = document.getElementById('saleGrid');          // شبكة كل المزارع
+  // عناصر
+  const vipSection = document.getElementById('vip-sale');
+  const vipWrapper = document.getElementById('vipSwiperWrapper');
+  const saleGrid   = document.getElementById('saleGrid');
+  const pager      = document.getElementById('pager');
   const form       = document.querySelector('#saleFilters, #rent-filters, form[data-role="sale-filters"]');
 
-  /* ===== أدوات مساعدة ===== */
+  // أدوات
   const fmt = n => new Intl.NumberFormat('en').format(Number(n)||0);
   const esc = s => (s??'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const toNum = (v, fallback) => { const n = parseFloat(v); return Number.isFinite(n) ? n : fallback; };
+  const toNum = (v, fb) => { const n = parseFloat(v); return Number.isFinite(n) ? n : fb; };
 
   async function fetchJSON(url){
     const r = await fetch(url, { headers:{'Accept':'application/json'} });
@@ -368,135 +363,168 @@
     return j.data || [];
   }
 
-  /* ===== بيانات في الذاكرة ===== */
+  // بطاقات
+ function tierBadge(t){
+  if (t === 'VIP')     return '<span class="badge badge--tier">كبار الشخصيات (VIP)</span>';
+  if (t === 'Premium') return '<span class="badge badge--tier">مميز</span>';
+  return '';
+}
+
+function gridCard(f){
+  const cover = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
+  const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
+  const video = f.videoUrl ? '<span class="badge badge--video">🎥 فيديو</span>' : '';
+  const tier  = tierBadge(f.ownerTier || f.subscriptionTier || '');
+  const vws   = Number(f.views ?? 0);
+
+  return `
+    <article class="farm-card" role="listitem" data-id="${esc(f._id)}">
+      <a class="farm-link" href="/farm/${esc(f._id)}" aria-label="${esc(f.title||'مزرعة')}">
+        <figure class="farm-media">
+          <img src="${esc(cover)}" alt="${esc(f.title||'مزرعة')}" loading="lazy" />
+          ${tier}${video}
+        </figure>
+        <div class="farm-body">
+          <h3 class="farm-title">${esc(f.title||'—')}</h3>
+          <p class="farm-location">${loc}</p>
+          <p class="farm-price">$${fmt(f.price)}</p>
+          <div class="card-meta" style="display:flex;align-items:center;gap:.4rem">
+            <span class="meta-views">👁️ ${fmt(vws)}</span>
+            <span class="dot">•</span>
+            <span class="farm-status is-available" style="margin:0">متاحة</span>
+          </div>
+          <button class="btn btn-outline" type="button">التفاصيل</button>
+        </div>
+      </a>
+    </article>`;
+}
+
+function vipSlide(f){
+  const cover = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
+  const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
+  const vws   = Number(f.views || 0);
+
+  return `
+    <div class="swiper-slide">
+      <article class="vip-hero-slide">
+        <div class="vip-hero-bg" style="background-image:url('${cover}')"></div>
+        <div class="vip-hero-overlay"></div>
+        <div class="vip-hero-body">
+          <span class="vip-hero-badge">VIP</span>
+          <h3 class="vip-hero-title">${esc(f.title||'—')}</h3>
+          <div class="vip-hero-meta">
+            ${loc}<br> • ${fmt(f.size)} م² <br>• $${fmt(f.price)}
+            <span class="meta-views">• 👁️ ${fmt(vws)}</span>
+          </div>
+          <a class="vip-hero-cta" href="/farm/${f._id}">التفاصيل</a>
+        </div>
+      </article>
+    </div>`;
+}
+
+  // بيانات + ترقيم
   let allFarms = [];
+  let filtered = [];
+  let page     = 1;
+  const pageSize = 6;
 
-  /* ===== بطاقات العرض ===== */
-  function vipSlide(f){
-    const cover = Array.isArray(f.photos)&&f.photos[0] ? f.photos[0] : '/assets/farm-default.jpg';
-    const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
-    return `
-      <div class="swiper-slide">
-        <article class="vip-hero-slide">
-          <div class="vip-hero-bg" style="background-image:url('${cover}')"></div>
-          <div class="vip-hero-overlay"></div>
-          <div class="vip-hero-body">
-            <span class="vip-hero-badge">VIP</span>
-            <h3 class="vip-hero-title">${esc(f.title||'—')}</h3>
-            <div class="vip-hero-meta">${loc} • ${fmt(f.size)} م² • $${fmt(f.price)}</div>
-            <a class="vip-hero-cta" href="/farm/${f._id}" aria-label="تفاصيل ${esc(f.title||'المزرعة')}">التفاصيل</a>
-          </div>
-        </article>
-      </div>`;
+  function buildPager(total, current){
+    const pages = Math.max(1, Math.ceil(total / pageSize));
+    if (pages <= 1){ pager.hidden = true; pager.innerHTML=''; return; }
+    pager.hidden = false;
+
+    let html = '';
+    html += `<button type="button" data-go="${current-1}" ${current<=1?'disabled':''}>‹</button>`;
+    for (let i=1;i<=pages;i++){
+      html += `<button type="button" data-go="${i}" class="${i===current?'is-active':''}">${i}</button>`;
+    }
+    html += `<button type="button" data-go="${current+1}" ${current>=pages?'disabled':''}>›</button>`;
+    pager.innerHTML = html;
+
+    pager.onclick = (e)=>{
+      const btn = e.target.closest('button[data-go]');
+      if (!btn) return;
+      const go = parseInt(btn.dataset.go,10);
+      if (!Number.isFinite(go)) return;
+      setPage(go);
+    };
   }
 
-  function tierBadge(t){
-    if (t === 'VIP')     return '<span class="badge badge--tier">كبار الشخصيات (VIP)</span>';
-    if (t === 'Premium') return '<span class="badge badge--tier">مميز</span>';
-    return '';
-  }
+  function renderPage(){
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / pageSize));
+    if (page > pages) page = pages;
+    const start = (page-1) * pageSize;
+    const end   = start + pageSize;
+    const slice = filtered.slice(start, end);
 
-  function gridCard(f){
-    const cover = Array.isArray(f.photos)&&f.photos[0] ? f.photos[0] : '/assets/farm-default.jpg';
-    const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
-    const video = f.videoUrl ? '<span class="badge badge--video">🎥 فيديو</span>' : '';
-    const tier  = tierBadge(f.ownerTier);
-    return `
-      <article class="farm-card" role="listitem" data-id="${esc(f._id)}">
-        <a class="farm-link" href="/farm/${esc(f._id)}" aria-label="${esc(f.title||'مزرعة')}">
-          <figure class="farm-media">
-            <img src="${esc(cover)}" alt="${esc(f.title||'مزرعة')}" loading="lazy" />
-            ${tier}${video}
-          </figure>
-          <div class="farm-body">
-            <h3 class="farm-title">${esc(f.title||'—')}</h3>
-            <p class="farm-location">${loc}</p>
-            <p class="farm-price">$${fmt(f.price)}</p>
-            <p class="farm-status is-available">متاحة</p>
-            <button class="btn btn-outline" type="button">التفاصيل</button>
-          </div>
-        </a>
-      </article>`;
-  }
-
-  function renderGrid(rows){
-    saleGrid.innerHTML = rows.length
-      ? rows.map(gridCard).join('')
+    saleGrid.innerHTML = slice.length
+      ? slice.map(gridCard).join('')
       : '<p class="muted">لا توجد نتائج مطابقة.</p>';
+
+    buildPager(total, page);
   }
 
-  /* ===== الفلاتر ===== */
+  function setPage(p){ page = Math.max(1, p); renderPage(); }
+
   function applyFilters(){
-    if (!form){ renderGrid(allFarms); return; }
+    const f = form;
+    if (!f){ filtered = allFarms; page=1; renderPage(); return; }
 
-    const area   = (form.area?.value||'').trim();
-    const city   = (form.city?.value||'').trim();
-    const status = form.status?.value || 'all';
-    const pMin   = toNum(form.price_min?.value, -Infinity);
-    const pMax   = toNum(form.price_max?.value,  Infinity);
-    const sMin   = toNum(form.size_min?.value,  -Infinity);
-    const sMax   = toNum(form.size_max?.value,   Infinity);
+    const area   = (f.area?.value||'').trim();
+    const city   = (f.city?.value||'').trim().toLowerCase();
+    const pMin   = toNum(f.price_min?.value, -Infinity);
+    const pMax   = toNum(f.price_max?.value,  Infinity);
+    const sMin   = toNum(f.size_min?.value,  -Infinity);
+    const sMax   = toNum(f.size_max?.value,   Infinity);
 
-    const rows = allFarms.filter(f=>{
-      const okArea  = !area || f.area === area;
-      const okCity  = !city || f.city === city;
-      const price   = Number(f.price)||0;
-      const size    = Number(f.size)||0;
+    filtered = allFarms.filter(x=>{
+      const okArea  = !area || x.area === area;
+      const okCity  = !city || (x.city||'').toLowerCase().includes(city);
+      const price   = Number(x.price)||0;
+      const size    = Number(x.size)||0;
       const okPrice = price>=pMin && price<=pMax;
       const okSize  = size>=sMin  && size<=sMax;
-      const okStat  = (status==='all') ? true : true; // عدّلها لو عندك حالة من الخادم
-      return okArea && okCity && okPrice && okSize && okStat;
+      return okArea && okCity && okPrice && okSize;
     });
 
-    renderGrid(rows);
+    page = 1;
+    renderPage();
   }
 
-  /* ===== التشغيل ===== */
   async function init(){
-    // (أ) VIP سلايدر
+    // VIP أولاً (لو عندك)
     try{
       const vip = await fetchJSON('/api/farms/sale?vipOnly=1');
       if (vip.length){
         vipSection.hidden = false;
         vipWrapper.innerHTML = vip.map(vipSlide).join('');
         new Swiper('.vip-swiper', {
-          loop: true,
-          centeredSlides: true,
-          slidesPerView: 1.02,
-          spaceBetween: 18,
-          watchOverflow: true,
-          pagination: { el: '.swiper-pagination', clickable: true },
-          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-          breakpoints: {
-            640:  { slidesPerView: 1.05, spaceBetween: 20 },
-            1024: { slidesPerView: 1.08, spaceBetween: 22 }
-          }
+          loop:true, centeredSlides:true, slidesPerView:1.02, spaceBetween:18,
+          pagination:{ el:'.swiper-pagination', clickable:true },
+          navigation:{ nextEl:'.swiper-button-next', prevEl:'.swiper-button-prev' },
+          breakpoints:{ 640:{slidesPerView:1.05}, 1024:{slidesPerView:1.08} }
         });
-      } else {
-        vipSection.hidden = true;
-      }
-    } catch(e){
-      console.warn('VIP fetch error:', e);
-      vipSection.hidden = true;
-    }
+      } else { vipSection.hidden = true; }
+    }catch{ vipSection.hidden = true; }
 
-    // (ب) كل المزارع للبيع للشبكة + حفظها للفلترة
+    // كل المزارع + تشغيل الترقيم
     try{
       allFarms = await fetchJSON('/api/farms/sale');
-      // إن أردت منع تكرار VIP في الشبكة، فعّل السطرين التاليين:
-      // const vipIds = new Set((await fetchJSON('/api/farms/sale?vipOnly=1')).map(x=>String(x._id)));
-      // allFarms = allFarms.filter(x => !vipIds.has(String(x._id)));
-
-      renderGrid(allFarms);
-    } catch(e){
+      filtered = allFarms;
+      page = 1;
+      renderPage();
+    }catch(e){
       console.error(e);
-      saleGrid.innerHTML = `<p class="muted">تعذّر تحميل المزارع.</p>`;
+      saleGrid.innerHTML = '<p class="muted">تعذّر تحميل المزارع.</p>';
+      pager.hidden = true;
     }
   }
 
   form?.addEventListener('submit', (e)=>{ e.preventDefault(); applyFilters(); });
   init();
 </script>
+
 <script>
   (function(){
     const btn  = document.getElementById('filtersToggle');

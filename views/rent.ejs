@@ -56,6 +56,18 @@
     }
     .filter-dropdown[open] summary::after{ transform: rotate(180deg); }
     .filters-form{ padding: .75rem 0 0; }
+    .pagination{
+  display:flex; gap:.4rem; justify-content:center; align-items:center;
+  margin-top: 1rem; flex-wrap: wrap;
+}
+.pagination .pg{
+  display:inline-block; padding:.45rem .8rem; border:1px solid #e2e8f0; border-radius:10px;
+  text-decoration:none; font-weight:600;
+}
+.pagination .pg.is-active{ background:#0f172a; color:#fff; border-color:#0f172a; }
+.pagination .pg.is-disabled{ opacity:.5; pointer-events:none; }
+.pagination .gap{ padding:0 .25rem; }
+
   </style>
 </head>
 <body>
@@ -199,15 +211,87 @@
         </article>
       <% }) } %>
     </div>
+    <nav id="rentPagination" class="pagination" aria-label="ترقيم الصفحات"></nav>
+
   </div>
 </section>
+<%- include('partials/promo', { promoContractors }) %>
+<!--
 
+   ========================
+       الفوتر
+   ======================== -->
 <footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
   <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+
+  <div class="footer-top">
+    <!-- الشعار والوصف المختصر -->
+    <div class="footer-brand">
+      <div class="logo-mark" aria-hidden="true">🌿</div>
+      <div>
+        <strong class="brand-name">مزرعتي</strong>
+        <p class="brand-desc">
+          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
+        </p>
+      </div>
+    </div>
+
+    <!-- روابط سريعة -->
+    <nav class="footer-links" aria-label="روابط سريعة">
+      <div>
+        <h3 class="footer-title">تصفح</h3>
+        <ul>
+          <li><a href="/sale">مزارع للبيع</a></li>
+          <li><a href="/rent">مزارع للإيجار</a></li>
+          <li><a href="/contractors">المقاولون</a></li>
+          <li><a href="/plans">الاشتراكات</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">الدعم</h3>
+        <ul>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/about">الأسئلة الشائعة</a></li>
+          <li><a href="/about">سياسة الخصوصية</a></li>
+          <li><a href="/about">الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">تواصل</h3>
+        <ul class="contact">
+          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
+          <li><a href="tel:+963900000000">+963 900 000</a></li>
+          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
   <div class="footer-bottom">
-    <p class="copyright">© <script>document.write(new Date().getFullYear())</script> فارمرز — جميع الحقوق محفوظة.</p>
+    <div class="social" aria-label="شبكات اجتماعية">
+      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
+      </a>
+    </div>
+
+    <p class="copyright">
+      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
+    </p>
+
+    <div class="mini-links">
+      <a href="/about">الخصوصية</a>
+      <span class="dot" aria-hidden="true">•</span>
+      <a href="/about">الشروط</a>
+    </div>
   </div>
 </footer>
+
 
 <script type="module">
   import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
@@ -229,12 +313,12 @@
 
   // كارت السلايدر الكبير (VIP)
  function vipSlide(f){
-  // غطاء آمن + افتراضي من مجلدك الحقيقي
   const cover =
     (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0]
-    : '/Public/assests/farm4k.jpg'; // ← عدّل المسار الافتراضي حسب موجود عندك
+    : '/Public/assests/farm4k.jpg'; // تأكد من صحة المسار
 
   const loc = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
+  const vws = Number(f.views || 0); // ← مهم
 
   return `
     <div class="swiper-slide">
@@ -244,8 +328,11 @@
         <div class="vip-hero-body">
           <span class="vip-hero-badge">VIP</span>
           <h3 class="vip-hero-title">${esc(f.title||'—')}</h3>
-          <div class="vip-hero-meta">${loc} • ${fmt(f.size)} م² • $${fmt(f.price)} / شهريًا</div>
-          <a class="vip-hero-cta" href="/rent/farm/${f._id}">التفاصيل</a>
+          <div class="vip-hero-meta">
+            ${loc} <br>• ${fmt(f.size)} م² <br>• $${fmt(f.price)} / شهريًا
+            <br>👁️ ${fmt(vws)}
+          </div>
+          <a class="vip-hero-cta" href="/rent/farm/${esc(f._id)}">التفاصيل</a>
         </div>
       </article>
     </div>`;
@@ -260,55 +347,140 @@
   }
 
   // بطاقة الشبكة العامة
-  function cardItem(f){
-    const cover = Array.isArray(f.photos)&&f.photos[0] ? f.photos[0] : '/assets/farm-default.jpg';
-    const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
+ function cardItem(f){
+  const cover = Array.isArray(f.photos)&&f.photos[0] ? f.photos[0] : '/assets/farm-default.jpg';
+  const loc   = f.city ? `${esc(f.area||'')} — ${esc(f.city)}` : esc(f.area||'—');
 
-    const tierName = f.ownerTier || f.subscriptionTier || '';
-    const tier     = tierBadge(tierName);
-    const video    = f.videoUrl ? '<span class="badge badge--video">🎥 فيديو</span>' : '';
+  const tierName = f.ownerTier || f.subscriptionTier || '';
+  const tier     = tierBadge(tierName);
+  const video    = f.videoUrl ? '<span class="badge badge--video">🎥 فيديو</span>' : '';
 
-    return `
-      <article class="farm-card" role="listitem" data-id="${esc(f._id)}">
-        <a class="farm-link" href="/rent/farm/${esc(f._id)}" aria-label="${esc(f.title||'مزرعة')}">
-          <figure class="farm-media">
-            <img src="${esc(cover)}" alt="${esc(f.title||'مزرعة')}" loading="lazy" />
-            ${tier}${video}
-          </figure>
-          <div class="farm-body">
-            <h3 class="farm-title">${esc(f.title||'—')}</h3>
-            <p class="farm-location">${loc}</p>
-            <p class="farm-price">$${fmt(f.price)} / شهريًا</p>
-            <button class="btn btn-outline" type="button">التفاصيل</button>
+  const vws = Number(f.views || 0);
+
+  return `
+    <article class="farm-card" role="listitem" data-id="${esc(f._id)}">
+      <a class="farm-link" href="/rent/farm/${esc(f._id)}" aria-label="${esc(f.title||'مزرعة')}">
+        <figure class="farm-media">
+          <img src="${esc(cover)}" alt="${esc(f.title||'مزرعة')}" loading="lazy" />
+          ${tier}${video}
+        </figure>
+        <div class="farm-body">
+          <h3 class="farm-title">${esc(f.title||'—')}</h3>
+          <p class="farm-location">${loc}</p>
+          <p class="farm-price">$${fmt(f.price)} / شهريًا</p>
+
+          <div class="card-meta" style="display:flex;align-items:center;gap:.4rem">
+            <span class="meta-views">👁️ ${fmt(vws)}</span>
+            <span class="dot">•</span>
+            <span class="farm-status is-available" style="margin:0">متاحة</span>
           </div>
-        </a>
-      </article>`;
-  }
+
+          <button class="btn btn-outline" type="button">التفاصيل</button>
+        </div>
+      </a>
+    </article>`;
+}
 
   function renderGrid(rows){
-    rentGrid.innerHTML = rows.length
-      ? rows.map(cardItem).join('')
-      : '<p class="muted">لا توجد نتائج مطابقة.</p>';
+  if (!Array.isArray(rows)) rows = [];
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end   = start + PAGE_SIZE;
+  const chunk = rows.slice(start, end);
+
+  rentGrid.innerHTML = chunk.length
+    ? chunk.map(cardItem).join('')
+    : '<p class="muted">لا توجد نتائج مطابقة.</p>';
+}
+// === إعدادات التصفّح ===
+const PAGE_SIZE = 6;
+let currentPage  = Math.max(1, parseInt(new URLSearchParams(location.search).get('page')) || 1);
+
+let currentRows = []; // الصفوف بعد تطبيق الفلاتر
+const pager = document.getElementById('rentPagination');
+
+
+// … (اترك دوال vipSlide / tierBadge / cardItem كما هي)
+
+// ترقيم الصفحات
+function renderPagination(totalItems, pageSize, page){
+  if (!pager) return;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  page = Math.min(Math.max(1, page), totalPages);
+
+  if (totalPages === 1) { pager.innerHTML = ''; return; }
+
+  const qs = new URLSearchParams(location.search);
+  function pageLink(p){
+    qs.set('page', p);
+    return `?${qs.toString()}#results`;
   }
+
+  let html = '';
+  // السابق
+  html += `<a class="pg prev ${page===1?'is-disabled':''}" href="${page>1?pageLink(page-1):'#'}" data-page="${page-1}">السابق</a>`;
+
+  // أرقام (نُظهر نطاقًا صغيرًا حول الصفحة الحالية)
+  const span = 2;
+  const start = Math.max(1, page - span);
+  const end   = Math.min(totalPages, page + span);
+  if (start > 1) html += `<a class="pg" href="${pageLink(1)}" data-page="1">1</a>${start>2?'<span class="gap">…</span>':''}`;
+
+  for(let p=start; p<=end; p++){
+    html += `<a class="pg ${p===page?'is-active':''}" href="${pageLink(p)}" data-page="${p}">${p}</a>`;
+  }
+
+  if (end < totalPages) html += `${end<totalPages-1?'<span class="gap">…</span>':''}<a class="pg" href="${pageLink(totalPages)}" data-page="${totalPages}">${totalPages}</a>`;
+
+  // التالي
+  html += `<a class="pg next ${page===totalPages?'is-disabled':''}" href="${page<totalPages?pageLink(page+1):'#'}" data-page="${page+1}">التالي</a>`;
+
+  pager.innerHTML = html;
+
+  // منع إعادة تحميل الصفحة عند الضغط (نحدّث العنوان فقط)
+  pager.querySelectorAll('a.pg').forEach(a=>{
+    a.addEventListener('click', (e)=>{
+      const p = parseInt(a.dataset.page);
+      if (!p || a.classList.contains('is-disabled')) return;
+      e.preventDefault();
+      goToPage(p);
+    });
+  });
+}
+function goToPage(p){
+  currentPage = p;
+  // حدّث الـURL بدون إعادة تحميل
+  const url = new URL(location.href);
+  url.searchParams.set('page', String(currentPage));
+  history.replaceState(null, '', `${url.pathname}?${url.searchParams.toString()}#results`);
+  // أعِد الرسم
+  renderGrid(currentRows);
+  renderPagination(currentRows.length, PAGE_SIZE, currentPage);
+}
 
   // فلاتر اختيارية من المصفوفة
   let allRent = [];
-  function applyFilters(){
-    if (!form) return renderGrid(allRent);
-    const area = (form.area?.value||'').trim();
-    const city = (form.city?.value||'').trim(); // المدينة كإنبوت
-    const minP = parseFloat(form.price_min?.value);
-    const maxP = parseFloat(form.price_max?.value);
+ function applyFilters(){
+  if (!form) { currentRows = allRent; goToPage(1); return; }
 
-    const rows = allRent.filter(f=>{
-      const okArea  = !area || f.area === area;
-      const okCity  = !city || (f.city||'').includes(city);
-      const price   = Number(f.price)||0;
-      const okPrice = (isNaN(minP) || price>=minP) && (isNaN(maxP) || price<=maxP);
-      return okArea && okCity && okPrice;
-    });
-    renderGrid(rows);
-  }
+  const area = (form.area?.value||'').trim();
+  const city = (form.city?.value||'').trim();
+  const minP = parseFloat(form.price_min?.value);
+  const maxP = parseFloat(form.price_max?.value);
+
+  currentRows = allRent.filter(f=>{
+    const okArea  = !area || f.area === area;
+    const okCity  = !city || (f.city||'').includes(city);
+    const price   = Number(f.price)||0;
+    const okPrice = (isNaN(minP) || price>=minP) && (isNaN(maxP) || price<=maxP);
+    return okArea && okCity && okPrice;
+  });
+
+  goToPage(1); // ابدأ من الصفحة الأولى بعد الفلترة
+}
 
   async function init(){
     // 1) VIP للإيجار فقط
@@ -336,17 +508,41 @@
     } catch(e){
       console.warn('VIP rent fetch error:', e);
       vipSection.hidden = true;
+    }try{
+    const vip = await fetchJSON('/api/farms/rent?vipOnly=1');
+    if (vip.length){
+      vipSection.hidden = false;
+      vipWrapper.innerHTML = vip.map(vipSlide).join('');
+      new Swiper('.vip-swiper', {
+        loop: true,
+        centeredSlides: true,
+        slidesPerView: 1.02,
+        spaceBetween: 18,
+        watchOverflow: true,
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        breakpoints: { 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
+      });
+    } else {
+      vipSection.hidden = true;
     }
+  } catch(e){ console.warn('VIP rent fetch error:', e); vipSection.hidden = true; }
+
     // 2) كل المزارع للإيجار (بعد الـ VIP)
     try{
-      allRent = await fetchJSON('/api/farms/rent');
-      renderGrid(allRent);
-    } catch(e){
-      console.error(e);
-      rentGrid.innerHTML = `<p class="muted">تعذّر تحميل المزارع.</p>`;
-    }
+    allRent = await fetchJSON('/api/farms/rent');
+    currentRows = allRent;
+    renderGrid(currentRows);
+    renderPagination(currentRows.length, PAGE_SIZE, currentPage);
+  } catch(e){
+    console.error(e);
+    rentGrid.innerHTML = `<p class="muted">تعذّر تحميل المزارع.</p>`;
+    pager.innerHTML = '';
   }
+}
+
   form?.addEventListener('submit', (e)=>{ e.preventDefault(); applyFilters(); });
+  
   init();
 </script>
 

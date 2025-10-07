@@ -48,7 +48,7 @@
         </p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="/signup.html">سجل الآن كبائع</a>
-          <a class="btn btn-outline" href="add-farm.html">أضف مزرعتك</a>
+          <a class="btn btn-outline" href="/sell">اكتشف المزارع</a>
         </div>
       </div>
     </div>
@@ -56,12 +56,12 @@
 <!-- ===== Quick-links cards (قبل الاشتراكات) ===== -->
 <section id="quick-links" class="section quick-links" aria-labelledby="quick-links-title">
   <div class="container">
-    <h2 id="quick-links-title" class="section-title">تصفح الأقسام الشائعة</h2>
+    <h2 id="quick-links-title" class="section-title" style="text-align: center;">تصفح الأقسام الشائعة</h2>
 
     <div class="cards-row" role="list">
       <!-- Card 1: مزارع للبيع -->
       <article class="ql-card" role="listitem">
-        <a class="ql-link" href="#sales" aria-label="اذهب إلى مزارع للبيع">
+        <a class="ql-link" href="/sell" aria-label="اذهب إلى مزارع للبيع">
           <div class="ql-media">
             <img src="../Public/assests/farm4k1.jpg" alt="مزارع للبيع" loading="lazy" />
             <div class="ql-badge">مزارع للبيع</div>
@@ -71,9 +71,9 @@
 
       <!-- Card 2: مزارع للكراء -->
       <article class="ql-card" role="listitem">
-        <a class="ql-link" href="/rent.html" aria-label="اذهب إلى مزارع للكراء">
+        <a class="ql-link" href="/rent" aria-label="اذهب إلى مزارع للكراء">
           <div class="ql-media">
-            <img src="../Public/assests/farm4k2.jpg" alt="مزارع للكراء" loading="lazy" />
+            <img src="../Public/assests/farm4k1.jpg" alt="مزارع للكراء" loading="lazy" />
             <div class="ql-badge">مزارع للكراء</div>
           </div>
         </a>
@@ -81,9 +81,9 @@
 
       <!-- Card 3: المقاولون -->
       <article class="ql-card" role="listitem">
-        <a class="ql-link" href="/contractors.html" aria-label="اذهب إلى المقاولون">
+        <a class="ql-link" href="/contractors" aria-label="اذهب إلى المقاولون">
           <div class="ql-media">
-            <img src="../Public/assests/electricity.webp" alt="المقاولون" loading="lazy" />
+            <img src="../Public/assests/farm4k1.jpg" alt="المقاولون" loading="lazy" />
             <div class="ql-badge">المقاولون</div>
           </div>
         </a>
@@ -92,82 +92,7 @@
   </div>
 </section>
 
-  <!-- ========================
-       3) Monthly Subscription
-       ======================== -->
- <section id="subscription" class="section plans" aria-labelledby="plans-title">
-  <div class="container">
-    <header class="section-header">
-      <h2 id="plans-title">الاشتراكات الشهرية</h2>
-      <p class="muted">اختر الباقة التي تناسب احتياجاتك. يمكنك الترقية أو الإلغاء في أي وقت.</p>
-    </header>
-
-    <div class="plan-grid" role="list">
-      <!-- Basic -->
-      <article class="plan" role="listitem" aria-labelledby="plan-basic-title">
-        <header>
-          <h3 id="plan-basic-title">الخطة الأساسية (Basic)</h3>
-          <p class="muted">أدوات البداية للبائعين الجدد</p>
-        </header>
-        <div class="plan-price">
-          <span class="price">0</span><span class="period">/شهريًا</span>
-        </div>
-        <ul class="plan-features">
-          <li><span class="check" aria-hidden="true">✓</span> قائمة مزرعة نشطة واحدة</li>
-          <li><span class="check" aria-hidden="true">✓</span> دعم قياسي</li>
-          <li><span class="check" aria-hidden="true">✓</span> تحليلات أساسية</li>
-          <li><span class="check" aria-hidden="true">✓</span> استفسارات عبر البريد الإلكتروني</li>
-        </ul>
-        <footer>
-          <a class="btn btn-primary btn-block" href="#subscribe-basic">مشترك</a>
-        </footer>
-      </article>
-
-      <!-- Premium / Pro -->
-      <article class="plan plan--popular" role="listitem" aria-labelledby="plan-premium-title">
-        <div class="plan-badge">الأكثر طلبًا</div>
-        <header>
-          <h3 id="plan-premium-title">الخطة المميزة (Premium)</h3>
-          <p class="muted">مزايا متقدمة لتعزيز نمو أعمالك</p>
-        </header>
-        <div class="plan-price">
-          <span class="price">49</span><span class="period">/شهريًا</span>
-        </div>
-        <ul class="plan-features">
-          <li><span class="check" aria-hidden="true">✓</span> حتى 10 قوائم نشطة</li>
-          <li><span class="check" aria-hidden="true">✓</span> دعم ذو أولوية</li>
-          <li><span class="check" aria-hidden="true">✓</span> تحليلات متقدمة وشارات مميزة</li>
-          <li><span class="check" aria-hidden="true">✓</span> ترويج لجذب المزيد من العملاء المحتملين</li>
-        </ul>
-        <footer>
-          <a class="btn btn-primary btn-block" href="#subscribe-premium">اشترك الآن</a>
-        </footer>
-      </article>
-
-      <!-- VIP -->
-      <article class="plan" role="listitem" aria-labelledby="plan-vip-title">
-        <header>
-          <h3 id="plan-vip-title">خطة كبار الشخصيات (VIP)</h3>
-          <p class="muted">أقصى مستوى من الوصول للوكالات والمحترفين</p>
-        </header>
-        <div class="plan-price">
-          <span class="price">99</span><span class="period">/شهريًا</span>
-        </div>
-        <ul class="plan-features">
-          <li><span class="check" aria-hidden="true">✓</span> قوائم غير محدودة</li>
-          <li><span class="check" aria-hidden="true">✓</span> مدير حساب مخصص</li>
-          <li><span class="check" aria-hidden="true">✓</span> تقارير ورؤى مخصصة</li>
-          <li><span class="check" aria-hidden="true">✓</span> وصول إلى واجهة API</li>
-        </ul>
-        <footer>
-          <a class="btn btn-primary btn-block" href="#subscribe-vip">اشترك الآن</a>
-        </footer>
-      </article>
-    </div>
-  </div>
-</section>
-
-
+  
   <!-- ========================
        4) Efficiency, Skills & Experience
        ======================== -->
@@ -256,8 +181,8 @@
         <header class="testimonial-head">
           <img src="../Public/assests/pumpmen.webp" alt="">
           <div>
-            <strong id="t1-name">أمينة بلقاسم</strong>
-            <div class="testimonial-role">بائعة مزرعة، سوسة</div>
+            <strong id="t1-name">أجمد العظمة</strong>
+            <div class="testimonial-role">بائع مزرعة، حمص</div>
              <div class="stars" aria-label="5 نجوم">★★★★★</div>
           </div>
          
@@ -271,8 +196,8 @@
         <header class="testimonial-head">
           <img src="../Public/assests/electrician.jpg" alt="">
           <div>
-            <strong id="t2-name">يوسف حداد</strong>
-            <div class="testimonial-role">مشتري، أريانة</div>
+            <strong id="t2-name">امين مراش</strong>
+            <div class="testimonial-role">مشتري، حماة</div>
             <div class="stars" aria-label="5 نجوم">★★★★★</div>
           </div>
           
@@ -284,9 +209,9 @@
 
       <article class="testimonial" role="listitem" aria-labelledby="t3-name">
         <header class="testimonial-head">
-          <img src="../Public/assests/electrician.jpg" alt="">
+          <img src="../Public/assests/men.webp" alt="">
           <div>
-            <strong id="t3-name">كنزة الطرابلسي</strong>
+            <strong id="t3-name">علي المرادي</strong>
             <div class="testimonial-role">شريكة وكالة</div>
             <div class="stars" aria-label="4 نجوم">★★★★☆</div>
           </div>
@@ -304,8 +229,8 @@
         <h3 class="cta-title">هل أنت مستعد للنمو مع منصة مزارع؟</h3>
         <p class="cta-sub">انضم إلى آلاف الأشخاص الذين يثقون بمنصتنا لإدراج وتأجير المزارع.</p>
         <div class="cta-actions">
-          <a class="btn btn-outline" href="#signup">ابدأ مجانًا</a>
-          <a class="btn btn-subscribe" href="#subscription">شاهد الباقات</a>
+          <a class="btn btn-outline" href="/signup">ابدأ مجانًا</a>
+          <a class="btn btn-subscribe" href="/plans">شاهد الباقات</a>
         </div>
       </div>
     </div>
@@ -325,7 +250,7 @@
     <div class="footer-brand">
       <div class="logo-mark" aria-hidden="true">🌿</div>
       <div>
-        <strong class="brand-name">فارمرز</strong>
+        <strong class="brand-name">مزرعتي</strong>
         <p class="brand-desc">
           منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
         </p>
@@ -337,19 +262,19 @@
       <div>
         <h3 class="footer-title">تصفح</h3>
         <ul>
-          <li><a href="/sale.html">مزارع للبيع</a></li>
-          <li><a href="/rent.html">مزارع للإيجار</a></li>
-          <li><a href="/contractors.html">المقاولون</a></li>
-          <li><a href="/plans.html">الاشتراكات</a></li>
+          <li><a href="/sale">مزارع للبيع</a></li>
+          <li><a href="/rent">مزارع للإيجار</a></li>
+          <li><a href="/contractors">المقاولون</a></li>
+          <li><a href="/plans">الاشتراكات</a></li>
         </ul>
       </div>
       <div>
         <h3 class="footer-title">الدعم</h3>
         <ul>
-          <li><a href="/about.html">من نحن</a></li>
-          <li><a href="/faq.html">الأسئلة الشائعة</a></li>
-          <li><a href="/policy.html">سياسة الخصوصية</a></li>
-          <li><a href="/terms.html">الشروط والأحكام</a></li>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/about">الأسئلة الشائعة</a></li>
+          <li><a href="/about">سياسة الخصوصية</a></li>
+          <li><a href="/about">الشروط والأحكام</a></li>
         </ul>
       </div>
       <div>
@@ -381,9 +306,9 @@
     </p>
 
     <div class="mini-links">
-      <a href="/policy.html">الخصوصية</a>
+      <a href="/about">الخصوصية</a>
       <span class="dot" aria-hidden="true">•</span>
-      <a href="/terms.html">الشروط</a>
+      <a href="/about">الشروط</a>
     </div>
   </div>
 </footer>

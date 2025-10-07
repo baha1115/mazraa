@@ -26,163 +26,287 @@
   </a>
 
   <!-- ========== سلايدر دعائي (اختياري) ========== -->
-  <section id="gallery" class="section gallery" aria-labelledby="gallery-title">
-    <div class="container">
-      <div class="swiper gallery-swiper" aria-label="صور المعرض">
-        <div class="swiper-wrapper">
-          <div class="swiper-slide">
-            <img src="/Public/assests/farm4k.jpg" alt="تركيب لوحة كهربائية في مزرعة" loading="eager" />
-            <div class="slide-overlay">
-              <h3 class="slide-title">تركيب لوحة كهربائية</h3>
-              <p class="slide-sub">تنفيذ آمن وفق المعايير، مع تمديدات محمية</p>
-              <a class="btn btn-primary" href="#list">تصفح المقاولين الآن</a>
-            </div>
-          </div>
-          <div class="swiper-slide">
-            <img src="/Public/assests/farm4k3.jpg" alt="أسلاك التحكم بمضخة الري" loading="lazy" />
-            <div class="slide-overlay">
-              <h3 class="slide-title">أسلاك تحكم بمضخة الري</h3>
-              <p class="slide-sub">لوحة حماية وأتمتة لضمان التشغيل المستمر</p>
-              <a class="btn btn-primary" href="#list">تصفح المقاولين الآن</a>
-            </div>
-          </div>
-          <div class="swiper-slide">
-            <img src="/Public/assests/farm4k2.jpg" alt="دمج عاكس طاقة شمسية" loading="lazy" />
-            <div class="slide-overlay">
-              <h3 class="slide-title">دمج عاكس طاقة شمسية</h3>
-              <p class="slide-sub">ربط احترافي بين الألواح والعاكس والمضخات</p>
-              <a class="btn btn-primary" href="#list">تصفح المقاولين الآن</a>
-            </div>
-          </div>
-        </div>
+<!-- سلايدر VIP للمقاولين فقط -->
+<% const vipContractors = Array.isArray(contractors) ? contractors.filter(c => c.subscriptionTier === 'VIP') : []; %>
+<% if (vipContractors.length) { %>
+<section id="gallery" class="section gallery" aria-labelledby="gallery-title">
+  <div class="container">
+    <h2 id="gallery-title" class="visually-hidden">مقاولون VIP</h2>
 
-        <div class="swiper-button-prev" aria-label="السابق"></div>
-        <div class="swiper-button-next" aria-label="التالي"></div>
-        <div class="swiper-pagination"></div>
+    <div class="swiper gallery-swiper" dir="rtl" aria-label="مقاولون VIP">
+      <div class="swiper-wrapper">
+        <% vipContractors.forEach(function(c){ 
+             const img = (Array.isArray(c.photos) && c.photos[0]) || c.avatar || '/Public/assets/contractors/default.jpg';
+             const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '');
+             const region = c.region || '';
+        %>
+          <div class="swiper-slide">
+            <img src="<%= img %>" alt="صورة <%= c.name || 'مقاول' %>" loading="lazy" />
+            <div class="slide-overlay">
+              <h3 class="slide-title"><%= c.name || '—' %></h3>
+              <p class="slide-sub">
+                <%= services %><% if (services && region) { %> — <% } %><%= region %>
+              </p>
+              <span class="badge" title="التقييم" style="margin-top:1rem ;">⭐ <%= (c.ratingAvg||0).toFixed(1) %> (<%= c.ratingCount||0 %>)</span><br>
+              <a class="btn btn-primary" href="/contractor/<%= c._id %>">عرض المقاول</a>
+            </div>
+          </div>
+        <% }) %>
       </div>
+
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+      <div class="swiper-pagination"></div>
     </div>
-  </section>
+  </div>
+</section>
+<% } %>
+
 
   <!-- ========== فلترة المقاولين ========== -->
-  <section id="filters" class="section filters" aria-labelledby="filters-title">
-    <div class="container">
-      <header class="section-header">
-        <h2 id="filters-title">فلترة المقاولين</h2>
-        <p class="muted">ابحث حسب التخصص والمنطقة.</p>
-      </header>
+<!-- ========== فلترة المقاولين ========== -->
+<section id="filters" class="section filters" aria-labelledby="filters-title">
+  <div class="container">
+    <header class="section-header">
+      <h2 id="filters-title">فلترة المقاولين</h2>
+      <p class="muted">ابحث حسب التخصص والمنطقة.</p>
+    </header>
 
-      <!-- مجرد فورم واجهة؛ يمكنك ربطه بـ GET /contractors?specialization=&region= -->
-      <form id="contractor-filters" class="filters-form" action="#list" method="get" novalidate>
-        <div class="filters-grid">
-          <div class="field">
-            <label class="label" for="specialization">اختر التخصص</label>
-            <select id="specialization" name="specialization">
-              <option value="">جميع التخصصات</option>
-              <option value="Electricity">كهرباء</option>
-              <option value="Pumps">مضخات</option>
-              <option value="Solar Energy">طاقة شمسية</option>
-              <option value="Construction">بناء</option>
-              <option value="Diagnostics">تشخيص فني</option>
-              <option value="Irrigation">ري</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label class="label" for="region">اختر المنطقة</label>
-            <select id="region" name="region">
-              <option value="">جميع المناطق</option>
-              <option value="Damascus Countryside">ريف دمشق</option>
-              <option value="Hama">حماة</option>
-              <option value="Homs">حمص</option>
-              <option value="Daraa">درعا</option>
-              <option value="Riyadh">الرياض</option>
-              <option value="Qassim">القصيم</option>
-            </select>
-          </div>
-
-          <div class="field field--actions">
-            <button class="btn btn-primary" type="submit">ابحث</button>
-          </div>
+    <!-- واجهة بحث ترسل specialization & region كـ query string -->
+    <form id="contractor-filters" class="filters-form" action="#list" method="get" novalidate>
+      <div class="filters-grid">
+        <!-- التخصص كـ input نصّي -->
+        <div class="field">
+          <label class="label" for="specialization">التخصص</label>
+          <input
+            id="specialization"
+            name="specialization"
+            type="text"
+            placeholder="مثال: كهرباء، مضخات، طاقة شمسية…"
+            value="<%= (typeof query!=='undefined' && query.specialization) ? query.specialization : '' %>"
+          />
         </div>
-      </form>
-    </div>
-  </section>
+
+        <!-- المنطقة كـ input نصّي -->
+        <div class="field">
+          <label class="label" for="region">المنطقة</label>
+          <input
+            id="region"
+            name="region"
+            type="text"
+            placeholder="مثال: ريف دمشق، حمص، درعا…"
+            value="<%= (typeof query!=='undefined' && query.region) ? query.region : '' %>"
+          />
+        </div>
+
+        <div class="field field--actions">
+          <button class="btn btn-primary" type="submit">ابحث</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
 
   <!-- ========== قائمة المقاولين (VIP/Premium أولاً) ========== -->
-  <section id="list" class="section list" aria-labelledby="list-title">
-    <div class="container">
-      <header class="section-header">
-        <h2 id="list-title">المقاولون المتاحون</h2>
-        <p class="muted">يظهر مشتركو VIP و Premium أولاً.</p>
-      </header>
+  <!-- ========== قائمة المقاولين (VIP/Premium أولاً) ========== -->
+<section id="list" class="section list" aria-labelledby="list-title">
+  <div class="container">
+    <header class="section-header">
+      <h2 id="list-title">المقاولون المتاحون</h2>
+      <p class="muted">يظهر مشتركو VIP و Premium أولاً.</p>
+    </header>
 
-      <% const items = Array.isArray(contractors) ? contractors : []; %>
+    <% const items = Array.isArray(contractors) ? contractors : []; %>
 
-      <% if (!items.length) { %>
-        <p class="muted">لا توجد نتائج حالياً.</p>
-      <% } else { %>
-        <div class="cards-grid" role="list">
-          <% items.forEach(function(c){ %>
-            <article class="contractor-card" role="listitem"
-                     data-id="<%= c._id %>"
-                     data-approved="<%= c.approved %>"
-                     data-subscription="<%= c.subscriptionTier || 'Basic' %>"
-                     data-specialization="<%= c.specialization || '' %>"
-                     data-region="<%= c.region || '' %>">
-
-              <a class="contractor-link" href="/contractor/<%= c._id %>" aria-label="فتح صفحة المقاول: <%= c.name %>">
-                <header class="contractor-head">
-                  <figure class="avatar">
-                    <img src="<%= c.avatar %>" alt="صورة <%= c.name %>" loading="lazy" />
-                  </figure>
-                  <div class="head-info">
-                    <h3 class="name"><%= c.name || '—' %></h3>
-                    <p class="specialization"><%= c.specialization || '—' %></p>
-                    <p class="region"><%= c.region || '—' %></p>
-                  </div>
-                  <span class="badge badge--tier"><%= c.subscriptionTier || 'Basic' %></span>
-                  <% if (c.featured) { %><span class="badge badge--featured">مميّز</span><% } %>
-                </header>
-                <div class="contractor-body">
-                  <button class="btn btn-outline" type="button">صفحة المقاول</button>
+    <% if (!items.length) { %>
+      <p class="muted">لا توجد نتائج حالياً.</p>
+    <% } else { %>
+      <!-- الشبكة: نعرض الكل هنا، والسكربت سيقسّمها إلى صفحات -->
+      <div id="contractorsGrid" class="cards-grid" role="list" data-per-page="6">
+        <% items.forEach(function(c){ %>
+          <article class="contractor-card" role="listitem"
+                   data-id="<%= c._id %>"
+                   data-approved="<%= c.approved %>"
+                   data-subscription="<%= c.subscriptionTier || 'Basic' %>"
+                   data-specialization="<%= Array.isArray(c.services) ? c.services.join('، ') : (c.services || '') %>"
+                   data-region="<%= c.region || '' %>">
+            <a class="contractor-link" href="/contractor/<%= c._id %>" aria-label="فتح صفحة المقاول: <%= c.name %>">
+              <header class="contractor-head">
+                <figure class="avatar">
+                  <img src="<%= c.avatar || (Array.isArray(c.photos)&&c.photos[0]) || '/Public/assets/contractors/default.jpg' %>"
+                       alt="صورة <%= c.name || '—' %>" loading="lazy" />
+                </figure>
+                <div class="head-info">
+                  <h3 class="name"><%= c.name || '—' %></h3>
+                  <p class="specialization"><%= Array.isArray(c.services) ? c.services.join('، ') : (c.services || '—') %></p>
+                  <p class="region"><%= c.region || '—' %></p>
                 </div>
-              </a>
-            </article>
-          <% }) %>
+                <span class="badge badge--tier"><%= c.subscriptionTier || 'Basic' %></span>
+                <span class="badge" title="التقييم">⭐ <%= (c.ratingAvg||0).toFixed(1) %> (<%= c.ratingCount||0 %>)</span>
+                <% if (c.featured) { %><span class="badge badge--featured">مميّز</span><% } %>
+              </header>
+              <div class="contractor-body">
+                <button class="btn btn-outline" type="button">صفحة المقاول</button>
+              </div>
+            </a>
+          </article>
+        <% }) %>
+      </div>
+
+      <!-- الترقيم الداخلي -->
+      <nav id="contractorsPager" class="pager" aria-label="ترقيم النتائج" style="margin-top:1rem; display:grid; gap:.6rem; justify-content:center;">
+        <div class="pager-controls" style="display:flex; gap:.35rem; flex-wrap:wrap; align-items:center; justify-content:center;">
+          <button class="pager-prev btn btn-outline" type="button" aria-label="السابق">السابق</button>
+          <div class="pager-pages" role="list" aria-label="أرقام الصفحات"></div>
+          <button class="pager-next btn btn-outline" type="button" aria-label="التالي">التالي</button>
         </div>
-      <% } %>
-    </div>
-  </section>
+        <div class="pager-info muted" style="text-align:center; font-size:.92rem;"></div>
+      </nav>
+    <% } %>
+  </div>
+</section>
 
   <!-- ========== بانر ترويجي سفلي (اختياري) ========== -->
-  <section id="promo" class="section promo" aria-labelledby="promo-title">
-    <div class="container">
-      <article class="promo-banner" data-controlled-by="admin">
-        <div class="promo-media">
-          <img src="/Public/assets/contractors/promo-01.jpg" alt="مقاول VIP — عرض تركيب طاقة شمسية + مضخة" loading="lazy" />
-        </div>
-        <div class="promo-body">
-          <h3 id="promo-title">مقاول VIP: باقة الطاقة الشمسية + المضخات</h3>
-          <p class="promo-text">تسعير خاص لمزارع الطاقة الشمسية مع مضخات الآبار العميقة المدمجة. عرض لفترة محدودة.</p>
-          <a class="btn btn-primary" href="/contractor/C002">عرض التفاصيل</a>
-        </div>
-      </article>
-    </div>
-  </section>
+ <%- include('partials/promo', { promoContractors }) %>
 
   <!-- Footer مبسّط -->
-  <footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
-    <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
-    <div class="footer-bottom">
-      <p class="copyright">
-        © <span id="year-placeholder"><script>document.write(new Date().getFullYear())</script></span> فارمرز — جميع الحقوق محفوظة.
-      </p>
+<!--
+
+   ========================
+       الفوتر
+   ======================== -->
+<footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
+  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
+
+  <div class="footer-top">
+    <!-- الشعار والوصف المختصر -->
+    <div class="footer-brand">
+      <div class="logo-mark" aria-hidden="true">🌿</div>
+      <div>
+        <strong class="brand-name">فارمرز</strong>
+        <p class="brand-desc">
+          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
+        </p>
+      </div>
     </div>
-  </footer>
+
+    <!-- روابط سريعة -->
+    <nav class="footer-links" aria-label="روابط سريعة">
+      <div>
+        <h3 class="footer-title">تصفح</h3>
+        <ul>
+          <li><a href="/sale">مزارع للبيع</a></li>
+          <li><a href="/rent">مزارع للإيجار</a></li>
+          <li><a href="/contractors">المقاولون</a></li>
+          <li><a href="/plans">الاشتراكات</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">الدعم</h3>
+        <ul>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/about">الأسئلة الشائعة</a></li>
+          <li><a href="/about">سياسة الخصوصية</a></li>
+          <li><a href="/about">الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">تواصل</h3>
+        <ul class="contact">
+          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
+          <li><a href="tel:+963900000000">+963 900 000</a></li>
+          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="social" aria-label="شبكات اجتماعية">
+      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
+      </a>
+      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
+      </a>
+    </div>
+
+    <p class="copyright">
+      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
+    </p>
+
+    <div class="mini-links">
+      <a href="/about">الخصوصية</a>
+      <span class="dot" aria-hidden="true">•</span>
+      <a href="/about">الشروط</a>
+    </div>
+  </div>
+</footer>
 
   <!-- سكربتات -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="../Public/contractors.js"></script>
+  <script>
+(function(){
+  const grid = document.getElementById('contractorsGrid');
+  const pager = document.getElementById('contractorsPager');
+  if(!grid || !pager) return;
+
+  const cards = Array.from(grid.querySelectorAll('.contractor-card'));
+  const perPage = parseInt(grid.dataset.perPage || '6', 10);
+  let page = 1;
+  const total = cards.length;
+  const pages = Math.max(1, Math.ceil(total / perPage));
+
+  const pagesWrap = pager.querySelector('.pager-pages');
+  const prevBtn = pager.querySelector('.pager-prev');
+  const nextBtn = pager.querySelector('.pager-next');
+  const info    = pager.querySelector('.pager-info');
+
+  function renderButtons(){
+    pagesWrap.innerHTML = '';
+    for(let i=1;i<=pages;i++){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn ' + (i===page ? 'btn-primary' : 'btn-outline');
+      b.textContent = i.toString();
+      b.setAttribute('aria-label', 'صفحة ' + i);
+      b.addEventListener('click', ()=>{ page=i; update(); });
+      pagesWrap.appendChild(b);
+    }
+  }
+
+  function update(){
+    const start = (page-1)*perPage;
+    const end   = start + perPage;
+
+    cards.forEach((card, idx)=>{
+      card.style.display = (idx>=start && idx<end) ? '' : 'none';
+    });
+
+    prevBtn.disabled = (page<=1);
+    nextBtn.disabled = (page>=pages);
+    info.textContent = `الصفحة ${page} من ${pages} — عرض ${(Math.min(end, total))} من ${total}`;
+    // تمرير خفيف لقمة القائمة عند تغيير الصفحة
+    if (document.location.hash !== '#list') document.location.hash = '#list';
+    document.getElementById('list').scrollIntoView({ behavior:'smooth', block:'start' });
+    // إعادة رسم أزرار الصفحات لتحديث حالة الزر المفعّل
+    renderButtons();
+  }
+
+  prevBtn.addEventListener('click', ()=>{ if(page>1){ page--; update(); } });
+  nextBtn.addEventListener('click', ()=>{ if(page<pages){ page++; update(); } });
+
+  // تفعيل أولي
+  renderButtons();
+  update();
+})();
+</script>
+
 </body>
 </html>
 

@@ -8,6 +8,8 @@ const MongoStore = require('connect-mongo');
 const nodemailer = require('nodemailer');
 const methodOverride = require('method-override');
 const { verifyTransporter } = require('./utils/mailer2');
+const cookieParser = require('cookie-parser');
+
 
 verifyTransporter(); // يطبع جاهزية SMTP
 // مثال
@@ -28,14 +30,27 @@ const port = process.env.PORT || 3000;
 
 // السماح باستخدام ?_method=PATCH/DELETE من الفورم
 app.use(methodOverride('_method'));
-
+app.use(cookieParser());
 // ملفات ثابتة (لو عندك مجلد public)
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Body parsers (لازم قبل الراوترات)
 app.use(express.urlencoded({ extended:true, limit: '25mb' })); // أو 50mb حسب حاجتك
 app.use(express.json({ limit: '25mb' }));
+const { randomUUID } = require('crypto');
 
+app.use((req, res, next) => {
+  // كوكي ثابت لمدة سنة لتمييز الزائر المجهول
+  if (!req.cookies.anonId) {
+    res.cookie('anonId', randomUUID(), {
+      httpOnly: false,    // نريده قابل للقراءة بالمتصفح لو احتجت لاحقاً
+      sameSite: 'lax',
+      maxAge: 365*24*60*60*1000
+    });
+  }
+  next();
+});
 // الجلسات (قبل الراوترات)
 app.use(session({
   name: 'sid',
@@ -130,7 +145,7 @@ if (transporter) {
 }
 app.locals.transporter = transporter;
 // loginrouter.js
-app.get('/',(req,res)=> res.render('home'));           // الرئيسية
+       // الرئيسية
 
 
 
@@ -139,20 +154,7 @@ app.use('/admin', adminRouter);     // لوحة التحكم للأدمن وكل
 app.use('/', loginRouter);          // تسجيل/دخول/خروج
 app.use('/', publicRouter); // صفحات عامة (إيجار/مقاولون) إن وجد
 app.use('/',ownerRouter);       // مسارات المالك إن وجدت
-app.get('/farm/:id', async (req, res) => {
-  try {
-    const farm = await Farm.findById(req.params.id).lean();
-    if (!farm || farm.kind !== 'sale' || farm.status === 'rejected') {
-      return res.status(404).render('sellfarmsingle', { farm: null });
-    }
-    // لو حابب تُظهر شارة خطة المالك
-    const ownerTier = farm.ownerTier || farm.subscriptionTier || farm.plan || 'Basic';
-    res.render('sellfarmsingle', { farm: { ...farm, ownerTier } });
-  } catch (e) {
-    console.error(e);
-    res.status(500).render('sellfarmsingle', { farm: null });
-  }
-});
+
 // صفحة القائمة: الإيجار
 app.get('/rent', (req, res) => {
   res.render('rent'); // تأكد أن اسم الملف هو rent.ejs
