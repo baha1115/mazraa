@@ -287,6 +287,7 @@ router.get('/contractors', async (req, res, next) => {
 
 // صفحة مقاول فردية
 router.get('/contractor/:id', async (req, res, next) => {
+  const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean(); // مثال
   try {
     const id = req.params.id;
     const contractor = await Contractor.findById(id).lean();
@@ -302,7 +303,7 @@ router.get('/contractor/:id', async (req, res, next) => {
     .select('name companyName services region city avatar subscriptionTier ratingAvg ratingCount')
     .lean();
 
-    res.render('contractorssingle', { contractor ,topRated});
+    res.render('contractorssingle', { contractor ,topRated,promoContractors});
   } catch (err) {
     next(err);
   }

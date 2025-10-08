@@ -7,6 +7,8 @@ const Contractor = require('../models/contactorsModel');
 const User = require('../models/usermodels');
 const SubscriptionRequest = require('../models/subscriptionRequest');
 const PromoConfig = require('../models/PromoConfig');
+const { enforceExpiry } = require('../utils/enforceExpiry');
+const { checkQuota } = require('../utils/quota');
 // استخدم مايلرين منفصلين مع أسماء مستعارة واضحة
 const { sendMail: sendFarmMail } = require('../utils/mailer');   // SMTP للأراضي
 const { sendMail: sendContractorMail } = require('../utils/mailer2'); // SMTP للمقاولين
@@ -54,17 +56,44 @@ router.get('/farms/:id', requireAdmin, async (req, res) => {
 // PATCH /admin/farms/:id/approve
 router.patch('/farms/:id/approve', requireAdmin, async (req, res) => {
   try {
-    const farm = await Farm.findByIdAndUpdate(
-      req.params.id,
-      { status: 'approved', approvedAt: new Date(), reviewNote: '' },
-      { new: true }
-    );
+    // احضر الوثيقة أولاً بدون تعديل
+    const farm = await Farm.findById(req.params.id).lean();
     if (!farm) {
       if (wantsJSON(req)) return res.status(404).json({ ok: false, msg: 'Not found' });
       return res.redirect('/admin/dashboard?type=danger&msg=العنصر%20غير%20موجود');
     }
 
-    // إشعار موافقة عبر mailer (SMTP المخصص للأراضي)
+    const ownerId = farm.owner || farm.owner?._id;
+    if (ownerId) {
+      // تأكد إن الاشتراك لم ينتهِ — إن انتهى يرجّع Basic
+      await enforceExpiry(ownerId);
+
+      // تحقّق من الكوته
+      const { ok, used, limit, tier } = await checkQuota(ownerId, 'farm');
+      if (!ok) {
+        // ارفض الطلب بدل الموافقة
+        await Farm.findByIdAndUpdate(farm._id, {
+          status: 'rejected',
+          rejectedAt: new Date(),
+          reviewNote: `تجاوز حد خطة ${tier} (${used}/${limit})`
+        });
+
+        if (wantsJSON(req)) {
+          return res.status(403).json({ ok:false, msg:`تجاوز حد خطة ${tier} (${used}/${limit})` });
+        }
+        return res.redirect('/admin/dashboard?type=warning&msg=تجاوز%20حد%20الخطة');
+      }
+    }
+
+    // طالما ضمن الحد → وافق الآن
+    const updated = await Farm.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved', approvedAt: new Date(), reviewNote: '' },
+      { new: true }
+    );
+
+    // (إرسال بريد كما في كودك الأصلي إن رغبت)
+    // ...
     try {
       let recipient = farm.ownerEmail || null;
       if (!recipient && farm.owner) {
@@ -84,7 +113,7 @@ router.patch('/farms/:id/approve', requireAdmin, async (req, res) => {
       }
     } catch (_) {}
 
-    if (wantsJSON(req)) return res.json({ ok: true, msg: 'Approved', data: farm });
+    if (wantsJSON(req)) return res.json({ ok: true, msg: 'Approved', data: updated });
     return res.redirect('/admin/dashboard?type=success&msg=تمت%20الموافقة');
   } catch (err) {
     console.error(err);
@@ -92,7 +121,6 @@ router.patch('/farms/:id/approve', requireAdmin, async (req, res) => {
     return res.redirect('/admin/dashboard?type=danger&msg=خطأ%20داخلي');
   }
 });
-
 // PATCH /admin/farms/:id/reject
 router.patch('/farms/:id/reject', requireAdmin, async (req, res) => {
   try {
@@ -177,16 +205,42 @@ router.get('/contractors/:id', requireAdmin, async (req, res) => {
 // PATCH /admin/contractors/:id/approve
 router.patch('/contractors/:id/approve', requireAdmin, async (req, res) => {
   try {
-    const doc = await ContractorRequest.findByIdAndUpdate(
-      req.params.id,
-      { status: 'approved', approvedAt: new Date(), reviewNote: '' },
-      { new: true }
-    );
+    // احضر الوثيقة أولاً بدون تعديل
+    const doc = await ContractorRequest.findById(req.params.id).lean();
     if (!doc) {
       if (wantsJSON(req)) return res.status(404).json({ ok:false, msg:'Not found' });
       return res.redirect('/admin/dashboard?type=danger&msg=العنصر%20غير%20موجود');
     }
 
+    const userId = doc.user || doc.user?._id;
+    if (userId) {
+      await enforceExpiry(userId);
+
+      const { ok, used, limit, tier } = await checkQuota(userId, 'contractor');
+      if (!ok) {
+        // ارفض بدل الموافقة
+        await ContractorRequest.findByIdAndUpdate(doc._id, {
+          status: 'rejected',
+          rejectedAt: new Date(),
+          reviewNote: `تجاوز حد خطة ${tier} (${used}/${limit})`
+        });
+
+        if (wantsJSON(req)) {
+          return res.status(403).json({ ok:false, msg:`تجاوز حد خطة ${tier} (${used}/${limit})` });
+        }
+        return res.redirect('/admin/dashboard?type=warning&msg=تجاوز%20حد%20الخطة');
+      }
+    }
+
+    // ضمن الحد → وافق الآن
+    const updated = await ContractorRequest.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved', approvedAt: new Date(), reviewNote: '' },
+      { new: true }
+    );
+
+    // (إرسال بريد كما في كودك الأصلي إن رغبت)
+    // ...
     if (doc.email) {
       const subject = `تمت الموافقة على ملفك — ${doc.companyName || doc.name || 'مقاول'}`;
       const text = `تمت الموافقة على ملفك كمقاول وسيظهر للجمهور.`;
@@ -195,8 +249,7 @@ router.patch('/contractors/:id/approve', requireAdmin, async (req, res) => {
         console.error('Contractor mail error:', err.message)
       );
     }
-
-    if (wantsJSON(req)) return res.json({ ok:true, msg:'Approved', data:doc });
+    if (wantsJSON(req)) return res.json({ ok:true, msg:'Approved', data:updated });
     return res.redirect('/admin/dashboard?type=success&msg=تمت%20الموافقة');
   } catch (e) {
     console.error(e);
@@ -204,8 +257,6 @@ router.patch('/contractors/:id/approve', requireAdmin, async (req, res) => {
     return res.redirect('/admin/dashboard?type=danger&msg=خطأ%20داخلي');
   }
 });
-
-
 // PATCH /admin/contractors/:id/reject
 router.patch('/contractors/:id/reject', requireAdmin, async (req, res) => {
   try {
@@ -269,6 +320,7 @@ router.get('/subscriptions', requireAdmin, async (req, res) => {
 });
 
 // PATCH /admin/subscriptions/:id/approve
+// PATCH /admin/subscriptions/:id/approve
 router.patch('/subscriptions/:id/approve', requireAdmin, async (req, res) => {
   const r = await SubscriptionRequest.findByIdAndUpdate(
     req.params.id,
@@ -280,12 +332,16 @@ router.patch('/subscriptions/:id/approve', requireAdmin, async (req, res) => {
 
   try {
     if (r.user?._id) {
+      const until = new Date(Date.now() + 30*24*60*60*1000); // شهر
       await User.findByIdAndUpdate(r.user._id, {
         $set: {
-          subscriptionTier: r.plan, // ← الأهم
-          plan: r.plan              // ← إبقها للتوافق (اختياري)
+          subscriptionTier: r.plan, // Premium أو VIP
+          plan: r.plan,
+          subscriptionUntil: until
         }
       });
+
+      // مزامنة اختيارية مع سجلات المقاول الخاصة به
       await ContractorRequest.updateMany(
         { user: r.user._id },
         { $set: { subscriptionTier: r.plan || 'Basic' } }
@@ -297,6 +353,7 @@ router.patch('/subscriptions/:id/approve', requireAdmin, async (req, res) => {
 
   res.json({ ok:true, msg:'Approved', data:r });
 });
+
 
 // PATCH /admin/subscriptions/:id/reject
 router.patch('/subscriptions/:id/reject', requireAdmin, async (req, res) => {

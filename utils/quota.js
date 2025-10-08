@@ -1,7 +1,7 @@
 
 const User = require('../models/usermodels');
 const Farm = require('../models/farmModel');
-const ContractorRequest = require('../models/ContractorRequest');
+const ContractorRequest = require('../models/contractorRequestModel');
 const LIMITS = require('./limits');
 
 async function countUsed(userId, kind) {
