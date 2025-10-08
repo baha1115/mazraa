@@ -43,7 +43,7 @@
           <ul class="stats" role="list" style="width:100%;display:flex;justify-content:center;align-items:flex-start;flex-direction:column;margin-bottom:-1rem;">
             <li><strong>الاشتراك:</strong> <span class="tier"><%= tier %></span></li>
           </ul>
-          <div class="hero-actions" style="position:absolute;right:2rem;top:12rem;">
+          <div class="hero-actions" style="margin-top: 1rem;">
             <a class="btn btn-primary" href="#request">طلب خدمة</a>
             <% if (contractor.phone) { %>
               <a class="btn btn-outline" href="tel:<%= contractor.phone.replace(/\s+/g,'') %>">اتصل: <%= contractor.phone %></a>
