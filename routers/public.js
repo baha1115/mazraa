@@ -1,16 +1,36 @@
 // routes/public.js
 const express = require('express');
 const router = express.Router();
-
+const HeroSlide = require('../models/HeroSlide');
+const HomeQuickLinks = require('../models/HomeQuickLinks');
 const Farm        = require('../models/farmModel');
 const Contractor  = require('../models/contractorRequestModel');
 const PromoConfig = require('../models/PromoConfig');
-
+const PromoBanner = require('../models/PromoBanner');
+const HomeShowcase = require('../models/homeShowcase');
 // ===== Helpers =====
-router.get('/',async(req,res)=> {
-  const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean(); // مثال
-  res.render('home', { promoContractors });
-}); 
+router.get('/', async (req,res) => {
+  try{
+     const [rentTop, saleTop, bestContractors] = await Promise.all([
+    HomeShowcase.findOne({ key:'rentTop' }).lean(),
+    HomeShowcase.findOne({ key:'saleTop' }).lean(),
+    HomeShowcase.findOne({ key:'bestContractors' }).lean(),
+  ]);
+      const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean();
+       const quickLinks = await HomeQuickLinks.findOne({ key: 'default' }).lean().catch(()=>null);
+    const heroSlides = await HeroSlide.find({ enabled: { $ne: false } })
+      .sort({ order: 1, createdAt: 1 })
+      .lean();
+
+    // أي متغيرات أخرى يحتاجها الـhome.ejs مرّرها أيضًا
+    res.render('home', { heroSlides,promoContractors,quickLinks,rentTop, saleTop, bestContractors});
+  }catch(e){
+    console.error(e);
+    res.render('home', { heroSlides: [],promoContractors:[],quickLinks:null });
+  }
+});
+
+
 // أعلى N مزارع حسب المشاهدات لنوع محدد (sale|rent)، مع إمكانية استثناء مزرعة معيّنة
 async function getTopFarms(kindWanted, excludeId = null, limit = 3) {
   const q = {
@@ -42,18 +62,29 @@ async function getTopFarms(kindWanted, excludeId = null, limit = 3) {
 
 // صفحة البيع (القائمة). الكروت تُجلب عبر fetch من /api/farms/sale
 router.get('/sale', async (req, res) => {
+  const bannersDoc = await PromoBanner.findOne({ key:'home-banners' }).lean();
   const topSale = await getTopFarms('sale');
   const topRent = await getTopFarms('rent');
  const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean(); // مثال
-  res.render('sellfarm', { topSale, topRent, promoContractors });
+  res.render('sellfarm', { topSale, topRent, promoContractors,bannersDoc  });
 });
 
 // صفحة الإيجار (القائمة). الكروت تُجلب عبر fetch من /api/farms/rent
-router.get('/rent', async (req, res) => {
-  const topRent = await getTopFarms('rent');
-  const topSale = await getTopFarms('sale');
-  const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean(); // مثال
-  res.render('rent', { topRent, topSale,promoContractors });
+  router.get('/rent', async (req, res) => {
+    const bannersDoc = await PromoBanner.findOne({ key:'home-banners' }).lean();
+  try {
+    const [topRent, topSale, promoContractors] = await Promise.all([
+      getTopFarms('rent'),
+      getTopFarms('sale'),
+      PromoConfig.findOne({ key: 'contractors' }).lean()
+    ]);
+
+    return res.render('rent', { topRent, topSale, promoContractors,bannersDoc });
+  } catch (e) {
+    console.error(e);
+    // حتى لو حصل خطأ، نعرض الصفحة بدون بيانات بدل كسرها
+    return res.render('rent', { topRent: [], topSale: [], promoContractors: null });
+  }
 });
 
 // ===== API: Farms for lists (used by client-side fetch) =====
@@ -195,15 +226,16 @@ router.get('/farm/:id', async (req, res) => {
 // تفاصيل مزرعة للإيجار: زيادة مشاهدات + مزارع نفس المالك + Top
 router.get('/rent/farm/:id', async (req, res) => {
   const id = req.params.id;
-  const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean(); // مثال
+
   try {
-    // زِد العداد لمزارع الإيجار المقبولة فقط
+    const promoContractors = await PromoConfig.findOne({ key: 'contractors' }).lean();
+
+    // زِد المشاهدات فقط لو المزرعة Rent و Approved
     await Farm.updateOne(
       { _id: id, kind: { $regex: /^rent$/i }, status: { $in: ['approved','Approved'] } },
       { $inc: { views: 1 } }
     );
 
-    // اجلب الوثيقة بعد الزيادة
     const farm = await Farm.findOne({
       _id: id,
       kind: { $regex: /^rent$/i },
@@ -216,11 +248,12 @@ router.get('/rent/farm/:id', async (req, res) => {
         viewsCount: 0,
         sameOwnerFarms: [],
         topRent: [],
-        topSale: [],promoContractors
+        topSale: [],
+        promoContractors
       });
     }
 
-    // بقية مزارع نفس المالك (إن وُجد) باستثناء الحالية
+    // بقية مزارع نفس المالك (إن وُجد)، باستثناء الحالية
     const sameOwnerPromise = farm.owner
       ? Farm.find({
           owner: farm.owner,
@@ -241,29 +274,33 @@ router.get('/rent/farm/:id', async (req, res) => {
       sameOwnerPromise, topRentPromise, topSalePromise
     ]);
 
-    res.render('singlefarm', {
+    return res.render('singlefarm', {
       farm,
       viewsCount: Number(farm.views || 0),
       sameOwnerFarms,
       topRent,
-      topSale,promoContractors
+      topSale,
+      promoContractors
     });
   } catch (e) {
     console.error(e);
-    res.status(500).render('singlefarm', {
+    return res.status(500).render('singlefarm', {
       farm: null,
       viewsCount: 0,
       sameOwnerFarms: [],
       topRent: [],
-      topSale: []
+      topSale: [],
+      promoContractors: null
     });
   }
 });
+
 
 // ===== Contractors =====
 
 // قائمة المقاولين + إعدادات البانر من لوحة الأدمن
 router.get('/contractors', async (req, res, next) => {
+  const bannersDoc = await PromoBanner.findOne({ key:'home-banners' }).lean();
   try {
     const promo = await PromoConfig.findOne({ key: 'contractors' }).lean();
     const contractors = await Contractor
@@ -278,7 +315,7 @@ router.get('/contractors', async (req, res, next) => {
 
     res.render('contractors', {
       contractors,
-      promoContractors: promo || { enabled: false }
+      promoContractors: promo || { enabled: false },bannersDoc
     });
   } catch (err) {
     next(err);

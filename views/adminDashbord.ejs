@@ -110,6 +110,7 @@
 .mobile-menu { padding:.75rem 1rem; background:#fff; border-top:1px solid #eee; }
 .nav-toggle { background:transparent; border:0; }
 #previewMap { height: 260px; border-radius: 12px; border:1px solid #e5e7eb; overflow:hidden; }
+
 </style>
 </head>
 <body>
@@ -119,10 +120,10 @@
     <nav class="menu">
       <button class="menu__item is-active" data-view="farms">أراضٍ بانتظار الموافقة</button>
       <button class="menu__item" data-view="contractors">ملفات المقاولين</button>
-      <button class="menu__item" data-view="banners" style="display: none;">طلبات بانرات</button>
+      <button class="menu__item" data-view="banners">بانرات الصفحة الرئيسية</button>
       <button class="menu__item" data-view="subs">الاشتراكات والصلاحيات</button>
-      <button class="menu__item" data-view="history" style="display: none;">سجلّ التعديلات</button>
-      <button class="menu__item" data-view="settings">إضافة بانرات</button>
+      <button class="menu__item" data-view="history">البنر المتحرك العلوي</button>
+      <button class="menu__item" data-view="settings">البنر السفلي الثابت</button>
     </nav>
     <div class="sidebar__foot">© <span data-year></span> Farmers</div>
   </aside>
@@ -130,7 +131,7 @@
   <section class="content">
 
     <!-- 1) Farms Pending -->
-    <section id="view-farms" class="panel is-visible">
+    <section id="view-farms" class="panel">
       <div class="head">
         <h2>أراضٍ بانتظار الموافقة</h2>
         <div style="display:flex;gap:.5rem;align-items:center">
@@ -160,23 +161,97 @@
   <div id="contractorsCards" class="cards"></div>
   <p id="contractorsEmpty" class="muted" hidden>لا توجد ملفات الآن.</p>
 </section>
+    <!-- داخل .content في adminDashbord.ejs -->
+<section id="view-banners" class="panel">
+  <div class="head"><h2>سلايدات الهيرو (Hero Swiper)</h2></div>
 
-    <!-- 3) Banners -->
-    <section id="view-banners" class="panel" style="display: none;">
-      <div class="head"><h2>طلبات البانرات الإعلانية</h2></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>المالك/المقاول</th><th>الموضع</th><th>المدة</th><th>رابط الصورة</th><th style="width:220px">إجراء</th></tr></thead>
-          <tbody id="bannersBody"></tbody>
-        </table>
+  <form id="hero-add" class="card" style="display:grid;gap:.6rem;max-width:560px">
+    <div><label class="muted">الصورة (رابط)</label><input class="input" name="img" required></div>
+    <div><label class="muted">العنوان (يدعم span)</label><input class="input" name="title" placeholder='مثال: هل لديك مزرعة؟ <span class="accent">انضم الآن</span>'></div>
+    <div><label class="muted">الوصف</label><textarea class="input" name="lead" rows="3"></textarea></div>
+    <button class="btn btn--ok" type="submit">إضافة</button>
+  </form>
+
+  <div style="margin:.8rem 0 .4rem"><strong>القائمة الحالية</strong></div>
+  <div id="hero-list" style="display:grid;gap:.6rem"></div>
+  <p id="hero-empty" class="muted">لا توجد سلايدات بعد.</p>
+  <div class="head"><h2>صور “تصفح الأقسام الشائعة” (الصفحة الرئيسية)</h2></div>
+
+  <form id="ql-form" class="card" style="display:grid;gap:.6rem;max-width:560px">
+    <label class="muted" style="display:flex;gap:.5rem;align-items:center">
+      <input type="checkbox" name="enabled"> تفعيل إظهار هذه الكروت
+    </label>
+    <div>
+      <label class="muted">صورة “مزارع للبيع”</label>
+      <input class="input" name="saleImg" placeholder="/Public/assests/farm4k1.jpg أو رابط كامل">
+    </div>
+    <div>
+      <label class="muted">صورة “مزارع للإيجار”</label>
+      <input class="input" name="rentImg" placeholder="/Public/assests/farm4k1.jpg أو رابط كامل">
+    </div>
+    <div>
+      <label class="muted">صورة “المقاولون”</label>
+      <input class="input" name="contractorsImg" placeholder="/Public/assests/farm4k1.jpg أو رابط كامل">
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn--ok" type="submit">حفظ</button>
+      <button class="btn btn--ghost" type="reset">إلغاء</button>
+    </div>
+  </form>
+   <div class="head"><h2>سلايدر الصفحة الرئيسية (3 أقسام)</h2></div>
+
+  <form id="hs-form" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <div style="flex:1 1 220px">
+        <label class="muted">اختر السكشن</label>
+        <select class="input" name="key" required>
+          <option value="rentTop">أجمل أراضي للإيجار</option>
+          <option value="saleTop">أجمل أراضي للبيع</option>
+          <option value="bestContractors">أفضل المقاولين</option>
+        </select>
       </div>
-      <p class="muted" id="bannersEmpty" hidden>لا توجد طلبات حاليًا.</p>
-    </section>
+      <div style="flex:1 1 220px;display:flex;align-items:flex-end;gap:.6rem">
+        <label class="muted" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
+          <input type="checkbox" name="enabled"> تفعيل السكشن
+        </label>
+      </div>
+    </div>
 
+    <div>
+      <label class="muted">عنوان السكشن (اختياري)</label>
+      <input class="input" name="title" placeholder="مثال: أجمل المزارع للإيجار">
+    </div>
+
+    <hr>
+
+    <div class="muted"><strong>العناصر (حتى 3):</strong></div>
+    <div id="hs-items" style="display:grid;gap:.6rem"></div>
+    <button type="button" id="hs-add-item" class="btn btn--ghost btn--sm">+ إضافة عنصر</button>
+
+    <div style="display:flex;gap:.5rem;margin-top:.4rem">
+      <button class="btn btn--ok" type="submit">حفظ السكشن</button>
+      <button class="btn btn--ghost" type="reset">إلغاء</button>
+    </div>
+  </form>
+
+  <div style="margin:.8rem 0 .4rem"><strong>المعاينة/المحفوظ</strong></div>
+  <div id="hs-view" style="display:grid;gap:.8rem"></div>
+</section>
+    <!-- 3) Banners -->
+    
     <!-- 4) Subs & Permissions -->
     <section id="view-subs" class="panel">
       <div class="head"><h2>الاشتراكات والصلاحيات</h2></div>
       <div class="table-wrap">
+        <div style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0 .8rem">
+  <label class="muted">الحالة:</label>
+  <select id="subsStatus" class="input" style="width:220px">
+    <option value="pending" selected>قيد المراجعة</option>
+    <option value="approved">مقبول</option>
+    <option value="rejected">مرفوض</option>
+  </select>
+</div>
+
         <table>
           <thead><tr><th>الاسم</th><th>الإيميل</th><th>النوع</th><th>الصلاحيات</th><th style="width:180px">تحرير</th></tr></thead>
           <tbody id="subsBody"></tbody>
@@ -185,14 +260,36 @@
     </section>
 
     <!-- 5) History -->
-    <section id="view-history" class="panel" style="display: none;">
-      <div class="head"><h2>سجلّ التعديلات والموافقات</h2></div>
-      <div id="historyList" class="card"></div>
-      <button id="clearHistory" class="btn btn--ghost btn--sm" style="margin-top:.6rem">تفريغ السجل</button>
-    </section>
+    <section id="view-history" class="panel">
+      <div class="head"><h2>إدارة البنرات الترويجية (Swiper)</h2></div>
+
+  <div class="card" style="display:grid;gap:.6rem;max-width:720px">
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      <input id="bnr-enabled" type="checkbox" /> تفعيل عرض البنرات في الموقع
+    </label>
+
+    <form id="bnr-add-form" style="display:grid;gap:.5rem">
+      <div><label class="muted">صورة (رابط)</label><input class="input" name="img" required></div>
+      <div><label class="muted">العنوان</label><input class="input" name="title"></div>
+      <div><label class="muted">النص</label><textarea class="input" name="text" rows="3"></textarea></div>
+      <div><label class="muted">الرابط</label><input class="input" name="link"></div>
+      <div><label class="muted">نص الزر</label><input class="input" name="btn" value="التفاصيل"></div>
+      <button class="btn btn--ok" type="submit">إضافة بانر</button>
+    </form>
+
+    <hr>
+
+    <div>
+      <h3 class="title">البنرات الحالية</h3>
+      <div id="bnr-list" style="display:grid;gap:.6rem"></div>
+      <p id="bnr-empty" class="muted">لا توجد بنرات بعد.</p>
+    </div>
+  </div>
+</section>
 <% var _promo = (typeof promo !== 'undefined' && promo) ? promo : {}; %>
 
     <!-- 6) Admin settings -->
+   
     <!-- 6) Admin settings -->
 <section id="view-settings" class="panel">
   <div class="head"><h2>إضافة بانرات</h2></div>
@@ -774,13 +871,13 @@ async function apiRejectSub(id, note){
   return res.json();
 }
 
-  async function renderSubs(){
+ async function renderSubs(){
   subsBody.innerHTML = '';
   let rows = [];
-  try { rows = await apiGetSubs('pending'); } catch { rows = []; }
+  try { rows = await apiGetSubs(subsStatus?.value || 'pending'); } catch { rows = []; }
 
   if (!rows.length){
-    subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك معلّقة.</td></tr>`;
+    subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك لهذه الحالة.</td></tr>`;
     return;
   }
 
@@ -804,6 +901,8 @@ async function apiRejectSub(id, note){
     subsBody.appendChild(tr);
   });
 }
+
+subsStatus?.addEventListener('change', renderSubs);
 subsBody?.addEventListener('click', async (e)=>{
   const btn = e.target.closest('button[data-act="sub-approve"][data-sub]');
   if (!btn) return;
@@ -903,8 +1002,354 @@ subsBody?.addEventListener('submit', async (e)=>{
   qs('#logoutBtn')?.addEventListener('click', ()=> toast('تم تسجيل الخروج (تجريبي)','warn'));
 })();
 </script>
+<script>
+(async function bannerAdmin(){
+  const $  = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
+  const listBox = $('#bnr-list');
+  const empty   = $('#bnr-empty');
+  const form    = $('#bnr-add-form');
+  const enabled = $('#bnr-enabled');
 
+  async function load(){
+    try{
+      const r = await fetch('/admin/promo/banners', { headers:{'Accept':'application/json'} });
+      const j = await r.json();
+      if(!j.ok) throw 0;
+      const d = j.data || {enabled:false, items:[]};
+      enabled.checked = !!d.enabled;
+      render(d.items);
+    }catch(_){ render([]); }
+  }
+
+  function render(items){
+    listBox.innerHTML = '';
+    if(!items.length){ empty.hidden = false; return; }
+    empty.hidden = true;
+    items
+      .slice().sort((a,b)=>(a.order||0)-(b.order||0))
+      .forEach(it=>{
+        const el = document.createElement('div');
+        el.style.cssText='border:1px solid #e5e7f0;border-radius:12px;padding:.6rem;display:grid;grid-template-columns:140px 1fr;gap:.6rem;align-items:center';
+        el.innerHTML = `
+          <div style="width:140px;height:90px;border-radius:10px;overflow:hidden;background:#0b1a13">
+            <img src="${it.img}" alt="" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <div>
+            <div style="font-weight:800">${it.title||'—'}</div>
+            <div class="muted" style="font-size:.95rem;white-space:pre-wrap">${it.text||''}</div>
+            <div style="display:flex;gap:.4rem;margin-top:.4rem">
+              <a class="btn btn--ghost btn--sm" href="${it.link||'#'}" target="_blank" rel="noopener">فتح الرابط</a>
+              <button class="btn btn--danger btn--sm" data-del="${it._id}">حذف</button>
+            </div>
+          </div>`;
+        listBox.appendChild(el);
+      });
+  }
+
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const payload = Object.fromEntries(fd.entries());
+    try{
+      const r = await fetch('/admin/promo/banners', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+      form.reset(); load();
+    }catch(_){ alert('تعذر إضافة البانر'); }
+  });
+
+  enabled?.addEventListener('change', async ()=>{
+    try{
+      const r = await fetch('/admin/promo/banners/enabled', {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ enabled: enabled.checked })
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+    }catch(_){ alert('تعذر تحديث التفعيل'); enabled.checked = !enabled.checked; }
+  });
+
+  listBox?.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-del]');
+    if(!btn) return;
+    if(!confirm('حذف هذا البانر؟')) return;
+    try{
+      const r = await fetch('/admin/promo/banners/'+btn.dataset.del, { method:'DELETE' });
+      const j = await r.json(); if(!j.ok) throw 0;
+      load();
+    }catch(_){ alert('تعذر الحذف'); }
+  });
+
+  load();
+})();
+</script>
+<script>
+(async function heroAdmin(){
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+  const list  = $('#hero-list');
+  const empty = $('#hero-empty');
+  const form  = $('#hero-add');
+
+  async function load(){
+    try{
+      const r = await fetch('/admin/hero/slides', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      render(j.data||[]);
+    }catch{ render([]); }
+  }
+  function render(items){
+    list.innerHTML = '';
+    if(!items.length){ empty.hidden=false; return; }
+    empty.hidden = true;
+    items.forEach(it=>{
+      const el = document.createElement('div');
+      el.style.cssText = 'border:1px solid #e5e7f0;border-radius:12px;padding:.6rem;display:grid;grid-template-columns:140px 1fr;gap:.6rem;align-items:center';
+      el.innerHTML = `
+        <div style="width:140px;height:90px;border-radius:10px;overflow:hidden;background:#0b1a13">
+          <img src="${it.img}" alt="" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="font-weight:800">${it.title||'—'}</div>
+            <label class="muted" style="display:flex;gap:.35rem;align-items:center">
+              <input type="checkbox" data-on="${it._id}" ${it.enabled?'checked':''}> مفعّل
+            </label>
+          </div>
+          <div class="muted" style="font-size:.95rem;white-space:pre-wrap">${it.lead||''}</div>
+          <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center">
+            <label class="muted">الترتيب:</label>
+            <input type="number" value="${it.order||0}" data-order="${it._id}" class="input" style="width:110px">
+            <button class="btn btn--danger btn--sm" data-del="${it._id}">حذف</button>
+          </div>
+        </div>`;
+      list.appendChild(el);
+    });
+  }
+
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const payload = Object.fromEntries(fd.entries());
+    try{
+      const r = await fetch('/admin/hero/slides', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+      form.reset(); load();
+    }catch{ alert('تعذّر الإضافة'); }
+  });
+
+  list?.addEventListener('change', async (e)=>{
+    const idOn = e.target.closest('input[type="checkbox"][data-on]')?.dataset.on;
+    const idOrd= e.target.closest('input[type="number"][data-order]')?.dataset.order;
+    try{
+      if (idOn){
+        await fetch('/admin/hero/slides/'+idOn, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ enabled: e.target.checked })
+        });
+      }
+      if (idOrd){
+        const val = Number(e.target.value)||0;
+        await fetch('/admin/hero/slides/'+idOrd, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ order: val })
+        });
+      }
+    }catch{ /* تجاهل */ }
+  });
+
+  list?.addEventListener('click', async (e)=>{
+    const id = e.target.closest('[data-del]')?.dataset.del;
+    if(!id) return;
+    if(!confirm('حذف هذه الشريحة؟')) return;
+    try{
+      const r = await fetch('/admin/hero/slides/'+id, { method:'DELETE' });
+      const j = await r.json(); if(!j.ok) throw 0;
+      load();
+    }catch{ alert('تعذّر الحذف'); }
+  });
+
+  load();
+})();
+</script>
+<script>
+(function quickLinksAdmin(){
+  const $ = (s,r=document)=>r.querySelector(s);
+  const form = $('#ql-form');
+  if(!form) return;
+
+  async function load(){
+    try{
+      const r = await fetch('/admin/quick-links', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      const d = j.data || {};
+      form.saleImg.value        = d.saleImg        || '';
+      form.rentImg.value        = d.rentImg        || '';
+      form.contractorsImg.value = d.contractorsImg || '';
+      form.enabled.checked      = !!d.enabled;
+    }catch(_){
+      // افتراضيات فارغة
+    }
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const payload = Object.fromEntries(fd.entries());
+    payload.enabled = form.enabled.checked;
+    try{
+      const r = await fetch('/admin/quick-links', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json();
+      if(!j.ok) throw 0;
+      alert('تم الحفظ');
+    }catch(_){
+      alert('تعذر الحفظ');
+    }
+  });
+
+  load();
+})();
+</script>
+<script>
+(function homeShowcaseAdmin(){
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+  const form   = $('#hs-form');
+  const itemsB = $('#hs-items');
+  const addBtn = $('#hs-add-item');
+  const viewB  = $('#hs-view');
+
+  const itemTpl = (data={}, idx=0)=>`
+    <div class="card" data-idx="${idx}" style="display:grid;gap:.5rem">
+      <div style="display:grid;grid-template-columns:160px 1fr;gap:.6rem;align-items:center">
+        <div style="width:160px;height:96px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#0b1a13">
+          <img src="${data.img||''}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.src='/public/assets/farm-default.jpg'">
+        </div>
+        <div style="display:grid;gap:.5rem">
+          <input class="input" name="img"   placeholder="رابط الصورة" value="${data.img||''}">
+          <input class="input" name="title" placeholder="العنوان"     value="${data.title||''}">
+          <input class="input" name="desc"  placeholder="الوصف"       value="${data.desc||''}">
+          <input class="input" name="link"  placeholder="رابط الزر"   value="${data.link||''}">
+          <input class="input" name="order" type="number" placeholder="الترتيب" value="${Number(data.order||0)}">
+          <button type="button" class="btn btn--danger btn--sm" data-del>حذف العنصر</button>
+        </div>
+      </div>
+    </div>`;
+
+  function readItemsFromUI(){
+    return $$('#hs-items .card').map(card=>{
+      const get = n=>card.querySelector(`[name="${n}"]`)?.value || '';
+      return {
+        img: get('img'), title:get('title'), desc:get('desc'), link:get('link'),
+        order: Number(get('order')||0)
+      };
+    });
+  }
+
+  function fillUIItems(items){
+    itemsB.innerHTML = '';
+    items.slice(0,3).forEach((it,i)=> itemsB.insertAdjacentHTML('beforeend', itemTpl(it,i)));
+  }
+
+  addBtn?.addEventListener('click', ()=>{
+    const cur = readItemsFromUI();
+    if (cur.length >= 3) return alert('الحد الأقصى 3 عناصر');
+    itemsB.insertAdjacentHTML('beforeend', itemTpl({}, cur.length));
+  });
+
+  itemsB?.addEventListener('click', (e)=>{
+    const del = e.target.closest('[data-del]');
+    if(!del) return;
+    del.closest('.card')?.remove();
+  });
+
+  async function loadAll(){
+    try{
+      const r = await fetch('/admin/home/showcase', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      renderView(j.data || []);
+    }catch{ renderView([]); }
+  }
+
+  function renderView(rows){
+    viewB.innerHTML = rows.map(row=>{
+      const items = (row.items||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
+      return `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>${row.key}</strong>
+            <span class="pill ${row.enabled?'p--approved':'p--pending'}">${row.enabled?'مفعل':'غير مفعل'}</span>
+          </div>
+          <div class="muted">${row.title||''}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.5rem">
+            ${items.map(it=>`
+              <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+                <img src="${it.img}" alt="" style="width:100%;height:120px;object-fit:cover">
+                <div style="padding:.5rem">
+                  <div style="font-weight:800">${it.title||'—'}</div>
+                  <div class="muted" style="font-size:.92rem">${it.desc||''}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // تعبئة النموذج عند تغيير المفتاح (تحميل بياناته لتعديلها)
+  form?.key?.addEventListener('change', async ()=>{
+    const key = form.key.value;
+    try{
+      const r = await fetch('/admin/home/showcase', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      const row = (j.data||[]).find(x=>x.key===key);
+      form.enabled.checked = !!row?.enabled;
+      form.title.value = row?.title || '';
+      fillUIItems(row?.items || []);
+    }catch{
+      form.enabled.checked = true;
+      form.title.value = '';
+      fillUIItems([]);
+    }
+  });
+
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const key = form.key.value;
+    const payload = {
+      title: form.title.value || '',
+      enabled: form.enabled.checked,
+      items: readItemsFromUI()
+    };
+    try{
+      const r = await fetch('/admin/home/showcase/'+encodeURIComponent(key), {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+      alert('تم الحفظ');
+      loadAll();
+    }catch{ alert('تعذر الحفظ'); }
+  });
+
+  // إقلاع
+  (async function init(){
+    // حمّل أول سكشن افتراضيًا
+    await loadAll();
+    form.key.dispatchEvent(new Event('change'));
+  })();
+})();
+</script>
 
 </body>
 </html>

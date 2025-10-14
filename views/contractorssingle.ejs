@@ -9,6 +9,11 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 </head>
 <body>
+<style>
+  /* لتحسين مظهر الشرائح داخل سويبر أفضل التقييم */
+  .toprated-swiper .swiper-slide { height: auto; }
+  .toprated-swiper .contractor-card { height: 100%; display: block; }
+</style>
 
   <%- include('partials/navbar', { active: 'contractors' }) %>
 
@@ -183,43 +188,54 @@
 <section class="section" aria-labelledby="top-rated-title">
   <div class="container">
     <h2 id="top-rated-title" style="margin-bottom:1rem;">أفضل المقاولين تقييماً</h2>
-    <div class="cards-grid">
-      <% topRated.forEach(function(c){ 
-           const name = c.name || c.companyName || '—';
-           const avatar = c.avatar || '/Public/assets/contractors/default.jpg';
-           const svc = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '—');
-           const reg = c.region || c.city || '—';
-           const avg = Number(c.ratingAvg || 0).toFixed(2);
-           const cnt = Number(c.ratingCount || 0);
-      %>
-        <article class="contractor-card">
-          <a class="contractor-link" href="/contractor/<%= c._id %>">
-            <header class="contractor-head">
-              <figure class="avatar">
-                <img src="<%= avatar %>" alt="صورة <%= name %>" loading="lazy" />
-              </figure>
-              <div class="head-info">
-                <h3 class="name"><%= name %></h3>
-                <p class="specialization"><%= svc %></p>
-                <p class="region"><%= reg %></p>
-                <p class="muted">⭐ <strong dir="ltr"><%= avg %></strong> (<%= cnt %>)</p>
-              </div>
-              <% if (c.subscriptionTier==='VIP') { %>
-                <span class="badge badge--tier">VIP</span>
-              <% } else if (c.subscriptionTier==='Premium') { %>
-                <span class="badge badge--tier">مميز</span>
-              <% } %>
-            </header>
-            <div class="contractor-body">
-              <button class="btn btn-outline" type="button">عرض المقاول</button>
-            </div>
-          </a>
-        </article>
-      <% }) %>
+
+    <div class="swiper toprated-swiper" dir="rtl">
+      <div class="swiper-wrapper">
+        <% topRated.forEach(function(c){ 
+             const name   = c.name || c.companyName || '—';
+             const avatar = c.avatar || '/Public/assets/contractors/default.jpg';
+             const svc    = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '—');
+             const reg    = c.region || c.city || '—';
+             const avg    = Number(c.ratingAvg || 0).toFixed(2);
+             const cnt    = Number(c.ratingCount || 0);
+        %>
+          <div class="swiper-slide">
+            <article class="contractor-card">
+              <a class="contractor-link" href="/contractor/<%= c._id %>">
+                <header class="contractor-head">
+                  <figure class="avatar">
+                    <img src="<%= avatar %>" alt="صورة <%= name %>" loading="lazy" />
+                  </figure>
+                  <div class="head-info">
+                    <h3 class="name"><%= name %></h3>
+                    <p class="specialization"><%= svc %></p>
+                    <p class="region"><%= reg %></p>
+                    <p class="muted">⭐ <strong dir="ltr"><%= avg %></strong> (<%= cnt %>)</p>
+                  </div>
+                  <% if (c.subscriptionTier==='VIP') { %>
+                    <span class="badge badge--tier">VIP</span>
+                  <% } else if (c.subscriptionTier==='Premium') { %>
+                    <span class="badge badge--tier">مميز</span>
+                  <% } %>
+                </header>
+                <div class="contractor-body">
+                  <button class="btn btn-outline" type="button">عرض المقاول</button>
+                </div>
+              </a>
+            </article>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- عناصر التحكم -->
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+      <div class="swiper-pagination"></div>
     </div>
   </div>
 </section>
 <% } %>
+
   <%- include('partials/promo', { promoContractors }) %>
  <!--
 
@@ -307,6 +323,21 @@
       pagination: { el: '.swiper-pagination', clickable: true },
       navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
     });
+      new Swiper('.toprated-swiper', {
+    slidesPerView: 1.05,
+    spaceBetween: 16,
+    watchOverflow: true,
+    pagination: { el: '.toprated-swiper .swiper-pagination', clickable: true },
+    navigation: {
+      nextEl: '.toprated-swiper .swiper-button-next',
+      prevEl: '.toprated-swiper .swiper-button-prev'
+    },
+    breakpoints: {
+      640:  { slidesPerView: 2,   spaceBetween: 18 },
+      1024: { slidesPerView: 3,   spaceBetween: 20 },
+      1280: { slidesPerView: 3.5, spaceBetween: 22 }
+    }
+  });
   </script>
   <script>
 (() => {

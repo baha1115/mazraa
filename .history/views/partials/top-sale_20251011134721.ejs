@@ -1,0 +1,109 @@
+<%
+  const list = Array.isArray(items) ? items : [];
+
+  // معرّف فريد لمنع تضارب السويبرات المتعددة
+  const uid = 'top-sale-' + Math.random().toString(36).slice(2,9);
+
+  function assetPath(u){
+    u = (u || '').toString().trim();
+    if (!u) return '/public/assets/farm-default.jpg';
+    if (/^data:/i.test(u) || /^https?:\/\//i.test(u)) return u;
+    u = u.replace(/\\/g,'/')
+         .replace(/^\/?Public\//,'/public/')
+         .replace(/\/assests\//gi,'/assets/');
+    if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
+    if (u.startsWith('/assets/')) return '/public' + u;
+    if (u.startsWith('/')) return '/public' + u;
+    return '/uploads/' + u;
+  }
+%>
+
+<section id="<%= uid %>" class="section">
+  <div class="container">
+    <h3>أكثر مزارع البيع مشاهدة</h3>
+
+    <% if (!list.length) { %>
+      <p class="muted">لا توجد عناصر.</p>
+    <% } else { %>
+      <div class="swiper top-sale-swiper" dir="rtl">
+        <div class="swiper-wrapper">
+          <% list.forEach(f => {
+               const cover = assetPath((Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg');
+               const loc   = f.city ? ((f.area || '') + ' — ' + f.city) : (f.area || '—');
+               const price = Number(f.price || 0);
+               const views = Number(f.views || 0);
+          %>
+            <div class="swiper-slide">
+              <article class="farm-card">
+                <a class="farm-link" href="/farm/<%= f._id %>">
+                  <figure class="farm-media" style="position:relative">
+                    <img
+                      src="<%= cover %>"
+                      alt="<%= f.title || 'مزرعة' %>"
+                      loading="lazy"
+                      onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+                  </figure>
+                  <div class="farm-body">
+                    <h4 class="farm-title"><%= f.title || '—' %></h4>
+                    <p class="farm-location"><%= loc %></p>
+                    <p class="farm-price"><%= price ? ('$' + price.toLocaleString('en')) : '—' %></p>
+                    <div class="card-meta">👁️ <%= views.toLocaleString('en') %></div>
+                    <!-- زر التفاصيل داخل نفس الرابط (span حتى لا نضع رابطاً داخل رابط) -->
+                    <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
+                  </div>
+                </a>
+              </article>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="swiper-button-prev" aria-label="السابق"></div>
+        <div class="swiper-button-next" aria-label="التالي"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<script type="module">
+  import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
+
+  (function(){
+    const root = document.getElementById('<%= uid %>');
+    if (!root) return;
+    const container = root.querySelector('.top-sale-swiper');
+    if (!container || container.__inited) return;
+    container.__inited = true;
+
+    new Swiper(container, {
+      slidesPerView: 1.05,
+      spaceBetween: 12,
+      watchOverflow: true,
+      pagination: {
+        el: container.querySelector('.swiper-pagination'),
+        clickable: true
+      },
+      navigation: {
+        nextEl: container.querySelector('.swiper-button-next'),
+        prevEl: container.querySelector('.swiper-button-prev')
+      },
+      breakpoints: {
+        480:  { slidesPerView: 1.3, spaceBetween: 14 },
+        640:  { slidesPerView: 2.1, spaceBetween: 16 },
+        1024: { slidesPerView: 3.2, spaceBetween: 18 },
+        1280: { slidesPerView: 4.2, spaceBetween: 20 }
+      }
+    });
+  })();
+</script>
+
+<style>
+  #<%= uid %> .swiper-slide { height: auto; }
+  #<%= uid %> .farm-card { display:block; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; background:#fff }
+  #<%= uid %> .farm-card img { width:100%; height:220px; object-fit:cover }
+  #<%= uid %> .farm-body { padding:.8rem }
+  #<%= uid %> .farm-title { margin:.2rem 0 .4rem; font-size:1.05rem }
+  #<%= uid %> .farm-location, #<%= uid %> .farm-price { margin:0 0 .25rem; color:#475569 }
+  /* زر بسيط مثل صفحاتك الأخرى */
+  #<%= uid %> .btn.btn-outline{display:inline-block;border:1px solid #0f172a;border-radius:10px;padding:.35rem .7rem;text-decoration:none;color:#0f172a;margin-top:.35rem}
+</style>

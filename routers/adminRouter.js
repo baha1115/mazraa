@@ -6,9 +6,12 @@ const Farm = require('../models/farmModel');
 const Contractor = require('../models/contactorsModel');
 const User = require('../models/usermodels');
 const SubscriptionRequest = require('../models/subscriptionRequest');
+const HomeQuickLinks = require('../models/HomeQuickLinks');
 const PromoConfig = require('../models/PromoConfig');
 const { enforceExpiry } = require('../utils/enforceExpiry');
 const { checkQuota } = require('../utils/quota');
+const HeroSlide = require('../models/HeroSlide');
+const HomeShowcase = require('../models/homeShowcase');
 // استخدم مايلرين منفصلين مع أسماء مستعارة واضحة
 const { sendMail: sendFarmMail } = require('../utils/mailer');   // SMTP للأراضي
 const { sendMail: sendContractorMail } = require('../utils/mailer2'); // SMTP للمقاولين
@@ -409,6 +412,208 @@ router.post('/promo/contractors', requireAdmin, async (req,res)=>{
     user: req.session.user,
     promo: fresh || {}
   });
+});
+const PromoBanner = require('../models/PromoBanner');
+// لو عندك ميدل وير requires:
+
+// احضر/أنشئ وثيقة البنرات الافتراضية
+async function getOrInit(key='home-banners'){
+  let doc = await PromoBanner.findOne({ key }).lean();
+  if (!doc) {
+    doc = await PromoBanner.create({ key, enabled: true, items: [] });
+    doc = doc.toObject();
+  }
+  return doc;
+}
+
+// GET: عرض البنرات JSON (لوحة الأدمن تحتاجه)
+router.get('/promo/banners', requireAdmin, async (req, res) => {
+  try {
+    const doc = await getOrInit('home-banners');
+    res.json({ ok:true, data: doc });
+  } catch (e) {
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+// POST: إضافة بانر جديد
+router.post('/promo/banners', requireAdmin, async (req, res) => {
+  try {
+    const { img, title, text, link, btn } = req.body;
+    if (!img) return res.status(400).json({ ok:false, msg:'img required' });
+
+    const doc = await PromoBanner.findOneAndUpdate(
+      { key: 'home-banners' },
+      { $setOnInsert: { key:'home-banners', enabled: true },
+        $push: { items: { img, title, text, link, btn, order: Date.now() } } },
+      { new:true, upsert:true }
+    );
+    res.json({ ok:true, data: doc });
+  } catch (e) {
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+// PATCH: تفعيل/تعطيل البنرات
+router.patch('/promo/banners/enabled', requireAdmin, async (req, res) => {
+  try {
+    const enabled = !!req.body.enabled;
+    const doc = await PromoBanner.findOneAndUpdate(
+      { key: 'home-banners' },
+      { $set: { enabled } },
+      { new:true, upsert:true }
+    );
+    res.json({ ok:true, data: doc });
+  } catch (e) {
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+// DELETE: حذف عنصر بانر معيّن
+router.delete('/promo/banners/:itemId', requireAdmin, async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const doc = await PromoBanner.findOneAndUpdate(
+      { key:'home-banners' },
+      { $pull: { items: { _id: itemId } } },
+      { new:true }
+    );
+    res.json({ ok:true, data: doc });
+  } catch (e) {
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+
+/** GET: جميع الشرائح (JSON) */
+router.get('/hero/slides', requireAdmin, async (req,res)=>{
+  try{
+    const rows = await HeroSlide.find({ enabled: { $ne: false } })
+      .sort({ order: 1, createdAt: 1 }).lean();
+    res.json({ ok:true, data: rows });
+  }catch(e){
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+/** POST: إضافة شريحة */
+router.post('/hero/slides', requireAdmin, async (req,res)=>{
+  try{
+    const { img, title, lead } = req.body;
+    const max = await HeroSlide.findOne().sort({ order:-1 }).lean();
+    const row = await HeroSlide.create({
+      img, title, lead,
+      order: (max?.order ?? -1) + 1
+    });
+    res.json({ ok:true, data: row });
+  }catch(e){
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+/** PATCH: تعديل شريحة */
+router.patch('/hero/slides/:id', requireAdmin, async (req,res)=>{
+  try{
+    const row = await HeroSlide.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new:true }
+    );
+    if(!row) return res.status(404).json({ ok:false, msg:'Not found' });
+    res.json({ ok:true, data: row });
+  }catch(e){
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+/** DELETE: حذف شريحة */
+router.delete('/hero/slides/:id', requireAdmin, async (req,res)=>{
+  try{
+    const row = await HeroSlide.findByIdAndDelete(req.params.id);
+    if(!row) return res.status(404).json({ ok:false, msg:'Not found' });
+    res.json({ ok:true });
+  }catch(e){
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+/** PATCH: ترتيب دفعي */
+router.patch('/hero/slides/reorder', requireAdmin, async (req,res)=>{
+  try{
+    // body: [{_id, order}, ...]
+    const arr = Array.isArray(req.body) ? req.body : [];
+    const ops = arr.map(it => ({
+      updateOne: { filter:{ _id: it._id }, update:{ $set:{ order: Number(it.order)||0 } } }
+    }));
+    if (ops.length) await HeroSlide.bulkWrite(ops);
+    res.json({ ok:true });
+  }catch(e){
+    console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+
+// GET (JSON): جلب الإعدادات الحالية
+router.get('/quick-links', async (req, res) => {
+  try {
+    const doc = await HomeQuickLinks.findOne({ key: 'default' }).lean();
+    res.json({ ok:true, data: doc || null });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+// POST: حفظ/تحديث الإعدادات
+router.post('/quick-links', async (req, res) => {
+  try {
+    const payload = {
+      saleImg:        (req.body.saleImg || '').trim(),
+      rentImg:        (req.body.rentImg || '').trim(),
+      contractorsImg: (req.body.contractorsImg || '').trim(),
+      enabled:        !!req.body.enabled
+    };
+    const doc = await HomeQuickLinks.findOneAndUpdate(
+      { key: 'default' },
+      { $set: payload },
+      { upsert: true, new: true }
+    );
+    res.json({ ok:true, data: doc });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+// جلب كل الأقسام (للداشبورد)
+router.get('/home/showcase', async (req,res) => {
+  const rows = await HomeShowcase.find({}).lean();
+  res.json({ ok:true, data: rows });
+});
+
+// إنشاء/تحديث سكشن (upsert)
+router.post('/home/showcase/:key', async (req,res) => {
+  const { key } = req.params; // rentTop | saleTop | bestContractors
+  const { title, enabled, items } = req.body; // items = [{img,title,desc,link,order}, ...]
+  const doc = await HomeShowcase.findOneAndUpdate(
+    { key },
+    { $set: { title: title||'', enabled: !!enabled, items: Array.isArray(items)?items:[] } },
+    { new:true, upsert:true }
+  );
+  res.json({ ok:true, data:doc });
+});
+
+// حذف عنصر داخل سكشن بالاندكس (اختياري)
+router.delete('/home/showcase/:key/item/:idx', async (req,res)=>{
+  const { key, idx } = req.params;
+  const doc = await HomeShowcase.findOne({ key });
+  if(!doc) return res.json({ ok:false, msg:'Not found' });
+  const i = Number(idx);
+  if (Number.isInteger(i) && i>=0 && i<doc.items.length){
+    doc.items.splice(i,1);
+    await doc.save();
+  }
+  res.json({ ok:true, data:doc });
 });
 
 module.exports = router;

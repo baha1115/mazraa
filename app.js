@@ -212,22 +212,7 @@ app.locals.transporter = transporter;
 app.get('/login',  (req, res) => res.render('signup'));
 app.get('/signup', (req, res) => res.render('signup'));
 
-// صفحة قائمة الإيجار (الـcards تُجلب بـ fetch من /api)
-app.get('/rent', (req, res) => {
-  res.render('rent'); // تأكد من وجود views/rent.ejs
-});
 
-// صفحة تفاصيل مزرعة إيجار
-app.get('/rent/farm/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const farm = await Farm.findOne({ _id: id, kind: 'rent', status: 'approved' }).lean();
-    return res.render('singlefarm', { farm }); // تأكد من وجود views/singlefarm.ejs
-  } catch (e) {
-    console.error(e);
-    return res.render('singlefarm', { farm: null });
-  }
-});
 
 // ---------------------------------------------------------------------------
 // ربط الراوترات (بعد تهيئة كل شيء)

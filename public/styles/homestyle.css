@@ -615,3 +615,38 @@ html[lang="ar"] body{
   .farm-footer .footer-top{grid-template-columns: 1fr}
   .footer-links{grid-template-columns:repeat(2,1fr)}
 }
+/* Testimonials — Swiper */
+.testimonials-swiper { margin-top: 1rem; }
+.testimonials-swiper .swiper-slide { height: auto; }
+
+.testimonials-swiper .swiper-button-prev,
+.testimonials-swiper .swiper-button-next {
+  color: var(--ink-70);
+}
+.testimonials-swiper .swiper-button-prev:hover,
+.testimonials-swiper .swiper-button-next:hover {
+  color: var(--ink);
+}
+.testimonials-swiper .swiper-pagination-bullet {
+  background: #cbd5e1;
+  opacity: .9;
+}
+.testimonials-swiper .swiper-pagination-bullet-active {
+  background: var(--green-600);
+}
+/* Hero as Swiper */
+.hero-swiper-section { position: relative; }
+.hero-swiper { width: 100%; }
+.hero-swiper .swiper-slide { height: auto; }
+
+/* نعيد استخدام تصميم .hero القديم داخل كل شريحة */
+.hero-slide { min-height: 68vh; position: relative; }
+
+/* نضبط أسهم/نقاط سويبر للـHero */
+.hero-swiper .swiper-button-prev,
+.hero-swiper .swiper-button-next {
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,.35);
+}
+.hero-swiper .swiper-pagination-bullet { background: rgba(255,255,255,.7); }
+.hero-swiper .swiper-pagination-bullet-active { background: #fff; }

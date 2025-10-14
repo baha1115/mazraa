@@ -1,228 +1,3 @@
-حسنا الان هاهو الكود نظمه دون افساده
-// app.js
-require('dotenv').config();
-const path = require('path');
-const express = require('express');
-const mongoose = require('mongoose');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const nodemailer = require('nodemailer');
-const methodOverride = require('method-override');
-const { verifyTransporter } = require('./utils/mailer2');
-const cookieParser = require('cookie-parser');
-
-
-verifyTransporter(); // يطبع جاهزية SMTP
-// مثال
-const Farm = require('./models/farmModel');
-const User = require('./models/usermodels'); 
-
-
-
-// Routers
-const loginRouter   = require('./routers/loginrouter');
-const publicRouter  = require('./routers/public');       // إن كان عندك هذا الراوتر
-const adminRouter   = require('./routers/adminRouter');  // راوتر الأدمن
-const ownerRouter   = require('./routers/ownerRouter');  // راوتر المالك (إن وجد)
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-
-// السماح باستخدام ?_method=PATCH/DELETE من الفورم
-app.use(methodOverride('_method'));
-app.use(cookieParser());
-// ملفات ثابتة (لو عندك مجلد public)
-app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Body parsers (لازم قبل الراوترات)
-app.use(express.urlencoded({ extended:true, limit: '25mb' })); // أو 50mb حسب حاجتك
-app.use(express.json({ limit: '25mb' }));
-const { randomUUID } = require('crypto');
-
-// لو تستخدم proxy/NGINX
-// حتى لا تُحذف الكوكيز ذات secure خطأً
-app.set('trust proxy', 1);
-
-// كوكي مميز للزائر (لا مشكلة فيه)
-app.use((req, res, next) => {
-  if (!req.cookies.anonId) {
-    res.cookie('anonId', randomUUID(), {
-      httpOnly: false,
-      sameSite: 'lax',
-      maxAge: 365*24*60*60*1000
-    });
-  }
-  next();
-});
-
-app.use(session({
-  name: 'sid',
-  secret: process.env.SESSION_SECRET || 'devsecret',
-  resave: false,
-  saveUninitialized: false,
-  rolling: false,              // مهم: لا تحدّث الكوكي كل طلب
-  cookie: {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    // secure: true  // فعّلها على HTTPS
-  },
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || process.env.MONGO_URI, // تأكد من الاسم الصحيح
-    collectionName: 'sessions',
-    ttl: 14 * 24 * 60 * 60,         // عمر الجلسة في المتجر (ثواني)
-    disableTouch: true,             // <<< أهم سطر: لا تعمل touch
-    autoRemove: 'interval',
-    autoRemoveInterval: 10          // تنظيف دوري (بالدقائق)
-  })
-}));
-
-// تنظيف الكوكي الفاسدة تلقائيًا بدل إسقاط الطلب
-app.use((err, req, res, next) => {
-  if (err && /Unable to find the session to touch/i.test(err.message)) {
-    res.clearCookie('sid', { sameSite: 'lax' });
-    return next(); // تابع بدون إسقاط الطلب
-  }
-  next(err);
-});
-
-// View engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// اتصال MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB error:', err));
-
-// تمرير المستخدم/الرسائل للمشاهد (مرّة واحدة فقط)
-// بعد إعدادات الجلسة وقبل تعريف الراوترات
-// غيّر المسار حسب مشروعك
-
-app.use(async (req, res, next) => {
-  try {
-    const u = req.session?.user || null;
-
-    // اجلب نسخة محدثة من قاعدة البيانات لو المستخدم موجود
-    if (u?._id) {
-      const fresh = await User.findById(u._id, 'subscriptionTier plan role name email').lean();
-      if (fresh) {
-        const tier = fresh.subscriptionTier || fresh.plan || 'Basic';
-        // حدّث الجلسة لو تغيّرت
-        if (req.session.user.subscriptionTier !== tier) {
-          req.session.user.subscriptionTier = tier;
-        }
-        // ارفع نسخة آمنة للـEJS
-        res.locals.safeUser = {
-          ...req.session.user,
-          subscriptionTier: tier,
-        };
-      } else {
-        res.locals.safeUser = u;
-      }
-    } else {
-      res.locals.safeUser = null;
-    }
-
-    // بقية الـlocals المعتادة
-    res.locals.currentUser  = req.session?.user || null;
-    res.locals.isAuth       = !!req.session?.user;
-    res.locals.role         = req.session?.user?.role || 'guest';
-    res.locals.isAdmin      = req.session?.user?.role === 'admin';
-    res.locals.isContractor = req.session?.user?.role === 'contractor';
-    res.locals.isOwner      = req.session?.user?.role === 'owner';
-
-    // رسائل فلاش
-    res.locals.msg  = req.session.msg  || '';
-    res.locals.type = req.session.type || '';
-    delete req.session.msg;
-    delete req.session.type;
-
-    next();
-  } catch (e) {
-    console.warn('session sync error:', e);
-    next();
-  }
-});
-
-app.get('/login',       (req,res)=> res.render('signup')); 
-app.get('/signup',       (req,res)=> res.render('signup')); 
-// إعداد مرسل البريد (اختياري)
-const transporter = process.env.SMTP_HOST ? nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: false,
-  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-}) : null;
-
-if (transporter) {
-  transporter.verify((err) => {
-    if (err) console.error('SMTP verify error:', err);
-    else console.log('✅ SMTP ready to send');
-  });
-}
-app.locals.transporter = transporter;
-// loginrouter.js
-       // الرئيسية
-
-
-
-// راوترات الموقع (بعد كل الإعدادات بالأعلى)
-app.use('/admin', adminRouter);     // لوحة التحكم للأدمن وكل REST الخاصة بالموافقة
-app.use('/', loginRouter);          // تسجيل/دخول/خروج
-app.use('/', publicRouter); // صفحات عامة (إيجار/مقاولون) إن وجد
-app.use('/',ownerRouter);       // مسارات المالك إن وجدت
-
-// صفحة القائمة: الإيجار
-app.get('/rent', (req, res) => {
-  res.render('rent'); // تأكد أن اسم الملف هو rent.ejs
-});
-
-// صفحة التفاصيل: الإيجار
-app.get('/rent/farm/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    // نجيب مزرعة “للإيجار” ومقبولة
-    const farm = await Farm.findOne({ _id: id, kind: 'rent', status: 'approved' })
-      .lean();
-
-    return res.render('singlefarm', { farm }); // تأكد من اسم الملف singlefarm.ejs
-  } catch (e) {
-    console.error(e);
-    return res.render('singlefarm', { farm: null });
-  }
-});
-// /api/farms/rent  (كل المزارع للإيجار المقبولة)
-// ?vipOnly=1      (فقط VIP)
-app.get('/api/farms/rent', async (req, res) => {
-  try {
-    const vipOnly = String(req.query.vipOnly || '') === '1';
-
-    // نجلب المزارع للإيجار + مقبولة
-    let rows = await Farm.find({ kind: 'rent', status: 'approved' })
-      .populate('owner', 'subscriptionTier') // يجلب اشتراك المالك
-      .sort({ createdAt: -1 })
-      .lean();
-
-    // نضيف ownerTier من حساب المالك (Basic/Premium/VIP)
-    rows = rows.map(f => ({
-      ...f,
-      ownerTier: (f.owner?.subscriptionTier || 'Basic')
-    }));
-
-    if (vipOnly) {
-      rows = rows.filter(f => f.ownerTier === 'VIP');
-    }
-
-    return res.json({ ok: true, data: rows });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ ok: false, msg: 'Server error' });
-  }
-});
-
-app.listen(port, () => {
-  console.log(`🚀 Server on http://localhost:${port}`);
-});
+حسنا الان اريد ان اظهر 3 سكشنات في الصفحة الرءيسية كل سكشن يمثل سلايدر يتكون من 3 كروت الكرت يتكون من خلفية صورة  وعنوان ووصف وزر يحيل الى مكان معين 
+هده السلايدات يتحكم في محتواها من داشبورد الادمن 
+حيث يكون السكشن الاول والكروت التي فيه خاصة باجمل الاراضي للكراء  بعدها السكشن الثاني اجمل الاراضي للبيع بعدها السكشن الثالث افضل المقاولين 
