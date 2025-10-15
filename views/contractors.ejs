@@ -147,81 +147,8 @@
   </section>
 
   <%- include('partials/promo', { promoContractors: (typeof promoContractors!=='undefined'?promoContractors:null) }) %>
- <!--
+ <%- include('partials/footer') %>
 
-   ========================
-       الفوتر
-   ======================== -->
-<footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
-  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
-
-  <div class="footer-top">
-    <!-- الشعار والوصف المختصر -->
-    <div class="footer-brand">
-      <div class="logo-mark" aria-hidden="true">🌿</div>
-      <div>
-        <strong class="brand-name">مزرعتي</strong>
-        <p class="brand-desc">
-          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
-        </p>
-      </div>
-    </div>
-
-    <!-- روابط سريعة -->
-    <nav class="footer-links" aria-label="روابط سريعة">
-      <div>
-        <h3 class="footer-title">تصفح</h3>
-        <ul>
-          <li><a href="/sale">مزارع للبيع</a></li>
-          <li><a href="/rent">مزارع للإيجار</a></li>
-          <li><a href="/contractors">المقاولون</a></li>
-          <li><a href="/plans">الاشتراكات</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="footer-title">الدعم</h3>
-        <ul>
-          <li><a href="/about">من نحن</a></li>
-          <li><a href="/about#faq">الأسئلة الشائعة</a></li>
-          <li><a href="/about#privacy">سياسة الخصوصية</a></li>
-          <li><a href="/about#terms">الشروط والأحكام</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="footer-title">تواصل</h3>
-        <ul class="contact">
-          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
-          <li><a href="tel:+963900000000">+963 900 000</a></li>
-          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
-        </ul>
-      </div>
-    </nav>
-  </div>
-
-  <div class="footer-bottom">
-    <div class="social" aria-label="شبكات اجتماعية">
-      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
-      </a>
-      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
-      </a>
-      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
-      </a>
-    </div>
-
-    <p class="copyright">
-      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
-    </p>
-
-    <div class="mini-links">
-      <a href="/about">الخصوصية</a>
-      <span class="dot" aria-hidden="true">•</span>
-      <a href="/about">الشروط</a>
-    </div>
-  </div>
-</footer>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
     const $  = (s,ctx=document)=>ctx.querySelector(s);
