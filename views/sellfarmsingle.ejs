@@ -199,6 +199,33 @@ const hasOwnerFarms = ownerList.length > 0;
     </div>
   </section>
   <% } %>
+<!-- ضع هذا البلوك قبل قسم "الوصف الكامل" الحالي -->
+<section class="section" aria-labelledby="quick-desc-title">
+  <div class="container">
+    <h2 id="quick-desc-title" style="margin-bottom:.75rem">تفاصيل سريعة</h2>
+
+    <% if ((farm.poolDesc||'').trim()) { %>
+      <article class="card" style="margin-bottom:.6rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;">
+        <h3 style="margin:.1rem 0 .4rem;">وصف المسبح</h3>
+        <p><%= farm.poolDesc %></p>
+      </article>
+    <% } %>
+
+    <% if ((farm.amenitiesDesc||'').trim()) { %>
+      <article class="card" style="margin-bottom:.6rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;">
+        <h3 style="margin:.1rem 0 .4rem;">وصف المرافق</h3>
+        <p><%= farm.amenitiesDesc %></p>
+      </article>
+    <% } %>
+
+    <% if ((farm.buildingDesc||'').trim()) { %>
+      <article class="card" style="margin-bottom:.6rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;">
+        <h3 style="margin:.1rem 0 .4rem;">وصف البناء</h3>
+        <p><%= farm.buildingDesc %></p>
+      </article>
+    <% } %>
+  </div>
+</section>
 
   <!-- الوصف -->
   <section id="description" class="section description" aria-labelledby="desc-title">

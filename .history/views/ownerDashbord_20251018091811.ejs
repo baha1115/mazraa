@@ -106,8 +106,8 @@
           <input type="hidden" name="id"/>
 
           <!-- معلومات المالك -->
-          <label class="field"><span class="label">اسم المالك</span><input maxlength="50" name="ownerFirst" class="input" placeholder="الاسم"/></label>
-          <label class="field"><span class="label">اللقب</span><input maxlength="50" name="ownerLast" class="input" placeholder="اللقب"/></label>
+          <label class="field"><span class="label">اسم المالك</span><input name="ownerFirst" class="input" placeholder="الاسم"/></label>
+          <label class="field"><span class="label">اللقب</span><input name="ownerLast" class="input" placeholder="اللقب"/></label>
           <label class="field"><span class="label">رقم واتساب</span><input name="ownerWhatsapp" class="input" placeholder="+9665... أو +9639..." /></label>
 
           <!-- معلومات الأرض -->
@@ -137,21 +137,21 @@
 <!-- داخل <form id="landForm" ...> وقبل الوصف العام -->
 <label class="field field--full">
   <span class="label">وصف المسبح (اختياري)</span>
-  <textarea name="poolDesc" maxlength="500" class="input" rows="3" placeholder="تفاصيل المسبح: الحجم/التجهيز/السلامة…"></textarea>
+  <textarea name="poolDesc" class="input" rows="3" placeholder="تفاصيل المسبح: الحجم/التجهيز/السلامة…"></textarea>
 </label>
 
 <label class="field field--full">
   <span class="label">وصف المرافق (اختياري)</span>
-  <textarea name="amenitiesDesc" maxlength="500" class="input" rows="3" placeholder="مرافق وخدمات …"></textarea>
+  <textarea name="amenitiesDesc" class="input" rows="3" placeholder="مرافق وخدمات: جلسات، شواء، ألعاب، إنارة…"></textarea>
 </label>
 
 <label class="field field--full">
   <span class="label">وصف البناء (اختياري)</span>
-  <textarea name="buildingDesc" class="input" maxlength="500" rows="3" placeholder="تفاصيل البناء …"></textarea>
+  <textarea name="buildingDesc" class="input" rows="3" placeholder="تفاصيل البناء: المساحة، الغرف، التشطيب…"></textarea>
 </label>
 
           <!-- وصف -->
-          <label class="field field--full"><span class="label">وصف</span><textarea name="desc" maxlength="2000" class="input" rows="4"></textarea></label>
+          <label class="field field--full"><span class="label">وصف</span><textarea name="desc" class="input" rows="4"></textarea></label>
       <!-- داخل <form id="landForm" ...> -->
 <label class="field field--full">
   <span class="label">رابط فيديو (اختياري)</span>
@@ -198,11 +198,11 @@
           <div class="grid2">
             <label class="field">
               <span class="label">اسم المالك</span>
-              <input class="input" maxlength="50" name="ownerFirst" placeholder="الاسم" required>
+              <input class="input" name="ownerFirst" placeholder="الاسم" required>
             </label>
             <label class="field">
               <span class="label">اللقب</span>
-              <input class="input" maxlength="50" name="ownerLast" placeholder="اللقب" required>
+              <input class="input" name="ownerLast" placeholder="اللقب" required>
             </label>
           </div>
 
@@ -215,7 +215,7 @@
 
           <label class="field">
             <span class="label">ملاحظات (اختياري)</span>
-            <textarea class="input" maxlength="500" name="notes" rows="3" placeholder="مثال: أرغب بعدد X إعلانات، وقت مناسب للاتصال..."></textarea>
+            <textarea class="input" name="notes" rows="3" placeholder="مثال: أرغب بعدد X إعلانات، وقت مناسب للاتصال..."></textarea>
           </label>
         
           <div class="actions">

@@ -376,6 +376,9 @@ router.post('/owner/lands', requireAuth, async (req, res) => {
       price: Number(b.price) || 0,
 
       photos: Array.isArray(b.photos) ? b.photos : [],
+      poolDesc:      (b.poolDesc      || '').toString().trim(),
+      amenitiesDesc: (b.amenitiesDesc || '').toString().trim(),
+      buildingDesc:  (b.buildingDesc  || '').toString().trim(),
       description: (b.desc || b.description || '').toString().trim(),         // لاحظ: نخزن في description
 
       // 👇 مهم: lat/lng أرقام حقيقية

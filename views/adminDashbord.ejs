@@ -460,6 +460,14 @@ const video = f.videoUrl ? videoBlock(f.videoUrl) : '';
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.35rem 0">
           ${imgs}
         </div>
+${(f.poolDesc||'').trim() ? `
+  <div><h4>وصف المسبح</h4><p style="white-space:pre-wrap">${esc(f.poolDesc)}</p></div>` : ''}
+
+${(f.amenitiesDesc||'').trim() ? `
+  <div><h4>وصف المرافق</h4><p style="white-space:pre-wrap">${esc(f.amenitiesDesc)}</p></div>` : ''}
+
+ ${(f.buildingDesc||'').trim() ? `
+   <div><h4>وصف البناء</h4><p style="white-space:pre-wrap">${esc(f.buildingDesc)}</p></div>` : ''}
 
         <div>
           <p style="white-space:pre-wrap">${esc(f.description || f.desc || '—')}</p>

@@ -20,7 +20,9 @@ views: { type: Number, default: 0 },
 
 
   photos: [String],
-
+  poolDesc: { type: String, default: '' },       // وصف المسبح
+  amenitiesDesc: { type: String, default: '' },  // وصف المرافق
+  buildingDesc: { type: String, default: '' },   // وصف البناء
   description: String,  // استخدم هذا الحقل للنص
   location: {
     lat: Number,

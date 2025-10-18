@@ -41,6 +41,10 @@ const landSchema = Joi.object({
 
   photos: Joi.array().items(Joi.string()).default([]),
 
+   poolDesc: Joi.string().allow(''),
+  amenitiesDesc: Joi.string().allow(''),
+  buildingDesc: Joi.string().allow(''),
+
   description: Joi.string().allow(''),
   desc: Joi.string().allow(''),
 
@@ -116,6 +120,9 @@ router.post('/owner/lands', requireAuth, async (req, res) => {
       price: Number(value.price) || 0,
 
       photos: Array.isArray(value.photos) ? value.photos : [],
+        poolDesc: (value.poolDesc || '').toString().trim(),
+  amenitiesDesc: (value.amenitiesDesc || '').toString().trim(),
+  buildingDesc: (value.buildingDesc || '').toString().trim(),
       description,
       location,
 
@@ -189,6 +196,9 @@ router.patch('/owner/lands/:id', requireAuth, async (req,res)=>{
       size : Number(b.size)||0,
       price: Number(b.price)||0,
       photos: Array.isArray(b.photos) ? b.photos : [],
+        poolDesc: (b.poolDesc || '').toString(),
+  amenitiesDesc: (b.amenitiesDesc || '').toString(),
+  buildingDesc: (b.buildingDesc || '').toString(),
       description: (b.description||b.desc||'').toString(),
       videoUrl: (b.videoUrl||'').trim(),
       ownerInfo: {

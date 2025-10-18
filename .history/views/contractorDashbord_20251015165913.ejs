@@ -135,7 +135,7 @@
           <!-- بيانات المستخدم الأساسية -->
           <label class="field">
             <span class="label">الاسم الكامل</span>
-            <input maxlength="100" type="text" name="name" class="input" required value="<%= safeProfile.name || safeUser.name || '' %>" />
+            <input type="text" name="name" class="input" required value="<%= safeProfile.name || safeUser.name || '' %>" />
             <% if (safeErrors.name){ %><small class="muted" style="color:#b91c1c"><%= safeErrors.name %></small><% } %>
           </label>
 
@@ -153,7 +153,7 @@
       <label class="field">
   <span class="label">المنطقة</span>
   <input
-    name="region" maxlength="80"
+    name="region"
     class="input"
     placeholder="اكتب المنطقة (مثال: ريف دمشق)"
     value="<%= safeProfile?.region || '' %>"
@@ -172,28 +172,28 @@
 
           <label class="field field--full">
             <span class="label">نبذة مختصرة</span>
-            <textarea name="bio" maxlength="1500" rows="3" class="input" placeholder="خبرتك ومهاراتك…"><%= safeProfile.bio || '' %></textarea>
+            <textarea name="bio" rows="3" class="input" placeholder="خبرتك ومهاراتك…"><%= safeProfile.bio || '' %></textarea>
           </label>
 
           <!-- بيانات المؤسسة (بديل بطاقة المقاول) -->
           <label class="field">
             <span class="label">اسم المؤسسة</span>
-            <input maxlength="100" name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
+            <input name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
           </label>
 
           <label class="field">
             <span class="label">الخدمات (افصل بفواصل)</span>
-            <input name="services" maxlength="500" class="input" placeholder="كهرباء زراعية, مضخات, طاقة شمسية" value="<%= Array.isArray(safeProfile.services)? safeProfile.services.join(', ') : (safeProfile.services||'') %>">
+            <input name="services" class="input" placeholder="كهرباء زراعية, مضخات, طاقة شمسية" value="<%= Array.isArray(safeProfile.services)? safeProfile.services.join(', ') : (safeProfile.services||'') %>">
           </label>
 
           <label class="field">
             <span class="label">المحافظة</span>
-            <input name="city" class="input" maxlength="80" value="<%= safeProfile.city || '' %>">
+            <input name="city" class="input" value="<%= safeProfile.city || '' %>">
           </label>
 
           <label class="field field--full">
             <span class="label">الوصف</span>
-            <textarea name="description" maxlength="2000" rows="4" class="input"><%= safeProfile.description || '' %></textarea>
+            <textarea name="description" rows="4" class="input"><%= safeProfile.description || '' %></textarea>
           </label>
      <!-- رابط فيديو (اختياري) -->
 <label class="field field--full">
