@@ -87,10 +87,26 @@
       <form id="sale-filters" class="filters-form" action="#results" method="get" novalidate>
         <div class="filters-grid">
           <!-- الأساسي (يظهر دائمًا) -->
-          <div class="field">
-            <label class="label" for="city">المحافظة</label>
-            <input id="city" name="city" type="text" placeholder="اكتب اسم المحافظة" />
-          </div>
+         <div class="field">
+  <label class="label" for="city">المحافظة</label>
+  <select id="city" name="city" class="input">
+    <option value="">اختر المحافظة…</option>
+    <option>دمشق</option>
+    <option>ريف دمشق</option>
+    <option>حلب</option>
+    <option>حمص</option>
+    <option>حماة</option>
+    <option>اللاذقية</option>
+    <option>طرطوس</option>
+    <option>إدلب</option>
+    <option>دير الزور</option>
+    <option>الحسكة</option>
+    <option>الرقة</option>
+    <option>درعا</option>
+    <option>القنيطرة</option>
+    <option>السويداء</option>
+  </select>
+</div>
 
           <div class="field">
             <label class="label" for="area">المنطقة</label>
@@ -161,6 +177,7 @@
              const titleTxt = esc(farm.title || '—');
              const hasVideo = !!(farm.videoUrl);
              const isVip    = (farm?.owner?.subscriptionTier === 'VIP') || (farm?.ownerTier === 'VIP');
+             if (tierSSR === 'VIP') { return; } // ⬅️ لا نرسم VIP في السلايدر العام
         %>
           <div class="swiper-slide">
             <article class="farm-card">
@@ -205,7 +222,8 @@
   </div>
 </section>
 
-<%- include('partials/promo', { promoContractors }) %>
+  <%- include('partials/promo', { promoBottom }) %>
+
 
 <%- include('partials/footer') %>
 
@@ -416,18 +434,29 @@ function applyFilters(){
     return okArea && okCity && okPrice && okSize;
   };
 
-  const filteredSale = allSale.filter(pass);
-  const filteredVip  = vipAll.filter(pass);
-  renderSale(filteredSale);
-  renderVip(filteredVip);
+ const filteredSale = allSale
+  .filter(pass)
+  .filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
+const filteredVip  = vipAll.filter(pass);
+renderSale(filteredSale);
+renderVip(filteredVip);
+
 }
 
 /* ======= بدء ======= */
 async function init(){
   try {
-    const apiSale = await fetchJSON('/api/farms/sale'); // كل البيع المقبول
-    allSale = Array.isArray(apiSale) ? apiSale : [];
-    renderSale(allSale);
+   const apiSale = await fetchJSON('/api/farms/sale'); // كلّ البيع المقبول
+allSale = Array.isArray(apiSale) ? apiSale : [];
+
+// ⬅️ استبعد VIP من السلايدر العام
+const nonVipSale = allSale.filter(f => {
+  const tier = (f?.owner?.subscriptionTier) || f.ownerTier || 'Basic';
+  return tier !== 'VIP';
+});
+
+renderSale(nonVipSale);
+
   } catch(e){ console.warn('sale fetch error:', e); renderSale([]); }
 
   try {

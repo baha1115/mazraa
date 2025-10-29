@@ -550,3 +550,33 @@ input:focus, select:focus{outline:none;border-color:transparent;box-shadow:var(-
   padding-bottom: .5rem;
   border-bottom: 1px solid #111; /* خط واضح */
 }
+/* ===== Fix promo banner layout (override) ===== */
+.promo-banner{
+  width: min(1100px, 96%);
+  margin: 1.25rem auto 2rem;
+  grid-template-columns: 360px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 20px;
+}
+.promo-banner .promo-media{
+  aspect-ratio: auto;
+  height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0b1a13;
+  box-shadow: 0 8px 22px rgba(0,0,0,.08);
+}
+.promo-banner .promo-media img{ width:100%; height:100%; object-fit:cover }
+.promo-banner .promo-body{
+  padding:.25rem 0; display:flex; flex-direction:column; align-items:flex-start; text-align:start; gap:.5rem;
+}
+.promo-banner .promo-title{ margin:0; font-weight:900; font-size:clamp(1.1rem, 2.2vw, 1.4rem) }
+.promo-banner .promo-text{ margin:0; color:#475569; line-height:1.7 }
+.promo-banner .btn{ margin-top:.25rem; border-radius:12px }
+@media (max-width:900px){
+  .promo-banner{ grid-template-columns:1fr; gap:12px }
+  .promo-banner .promo-media{ height:200px }
+  .promo-banner .promo-body{ align-items:center; text-align:center }
+}

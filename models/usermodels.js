@@ -15,7 +15,8 @@ const userSchema = new Schema({
   plan:             { type: String, enum: ['Basic','Premium','VIP'], default: 'Basic' }, // اختياري للتوافق
  // ⭐ جديد:
   subscriptionUntil: { type: Date, default: null },
-
+subscriptionExpiresAt: { type: Date, default: null },  // نهاية الاشتراك الحالي
+subscriptionGraceUntil: { type: Date, default: null }, // نهاية مهلة السماح أسبوع
   password: { type: String, required: true, minlength: 6 },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },

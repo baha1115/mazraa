@@ -7,7 +7,90 @@ const crypto = require('crypto');
 const User = require('../models/usermodels');
 const Farm = require('../models/farmModel');
 const  SubscriptionRequest = require('../models/subscriptionRequest');
+const SubscriptionConfig = require('../models/SubscriptionConfig');
+// === رفع صور المقاولين بالذاكرة + sharp ===
+const path = require('path');
+const fs = require('fs/promises');
+const multer = require('multer');
+const sharp = require('sharp');
+
+const uploadMem = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB للصورة الواحدة
+});
+
+async function saveSharpImageToUploads(fileBuffer, subdir, baseName = Date.now().toString()) {
+  const uploadsDir = path.join(__dirname, '..', 'uploads', subdir);
+  await fs.mkdir(uploadsDir, { recursive: true });
+
+  const outName = `${baseName}.jpg`;
+  const outFull = path.join(uploadsDir, outName);
+
+  await sharp(fileBuffer)
+    .resize({ width: 1600, withoutEnlargement: true })
+    .jpeg({ quality: 80, mozjpeg: true })
+    .toFile(outFull);
+
+  return `/uploads/${subdir}/${outName}`;
+}
+
+/**
+ * يبني مصفوفة الصور النهائية للمقاول:
+ * - يدمج الروابط النصّية القادمة من body (photos أو photos[])
+ * - يضيف أي صور رُفعت (req.files.photos) بعد ضغطها بـ sharp
+ * - يزيل التكرار
+ */
+async function buildContractorPhotosArray(req) {
+  // 1) روابط جاهزة من الـ body
+  let urls = [];
+  if (Array.isArray(req.body.photos)) {
+    urls = req.body.photos.map(s => String(s).trim()).filter(Boolean);
+  } else if (typeof req.body.photos === 'string' && req.body.photos.trim()) {
+    // دعم إرسال photos كسلسلة JSON مثل ["a","b"] أو كسلسلة مفصولة بفواصل
+    try {
+      const parsed = JSON.parse(req.body.photos);
+      if (Array.isArray(parsed)) {
+        urls = parsed.map(s => String(s).trim()).filter(Boolean);
+      }
+    } catch {
+      urls = String(req.body.photos).split(',').map(s => s.trim()).filter(Boolean);
+    }
+  }
+
+  // 2) صور مرفوعة: خزّنها في /uploads/contractors
+  const uploaded = [];
+  const upFiles = (req.files && req.files.photos) ? req.files.photos : [];
+  for (const f of upFiles) {
+    const p = await saveSharpImageToUploads(f.buffer, 'contractors');
+    uploaded.push(p);
+  }
+
+  // 3) دمج بدون تكرار
+  return Array.from(new Set([ ...urls, ...uploaded ]));
+}
+
+async function contractorPlanLimit(plan){
+  const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
+  const limitByTier = {
+    Basic:   cfg?.basicLimit   ?? 1,
+    Premium: cfg?.premiumLimit ?? 2,
+    VIP:     cfg?.vipLimit     ?? 999,
+  };
+  return limitByTier[plan] ?? 1;
+}
 // ========= Helpers =========
+// --- normalize phone helper (أعلى الملف) ---
+function normalizePhone(raw = '') {
+  let s = String(raw).trim();
+  s = s.replace(/\s+/g, '');
+  if (s.startsWith('+')) {
+    s = '+' + s.slice(1).replace(/\D/g, '');
+  } else {
+    s = s.replace(/\D/g, '');
+  }
+  return s.length >= 6 ? s : '';
+}
+
 function isAdminEmail(email) {
   const list = (process.env.ADMIN_EMAILS || '')
     .split(',')
@@ -110,30 +193,43 @@ router.post('/signup', validate(signupSchema, 'signup', {}, 'signup'), async (re
   try {
     const { name, email, phone, password, role } = req.validated;
 
-    const exists = await User.findOne({ email });
+    const normPhone = normalizePhone(phone);
+
+    // منع تكرار البريد أو الهاتف
+    const exists = await User.findOne({
+      $or: [
+        { email: String(email).toLowerCase() },
+        ...(normPhone ? [{ phone: normPhone }] : [])
+      ]
+    });
+
     if (exists) {
       return res.status(400).render('signup', {
         tab: 'signup',
-        errors: { email: 'البريد مستخدم بالفعل' },
+        errors: { email: 'البريد أو رقم الهاتف مستخدم بالفعل' },
         old: req.body,
-        msg: 'البريد مستخدم بالفعل',
+        msg: 'البريد أو رقم الهاتف مستخدم بالفعل',
         type: 'error',
       });
     }
 
-    const user = await User.create({ name, email, phone, password, role });
+    const user = await User.create({
+      name,
+      email: String(email).toLowerCase(),
+      phone: normPhone || undefined,
+      password,
+      role
+    });
 
-    // ضع الدور في الجلسة (إعطاء admin عبر .env إن كان البريد ضمن القائمة)
     const sessionRole = isAdminEmail(email) ? 'admin' : user.role;
-
     req.session.user = {
       _id: user._id.toString(),
-      id: user._id.toString(), // للمرونة
+      id: user._id.toString(),
       name: user.name,
       email: user.email,
       role: sessionRole,
     };
-    req.session.msg = `مرحبًا ${user.name}! تم إنشاء الحساب.`;
+    req.session.msg  = `مرحبًا ${user.name}! تم إنشاء الحساب.`;
     req.session.type = 'success';
 
     if (sessionRole === 'admin') return res.redirect('/dashboard/admin');
@@ -156,7 +252,23 @@ router.post('/login', validate(loginSchema, 'signup', {}, 'login'), async (req, 
   try {
     const { identifier, password } = req.validated;
 
-    const user = await User.findOne({ email: identifier });
+    const id = String(identifier || '').trim();
+    const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id);
+    const by = looksLikeEmail
+      ? { email: id.toLowerCase() }
+      : { phone: normalizePhone(id) };
+
+    if (!looksLikeEmail && !by.phone) {
+      return res.status(400).render('signup', {
+        tab: 'login',
+        errors: { identifier: 'أدخل بريدًا صحيحًا أو رقم هاتف صالحاً' },
+        old: req.body,
+        msg: 'أدخل بريدًا صحيحًا أو رقم هاتف صالحاً',
+        type: 'error',
+      });
+    }
+
+    const user = await User.findOne(by);
     if (!user) {
       return res.status(400).render('signup', {
         tab: 'login',
@@ -179,7 +291,6 @@ router.post('/login', validate(loginSchema, 'signup', {}, 'login'), async (req, 
     }
 
     const sessionRole = isAdminEmail(user.email) ? 'admin' : user.role;
-
     req.session.user = {
       _id: user._id.toString(),
       id: user._id.toString(),
@@ -187,7 +298,7 @@ router.post('/login', validate(loginSchema, 'signup', {}, 'login'), async (req, 
       email: user.email,
       role: sessionRole,
     };
-    req.session.msg = `مرحبًا ${user.name}! تم تسجيل الدخول.`;
+    req.session.msg  = `مرحبًا ${user.name}! تم تسجيل الدخول.`;
     req.session.type = 'success';
 
     if (sessionRole === 'admin') return res.redirect('/dashboard/admin');
@@ -465,52 +576,80 @@ router.get('/dashboard/owner', requireAuthPage, requireRole('landowner'), (req,r
 });
 // أبقِ هذه النسخة فقط (التي تنشئ في ContractorRequest)
 // إنشاء/إرسال ملف مقاول للمراجعة مع التحقق من الحصة
-router.post('/contractor/profile', requireAuthApi, async (req,res)=>{
-  try{
-    const {
-      name='', email='', phone='', region='', bio='',
-      companyName='', services=[], city='', description='',
-      avatar='', photos=[], submitForReview, videoUrl = ''
-    } = req.body || {};
+// إنشاء/إرسال ملف مقاول للمراجعة — يدعم رفع avatar + photos مع sharp
+router.post(
+  '/contractor/profile',
+  requireAuthApi,
+  uploadMem.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'photos', maxCount: 12 }
+  ]),
+  async (req,res)=>{
+    try{
+      const {
+        name='', email='', phone='', region='', bio='',
+        companyName='', services=[], city='', description='',
+        // لو أرسلت روابط جاهزة مع الفورم:
+        videoUrl = ''
+      } = req.body || {};
 
-    // تحقق من خطة المستخدم وحد النشر
-    const userId = req.session.user._id;
-    const user = await User.findById(userId).lean();
-    const plan = (user?.plan) || 'Basic';
-    const limit = contractorPlanLimit(plan);
-    const used = await ContractorRequest.countDocuments({
-      user: userId,
-      status: { $in: ['pending','approved'] }
-    });
-    if (limit !== Infinity && used >= limit) {
-      return res.status(403).json({
-        ok:false,
-        msg:`بلغت حدّ النشر المسموح في خطتك (${plan}). قم بالترقية لزيادة الحد.`
+      const userId = req.session.user._id;
+
+      // جلب الخطة لحساب الحصة
+      const user = await User.findById(userId).lean();
+      const plan = (user?.subscriptionTier || user?.plan || 'Basic');
+
+      // حدّ المقاولين (مقروء من SubscriptionConfig في مكان آخر كما عندك)
+      const used = await ContractorRequest.countDocuments({
+        user: userId,
+        status: { $in: ['pending','approved'] }
       });
+
+      // استعمل نفس دالتك الحالية للحدّ (contractorPlanLimit(plan)) إن كانت معرفة أعلى الملف
+      const limit = await contractorPlanLimit(plan);
+      if (limit !== Infinity && used >= limit) {
+        return res.status(403).json({
+          ok:false,
+          msg:`بلغت حدّ النشر المسموح في خطتك (${plan}). قم بالترقية لزيادة الحد.`
+        });
+      }
+
+      // 1) avatar (ملف مرفوع أو رابط نصّي احتياطي)
+      let avatar = '';
+      if (req.files?.avatar?.[0]?.buffer) {
+        avatar = await saveSharpImageToUploads(req.files.avatar[0].buffer, 'contractors', 'avatar_'+Date.now());
+      } else if (req.body.avatar) {
+        avatar = String(req.body.avatar).trim();
+      }
+
+      // 2) photos (دمج روابط + ملفات مضغوطة)
+      const photos = await buildContractorPhotosArray(req);
+
+      const doc = await ContractorRequest.create({
+        user: userId,
+        name, email, phone, region, bio,
+        companyName,
+        services: Array.isArray(services)
+                  ? services
+                  : String(services||'').split(',').map(s=>s.trim()).filter(Boolean),
+        city,
+        description,
+        avatar,
+        photos,
+        videoUrl: (videoUrl||'').trim(),
+        status: 'pending',
+        reviewNote: '',
+        approvedAt: null,
+        rejectedAt: null,
+      });
+
+      return res.json({ ok:true, msg:'تم إرسال طلبك للمراجعة', data: doc });
+    }catch(err){
+      console.error(err);
+      return res.status(500).json({ ok:false, msg:'تعذر الحفظ' });
     }
-
-    const doc = await ContractorRequest.create({
-      user: userId,
-      name, email, phone, region, bio,
-      companyName,
-      services: Array.isArray(services) ? services
-              : String(services||'').split(',').map(s=>s.trim()).filter(Boolean),
-      city, description, avatar,
-      photos: Array.isArray(photos) ? photos : [],
-      videoUrl: (videoUrl||'').trim(),
-      status: 'pending',
-      reviewNote: '',
-      approvedAt: null,
-      rejectedAt: null,
-    });
-
-    return res.json({ ok:true, msg:'تم إرسال طلبك للمراجعة', data: doc });
-  }catch(err){
-    console.error(err);
-    return res.status(500).json({ ok:false, msg:'تعذر الحفظ' });
   }
-});
-
+);
 
 // === API المقاول: جلب كل طلباتي ككروت ===
 router.get('/contractor/requests', requireAuthApi, async (req,res)=>{
@@ -539,53 +678,74 @@ router.delete('/contractor/requests/:id', requireAuthApi, async (req,res)=>{
   }
 });
 // === API المقاول: تعديل طلب (يعيده إلى pending للمراجعة) ===
-router.patch('/contractor/requests/:id', requireAuthApi, async (req,res)=>{
-  try{
-    // نسمح بتعديل بعض الحقول الشائعة؛ عدّل القائمة حسب حاجتك
-    const {
-      name, email, phone, region, bio,
-      companyName, services, city, description,
-      avatar, photos
-    } = req.body || {};
+// تعديل طلب مقاول — يدعم رفع avatar + photos مع sharp ويعيده pending للمراجعة
+router.patch(
+  '/contractor/requests/:id',
+  requireAuthApi,
+  uploadMem.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'photos', maxCount: 12 }
+  ]),
+  async (req,res)=>{
+    try{
+      const {
+        name, email, phone, region, bio,
+        companyName, services, city, description,
+        // يمكن أيضاً إرسال روابط avatar/photos في الـ body بجانب الملفات
+        videoUrl
+      } = req.body || {};
 
-    // جهّز حقول التحديث فقط مما وصلك
-    const update = {};
-    if (name != null)        update.name = String(name).trim();
-    if (email != null)       update.email = String(email).trim();
-    if (phone != null)       update.phone = String(phone).trim();
-    if (region != null)      update.region = String(region).trim();
-    if (bio != null)         update.bio = String(bio).trim();
-    if (companyName != null) update.companyName = String(companyName).trim();
-    if (city != null)        update.city = String(city).trim();
-    if (description != null) update.description = String(description).trim();
-    if (avatar != null)      update.avatar = String(avatar);
-    if (photos != null)      update.photos = Array.isArray(photos) ? photos : [];
+      const update = {};
 
-    if (services != null) {
-      update.services = Array.isArray(services)
-        ? services
-        : String(services||'').split(',').map(s=>s.trim()).filter(Boolean);
+      // avatar: الأولوية للملف، ثم الرابط النصّي، وإلا لا نغيّر القيمة
+      if (req.files?.avatar?.[0]?.buffer) {
+        update.avatar = await saveSharpImageToUploads(req.files.avatar[0].buffer, 'contractors', 'avatar_'+Date.now());
+      } else if (req.body.avatar != null) {
+        update.avatar = String(req.body.avatar).trim();
+      }
+
+      // photos: ابنِ المصفوفة من الروابط + الملفات الجديدة
+      const photos = await buildContractorPhotosArray(req);
+      if (photos.length || req.body.photos != null || (req.files?.photos?.length || 0) > 0) {
+        update.photos = photos;
+      }
+
+      if (name != null)        update.name = String(name).trim();
+      if (email != null)       update.email = String(email).trim();
+      if (phone != null)       update.phone = String(phone).trim();
+      if (region != null)      update.region = String(region).trim();
+      if (bio != null)         update.bio = String(bio).trim();
+      if (companyName != null) update.companyName = String(companyName).trim();
+      if (city != null)        update.city = String(city).trim();
+      if (description != null) update.description = String(description).trim();
+      if (services != null) {
+        update.services = Array.isArray(services)
+          ? services
+          : String(services||'').split(',').map(s=>s.trim()).filter(Boolean);
+      }
+      if (videoUrl != null)    update.videoUrl = String(videoUrl).trim();
+
+      // أي تعديل → يُعاد للمراجعة
+      update.status     = 'pending';
+      update.reviewNote = '';
+      update.approvedAt = null;
+      update.rejectedAt = null;
+
+      const doc = await ContractorRequest.findOneAndUpdate(
+        { _id: req.params.id, user: req.session.user._id },
+        { $set: update },
+        { new: true }
+      );
+
+      if (!doc) return res.status(404).json({ ok:false, msg:'غير موجود' });
+      return res.json({ ok:true, msg:'تم التعديل وإرسال الطلب للمراجعة', data: doc });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ ok:false, msg:'Server error' });
     }
-
-    // أي تعديل يُعيد الحالة إلى pending حتى تراجعه الإدارة
-    update.status = 'pending';
-    update.reviewNote = '';
-    update.approvedAt = null;
-    update.rejectedAt = null;
-
-    const doc = await ContractorRequest.findOneAndUpdate(
-      { _id: req.params.id, user: req.session.user._id },
-      { $set: update },
-      { new: true }
-    );
-
-    if (!doc) return res.status(404).json({ ok:false, msg:'غير موجود' });
-    return res.json({ ok:true, msg:'تم التعديل وإرسال الطلب للمراجعة', data: doc });
-  }catch(err){
-    console.error(err);
-    return res.status(500).json({ ok:false, msg:'Server error' });
   }
-});
+);
+
 // POST /owner/subscriptions  — يحفظ طلب الاشتراك
 // داخل راوتر المالك (ليس adminRouter)
 router.post('/owner/subscriptions', requireAuth, async (req, res) => {
@@ -611,19 +771,44 @@ function contractorPlanLimit(plan) {
 
 // GET /contractor/quota  — يعرض حدود النشر الحالية
 // /contractor/quota (JSON)
+// GET /contractor/quota  — حصة المقاول حسب الخطة (تُقرأ من SubscriptionConfig)
 router.get('/contractor/quota', requireAuthApi, async (req, res) => {
   try {
     const userId = req.session.user._id;
 
-    // اقرأ الخطة من الحقل الذي يكتبه الأدمن
+    // اجلب المستخدم لمعرفة خطته الحالية
     const u = await User.findById(userId).lean();
-    const plan =
-      (u && (u.subscriptionTier|| u.plan))  // الأفضلية لـ subscriptionTier
-      || 'Basic';
+    // الأفضلية لـ subscriptionTier ثم plan (للتوافق مع القديم)
+    let plan = (u && (u.subscriptionTier || u.plan)) || 'Basic';
 
-    // حدّ النشر لكل خطة
-    const LIMITS = { Basic: 1, Premium: 2, VIP: Infinity };
-    const limitRaw = LIMITS[plan] ?? 1;
+    // طبّع اسم الخطة لتلافي فروقات الكتابة مثل premium/ Premium / VIP / vip
+    const normalizePlan = (s='') => {
+      s = String(s).trim().toLowerCase();
+      if (s === 'vip') return 'VIP';
+      if (s === 'premium') return 'Premium';
+      return 'Basic';
+    };
+    plan = normalizePlan(plan);
+
+    // اقرأ حدود الخطط من SubscriptionConfig (نفس المصدر الذي تستخدمه لوحة التحكم)
+    const cfg = await SubscriptionConfig.findOne({ key: 'sub-plans' })
+      .lean()
+      .catch(() => null);
+
+    // حدود افتراضية آمنة في حال عدم وجود الوثيقة
+    const basicLimit   = cfg?.basicLimit   ?? 1;
+    const premiumLimit = cfg?.premiumLimit ?? 2;
+    const vipLimit     = cfg?.vipLimit     ?? 999;
+
+    // خريطة الحدود وفق الخطة. إذا أردت حدًّا مختلفًا للمقاولين تحديدًا،
+    // عدّل قيم premiumLimit/vipLimit هنا كما تشاء.
+    const limitMap = {
+      Basic:   basicLimit,
+      Premium: premiumLimit,
+      VIP:     Infinity // غير محدود فعليًا
+    };
+
+    const limitRaw = limitMap[plan] ?? basicLimit;
 
     // عدّ الطلبات المستخدمة (pending + approved)
     const used = await ContractorRequest.countDocuments({
@@ -631,17 +816,19 @@ router.get('/contractor/quota', requireAuthApi, async (req, res) => {
       status: { $in: ['pending', 'approved'] }
     });
 
-    // حساب المتبقي بشكل آمن بدون إرسال Infinity في JSON
-    const unlimited = (limitRaw === Infinity);
-    const limit = unlimited ? null : limitRaw;                      // null = غير محدود
+    // لا نرسل Infinity في JSON: إن كانت غير محدودة نُرجع null
+    const unlimited = (limitRaw === Infinity || limitRaw === vipLimit && vipLimit >= 999);
+    const limit = unlimited ? null : Number(limitRaw);
     const left  = unlimited ? null : Math.max(0, (limitRaw - used));
 
-    // (اختياري) حدّث الجلسة بالخطة الجديدة كي تظهر في الـEJS
-    req.session.user.subscriptionTier = plan;
+    // (اختياري) حدّث الجلسة بالخطة كي تظهر في الـ EJS
+    if (req.session.user) {
+      req.session.user.subscriptionTier = plan;
+    }
 
     return res.json({
       ok: true,
-      data: { plan, limit, used, left, unlimited }  // أضفنا unlimited للواجهة
+      data: { plan, limit, used, left, unlimited }
     });
   } catch (e) {
     console.error(e);
@@ -669,45 +856,6 @@ router.post('/contractor/subscriptions', requireAuth, async (req,res)=>{
   }catch(e){
     console.error(e); res.status(500).json({ok:false,msg:'Server error'});
   }
-});
-// GET /admin/subscriptions?status=pending|approved|rejected
-router.get('/admin/subscriptions', requireAdmin, async (req,res)=>{
-  try{
-    const status = (req.query.status||'pending');
-    const rows = await SubscriptionRequest.find({ status }).populate('user','name email');
-    res.json({ok:true, data: rows});
-  }catch(e){ console.error(e); res.status(500).json({ok:false,msg:'Server error'}); }
-});
-
-// PATCH /admin/subscriptions/:id/approve
-router.patch('/admin/subscriptions/:id/approve', requireAdmin, async (req,res)=>{
-  try{
-    const doc = await SubscriptionRequest.findById(req.params.id);
-    if(!doc) return res.status(404).json({ok:false,msg:'غير موجود'});
-    doc.status='approved'; doc.reviewNote=''; await doc.save();
- const plan = normalizePlan(doc.plan);
-    // فعّل الخطة على حساب المستخدم
-    await User.findByIdAndUpdate(doc.user, { $set: { subscriptionTier: doc.plan } });
-
-    res.json({ok:true});
-  }catch(e){ console.error(e); res.status(500).json({ok:false,msg:'Server error'}); }
-});
-
-// PATCH /admin/subscriptions/:id/reject
-router.patch('/admin/subscriptions/:id/reject', requireAdmin, async (req,res)=>{
-  try{
-    const note = (req.body?.note||'').toString();
-    const doc = await SubscriptionRequest.findById(req.params.id);
-    if(!doc) return res.status(404).json({ok:false,msg:'غير موجود'});
-    doc.status='rejected'; doc.reviewNote=note; await doc.save();
-    res.json({ok:true});
-  }catch(e){ console.error(e); res.status(500).json({ok:false,msg:'Server error'}); }
-});
-router.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie('sid');
-    res.redirect('home');
-  });
 });
 
 module.exports = router;

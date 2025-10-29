@@ -20,6 +20,8 @@
     --r:16px; --rs:12px;
     --sh:0 10px 26px rgba(2,44,34,.08);
     --ring:0 0 0 3px rgba(5,150,105,.28);
+    /* استقرار عرض الصفحة عند ظهور/اختفاء سكرول */
+    scrollbar-gutter: stable both-edges;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -31,6 +33,12 @@
       radial-gradient(900px 360px at -10% 120%, #ecfccb 0%, transparent 60%),
       linear-gradient(#f7fff8,#fbfdf6);
   }
+
+  /* منع التمدد الأفقي المفاجئ */
+  html, body { overflow-x: hidden; }
+  .container, .panel, .card { max-width: 100%; overflow-x: clip; }
+  img, video { max-width: 100%; height: auto; }
+
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block}
   button{font:inherit;cursor:pointer}
@@ -98,20 +106,138 @@
   .toast--ok{border-color:#a7f3d0;background:#ecfdf5;color:#065f46}
   .toast--warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
 
+  /* ---- ملف تحميل مخصص (إصلاح الانزلاق) ---- */
+  .filebox{
+    position: relative;                           /* مهم جداً لتقييد الـ input المطلق داخلها */
+    display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+    max-width:100%; overflow:hidden;
+  }
+  /* إخفاء بصري للـ input بدون إنشاء تمرير أفقي */
+  .filebox input[type="file"]{
+    position: absolute !important;                /* يتمركز داخل .filebox فقط */
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  .filebox__btn{
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.55rem .9rem; border-radius:12px; border:1px solid #d1d5db;
+    background:#fff; font-weight:800; cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.05);
+  }
+  .filebox__btn:hover{ background:#f8fafc }
+  .filebox__name{
+    font-size:.95rem; color:#475569; min-width:180px;
+    padding:.4rem .6rem; border:1px dashed #cbd5e1; border-radius:10px; background:#f8fafc;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:100%;
+    direction:ltr; /* لأسماء ملفات إنجليزية/أرقام طويلة */
+  }
+
   @media (max-width:980px){
     .layout{grid-template-columns:1fr}
     .cards{grid-template-columns:1fr}
   }
+
   .site-header { background:#fff; border-bottom:1px solid #eee; }
-.nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
-.nav .navlinks { display:flex; align-items:center; gap:1rem; }
-.nav .btn { padding:.5rem .9rem; border-radius:10px; }
-.badge { font-weight:700; }
-.mobile-menu { padding:.75rem 1rem; background:#fff; border-top:1px solid #eee; }
-.nav-toggle { background:transparent; border:0; }
-#previewMap { height: 260px; border-radius: 12px; border:1px solid #e5e7eb; overflow:hidden; }
+  .nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+  .nav .navlinks { display:flex; align-items:center; gap:1rem; }
+  .nav .btn { padding:.5rem .9rem; border-radius:10px; }
+  .badge { font-weight:700; }
+  .mobile-menu { padding:.75rem 1rem; background:#fff; border-top:1px solid #eee; }
+  .nav-toggle { background:transparent; border:0; }
+  #previewMap { height: 260px; border-radius: 12px; border:1px solid #e5e7eb; overflow:hidden; }
+.showcase-card{
+  border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; background:#fff;
+  display:flex; flex-direction:column; box-shadow:0 8px 20px rgba(0,0,0,.04);
+}
+.showcase-thumb{height:140px; background:#0b1a13}
+.showcase-thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.showcase-body{padding:.6rem .7rem}
+.showcase-title{font-weight:800; margin:.1rem 0}
+.showcase-desc{color:#64748b; font-size:.92rem; min-height:1.6em}
+.showcase-actions{display:flex; gap:.5rem; padding:.6rem; border-top:1px solid #eef2f7}
+/* === Showcase Lists (rentTop / saleTop / bestContractors) === */
+.showcase-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:.9rem;
+}
+
+.showcase-card{
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 10px 22px rgba(2,44,34,.06);
+  overflow:hidden;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  display:flex;
+  flex-direction:column;
+}
+
+.showcase-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 26px rgba(2,44,34,.10);
+  border-color:#cbd5e1;
+}
+
+.showcase-thumb{
+  height:140px;
+  background:#0b1a13;
+}
+
+.showcase-thumb img{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+
+.showcase-body{
+  padding:.7rem .8rem .2rem;
+}
+
+.showcase-title{
+  font-weight:900;
+  margin:.05rem 0 .25rem;
+  color:#0f172a;
+}
+
+.showcase-desc{
+  color:#64748b;
+  font-size:.94rem;
+  min-height:1.6em;
+  line-height:1.45;
+}
+
+.showcase-meta{
+  display:flex; gap:.5rem; align-items:center;
+  padding:.4rem .8rem .8rem;
+}
+
+.showcase-actions{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:.6rem; padding:.6rem .8rem; border-top:1px solid #eef2f7;
+}
+
+.showcase-actions .btn{
+  padding:.4rem .65rem;
+}
+
+.showcase-link{
+  color:#334155; font-size:.92rem; text-decoration:underline;
+}
+.showcase-link:hover{ color:#0f172a; }
+
+@media (max-width:640px){
+  .showcase-thumb{ height:120px; }
+}
 
 </style>
+
 </head>
 <body>
 <%- include('partials/navbar') %>
@@ -165,92 +291,256 @@
 <section id="view-banners" class="panel">
   <div class="head"><h2>سلايدات الهيرو (Hero Swiper)</h2></div>
 
-  <form id="hero-add" class="card" style="display:grid;gap:.6rem;max-width:560px">
-    <div><label class="muted">الصورة (رابط)</label><input class="input" name="img" required></div>
-    <div><label class="muted">العنوان (يدعم span)</label><input class="input" name="title" placeholder='مثال: هل لديك مزرعة؟ <span class="accent">انضم الآن</span>'></div>
-    <div><label class="muted">الوصف</label><textarea class="input" name="lead" rows="3"></textarea></div>
+  <form id="hero-add" class="card" style="display:grid;gap:.6rem;max-width:560px" enctype="multipart/form-data">
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="heroImgFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="heroImgFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (يدعم span)</label>
+      <input class="input" name="title" placeholder='مثال: هل لديك مزرعة؟ <span class="accent">انضم الآن</span>'>
+    </div>
+
+    <div>
+      <label class="muted">الوصف</label>
+      <textarea class="input" name="lead" rows="3"></textarea>
+    </div>
+
     <button class="btn btn--ok" type="submit">إضافة</button>
   </form>
+
+  <script>
+    (function(){
+      const fi = document.getElementById('heroImgFile');
+      const nameEl = document.querySelector('#hero-add .filebox__name');
+      if (fi && nameEl) {
+        fi.addEventListener('change', () => {
+          const f = fi.files && fi.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      }
+    })();
+  </script>
 
   <div style="margin:.8rem 0 .4rem"><strong>القائمة الحالية</strong></div>
   <div id="hero-list" style="display:grid;gap:.6rem"></div>
   <p id="hero-empty" class="muted">لا توجد سلايدات بعد.</p>
+
   <div class="head"><h2>صور “تصفح الأقسام الشائعة” (الصفحة الرئيسية)</h2></div>
 
-  <form id="ql-form" class="card" style="display:grid;gap:.6rem;max-width:560px">
+  <form id="ql-form" class="card" style="display:grid;gap:.6rem;max-width:560px"
+        action="/admin/quick-links" method="post" enctype="multipart/form-data">
     <label class="muted" style="display:flex;gap:.5rem;align-items:center">
       <input type="checkbox" name="enabled"> تفعيل إظهار هذه الكروت
     </label>
+
+    <!-- صورة مزارع للبيع -->
     <div>
       <label class="muted">صورة “مزارع للبيع”</label>
-      <input class="input" name="saleImg" placeholder="/Public/assests/farm4k1.jpg أو رابط كامل">
+      <div class="filebox" dir="rtl">
+        <input id="qlSale" type="file" name="saleImgFile" accept="image/*" required>
+        <label for="qlSale" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
     </div>
+
+    <!-- صورة مزارع للإيجار -->
     <div>
       <label class="muted">صورة “مزارع للإيجار”</label>
-      <input class="input" name="rentImg" placeholder="/Public/assests/farm4k1.jpg أو رابط كامل">
+      <div class="filebox" dir="rtl">
+        <input id="qlRent" type="file" name="rentImgFile" accept="image/*" required>
+        <label for="qlRent" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
     </div>
+
+    <!-- صورة المقاولون -->
     <div>
       <label class="muted">صورة “المقاولون”</label>
-      <input class="input" name="contractorsImg" placeholder="/Public/assests/farm4k1.jpg أو رابط كامل">
+      <div class="filebox" dir="rtl">
+        <input id="qlContractors" type="file" name="contractorsImgFile" accept="image/*" required>
+        <label for="qlContractors" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
     </div>
+
     <div style="display:flex;gap:.5rem">
       <button class="btn btn--ok" type="submit">حفظ</button>
       <button class="btn btn--ghost" type="reset">إلغاء</button>
     </div>
   </form>
-   <div class="head"><h2>سلايدر الصفحة الرئيسية (3 أقسام)</h2></div>
 
-  <form id="hs-form" class="card" style="display:grid;gap:.6rem;max-width:860px">
-    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-      <div style="flex:1 1 220px">
-        <label class="muted">اختر السكشن</label>
-        <select class="input" name="key" required>
-          <option value="rentTop">أجمل أراضي للإيجار</option>
-          <option value="saleTop">أجمل أراضي للبيع</option>
-          <option value="bestContractors">أفضل المقاولين</option>
-        </select>
-      </div>
-      <div style="flex:1 1 220px;display:flex;align-items:flex-end;gap:.6rem">
-        <label class="muted" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
-          <input type="checkbox" name="enabled"> تفعيل السكشن
-        </label>
+  <script>
+    (function(){
+      document.querySelectorAll('#ql-form .filebox').forEach(box=>{
+        const input  = box.querySelector('input[type="file"]');
+        const nameEl = box.querySelector('.filebox__name');
+        if (!input || !nameEl) return;
+        input.addEventListener('change', ()=>{
+          const f = input.files && input.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      });
+    })();
+  </script>
+
+  <div class="head" style="margin-top:1rem"><h3>إضافة عناصر لكل سكشن (Upload)</h3></div>
+
+  <!-- rentTop -->
+  <form action="/admin/home/showcase/rentTop/item" method="post" enctype="multipart/form-data" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <strong>إضافة عنصر إلى: أجمل أراضي للإيجار (rentTop)</strong>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="rentTopFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="rentTopFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
       </div>
     </div>
 
     <div>
-      <label class="muted">عنوان السكشن (اختياري)</label>
-      <input class="input" name="title" placeholder="مثال: أجمل المزارع للإيجار">
+      <label class="muted">العنوان (اختياري)</label>
+      <input class="input" name="title" placeholder="عنوان مختصر">
     </div>
 
-    <hr>
-
-    <div class="muted"><strong>العناصر (حتى 3):</strong></div>
-    <div id="hs-items" style="display:grid;gap:.6rem"></div>
-    <button type="button" id="hs-add-item" class="btn btn--ghost btn--sm">+ إضافة عنصر</button>
-
-    <div style="display:flex;gap:.5rem;margin-top:.4rem">
-      <button class="btn btn--ok" type="submit">حفظ السكشن</button>
-      <button class="btn btn--ghost" type="reset">إلغاء</button>
+    <div>
+      <label class="muted">وصف مختصر (اختياري)</label>
+      <input class="input" name="desc" placeholder="نص تعريفي قصير">
     </div>
+
+    <div>
+      <label class="muted">رابط التفاصيل (اختياري)</label>
+      <input class="input" name="link" placeholder="/rent أو /sale أو رابط خارجي">
+    </div>
+
+    <button type="submit" class="btn btn--ok">+ إضافة للـ rentTop</button>
   </form>
 
-  <div style="margin:.8rem 0 .4rem"><strong>المعاينة/المحفوظ</strong></div>
-  <div id="hs-view" style="display:grid;gap:.8rem"></div>
+  <!-- saleTop -->
+  <form action="/admin/home/showcase/saleTop/item" method="post" enctype="multipart/form-data" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <strong>إضافة عنصر إلى: أجمل أراضي للبيع (saleTop)</strong>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="saleTopFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="saleTopFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (اختياري)</label>
+      <input class="input" name="title" placeholder="عنوان مختصر">
+    </div>
+
+    <div>
+      <label class="muted">وصف مختصر (اختياري)</label>
+      <input class="input" name="desc" placeholder="نص تعريفي قصير">
+    </div>
+
+    <div>
+      <label class="muted">رابط التفاصيل (اختياري)</label>
+      <input class="input" name="link" placeholder="/sale أو /rent أو رابط خارجي">
+    </div>
+
+    <button type="submit" class="btn btn--ok">+ إضافة للـ saleTop</button>
+  </form>
+
+  <!-- bestContractors -->
+  <form action="/admin/home/showcase/bestContractors/item" method="post" enctype="multipart/form-data" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <strong>إضافة عنصر إلى: أفضل المقاولين (bestContractors)</strong>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="bestContractorsFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="bestContractorsFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (اختياري)</label>
+      <input class="input" name="title" placeholder="اسم/عنوان مختصر">
+    </div>
+
+    <div>
+      <label class="muted">وصف مختصر (اختياري)</label>
+      <input class="input" name="desc" placeholder="نص تعريفي قصير">
+    </div>
+
+    <div>
+      <label class="muted">رابط التفاصيل (اختياري)</label>
+      <input class="input" name="link" placeholder="/contractors أو صفحة مقاول">
+    </div>
+
+    <button type="submit" class="btn btn--ok">+ إضافة للـ bestContractors</button>
+  </form>
+
+  <script>
+    (function(){
+      document.querySelectorAll('.filebox').forEach(box=>{
+        const input  = box.querySelector('input[type="file"]');
+        const nameEl = box.querySelector('.filebox__name');
+        if (!input || !nameEl) return;
+        input.addEventListener('change', ()=>{
+          const f = input.files && input.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      });
+    })();
+  </script>
+<!-- ====== عرض العناصر الحالية لكل سكشن + الحذف ====== -->
+<div class="head" style="margin-top:1rem"><h3>العناصر الحالية بكل سكشن</h3></div>
+
+<!-- rentTop LIST -->
+<section class="card" style="display:grid;gap:.6rem;max-width:100%">
+  <strong>أجمل أراضي للإيجار (rentTop)</strong>
+ <div id="list-rentTop" class="showcase-grid">
+    <!-- يمتلئ عبر JS -->
+  </div>
 </section>
+
+<!-- saleTop LIST -->
+<section class="card" style="display:grid;gap:.6rem;max-width:100%">
+  <strong>أجمل أراضي للبيع (saleTop)</strong>
+ <div id="list-saleTop" class="showcase-grid">
+    <!-- يمتلئ عبر JS -->
+  </div>
+</section>
+
+<!-- bestContractors LIST -->
+<section class="card" style="display:grid;gap:.6rem;max-width:100%">
+  <strong>أفضل المقاولين (bestContractors)</strong>
+ <div id="list-bestContractors" class="showcase-grid">
+    <!-- يمتلئ عبر JS -->
+  </div>
+</section>
+
+</section>
+
     <!-- 3) Banners -->
     
     <!-- 4) Subs & Permissions -->
     <section id="view-subs" class="panel">
       <div class="head"><h2>الاشتراكات والصلاحيات</h2></div>
       <div class="table-wrap">
-        <div style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0 .8rem">
+<div style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0 .8rem">
   <label class="muted">الحالة:</label>
   <select id="subsStatus" class="input" style="width:220px">
     <option value="pending" selected>قيد المراجعة</option>
     <option value="approved">مقبول</option>
-    <option value="rejected">مرفوض</option>
   </select>
 </div>
+
+
 
         <table>
           <thead><tr><th>الاسم</th><th>الإيميل</th><th>النوع</th><th>الصلاحيات</th><th style="width:180px">تحرير</th></tr></thead>
@@ -260,16 +550,34 @@
     </section>
 
     <!-- 5) History -->
-    <section id="view-history" class="panel">
-      <div class="head"><h2>إدارة البنرات الترويجية (Swiper)</h2></div>
+   <section id="view-history" class="panel">
+  <div class="head"><h2>إدارة البنرات الترويجية (Swiper)</h2></div>
 
   <div class="card" style="display:grid;gap:.6rem;max-width:720px">
     <label class="muted" style="display:flex;align-items:center;gap:.5rem">
       <input id="bnr-enabled" type="checkbox" /> تفعيل عرض البنرات في الموقع
     </label>
 
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      اختر الصفحة:
+      <select id="bnr-key" class="input" style="width:240px">
+        <option value="sale-banners">صفحة البيع</option>
+        <option value="home-banners" style="display:none;">الصفحة الرئيسية</option>
+        <option value="rent-banners">صفحة الإيجار</option>
+        <option value="contractors-banners">صفحة المقاولين</option>
+      </select>
+    </label>
+
     <form id="bnr-add-form" style="display:grid;gap:.5rem">
-      <div><label class="muted">صورة (رابط)</label><input class="input" name="img" required></div>
+      <div>
+        <label class="muted">صورة</label>
+        <div class="filebox" dir="rtl">
+          <input id="imgFile" type="file" name="imgFile" accept="image/*" />
+          <label for="imgFile" class="filebox__btn">📤 اختر صورة</label>
+          <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+        </div>
+      </div>
+
       <div><label class="muted">العنوان</label><input class="input" name="title"></div>
       <div><label class="muted">النص</label><textarea class="input" name="text" rows="3"></textarea></div>
       <div><label class="muted">الرابط</label><input class="input" name="link"></div>
@@ -285,48 +593,156 @@
       <p id="bnr-empty" class="muted">لا توجد بنرات بعد.</p>
     </div>
   </div>
+
+  <!-- سجل الإداري (placeholder لتفادي null) -->
+  <div class="card" style="margin-top:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>سجل العمليات</strong>
+      <button id="clearHistory" class="btn btn--ghost btn--sm" type="button">تفريغ السجل</button>
+    </div>
+    <div id="historyList" style="margin-top:.6rem"></div>
+  </div>
 </section>
 <% var _promo = (typeof promo !== 'undefined' && promo) ? promo : {}; %>
 
     <!-- 6) Admin settings -->
    
     <!-- 6) Admin settings -->
-<section id="view-settings" class="panel">
+<<section id="view-settings" class="panel">
   <div class="head"><h2>إضافة بانرات</h2></div>
 
-  <form method="post" action="/admin/promo/contractors"
-        class="card" style="display:grid;gap:.6rem;max-width:560px">
+  <form id="bottom-form" class="card" action="/admin/promo/bottom" method="post" enctype="multipart/form-data" style="display:grid;gap:.6rem;max-width:720px">
     <label class="muted" style="display:flex;align-items:center;gap:.5rem">
-      <input type="checkbox" name="enabled" <%= _promo.enabled ? 'checked' : '' %> />
-      تفعيل
+      اختر الصفحة:
+      <select id="btm-key" name="__key__" class="input" style="width:240px">
+        <option value="sale">صفحة البيع</option>
+        <option value="rent">صفحة الإيجار</option>
+        <option value="contractors">صفحة المقاولين</option>
+      </select>
+    </label>
+
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      <input type="checkbox" name="enabled"> تفعيل البانر
     </label>
 
     <div>
-      <label class="muted">صورة</label>
-      <input class="input" name="img" value="<%= _promo.img || '' %>" />
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="bottomImgFile" type="file" name="imgFile" accept="image/*">
+        <label for="bottomImgFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
     </div>
 
-    <div>
-      <label class="muted">العنوان</label>
-      <input class="input" name="title" value="<%= _promo.title || '' %>" />
-    </div>
-
-    <div>
-      <label class="muted">النص</label>
-      <textarea class="input" name="text" rows="4"><%= _promo.text || '' %></textarea>
-    </div>
-
-    <div>
-      <label class="muted">الرابط</label>
-      <input class="input" name="link" value="<%= _promo.link || '' %>" />
-    </div>
+    <div><label class="muted">العنوان</label><input class="input" name="title"></div>
+    <div><label class="muted">النص</label><textarea class="input" name="text" rows="3"></textarea></div>
+    <div><label class="muted">الرابط</label><input class="input" name="link"></div>
+    <div><label class="muted">نص الزر</label><input class="input" name="btn" value="التفاصيل"></div>
 
     <div style="display:flex;gap:.5rem">
       <button class="btn btn--ok" type="submit">حفظ</button>
       <button class="btn btn--ghost" type="reset">إلغاء</button>
     </div>
   </form>
+
+  <!-- معاينة البنر الحالي + زر حذف -->
+  <section class="card" style="display:grid;gap:.6rem;max-width:720px;margin-top:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>المعاينة الحالية</strong>
+      <button id="btm-delete" class="btn btn--danger btn--sm" type="button">حذف البنر لهذه الصفحة</button>
+    </div>
+
+    <div id="btm-current">
+      <p class="muted">لا توجد بيانات بعد.</p>
+    </div>
+  </section>
+
+  <script>
+    (function(){
+      const form   = document.getElementById('bottom-form');
+      const keySel = document.getElementById('btm-key');
+      const nameEl = document.querySelector('#bottom-form .filebox__name');
+      const file   = document.getElementById('bottomImgFile');
+      const view   = document.getElementById('btm-current');
+      const delBtn = document.getElementById('btm-delete');
+
+      // اسم الملف المختار
+      if (file && nameEl) {
+        file.addEventListener('change', () => {
+          const f = file.files && file.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      }
+
+      // أضف ?key=... قبل الإرسال (يحافظ على منطقك الحالي)
+      form.addEventListener('submit', function(){
+        if (!keySel) return;
+        form.action = '/admin/promo/bottom?key=' + encodeURIComponent(keySel.value);
+      });
+
+      // جلب بيانات البنر الحالي
+      async function fetchBottom(){
+        const k = keySel.value || 'sale';
+        const res = await fetch('/admin/promo/bottom?key=' + encodeURIComponent(k), {
+          headers:{ 'accept':'application/json' }
+        });
+        if(!res.ok) throw new Error('load failed');
+        const j = await res.json();
+        return j && j.data ? j.data : { enabled:false };
+      }
+
+      // رسم البطاقة
+      function renderBottomCard(doc){
+        const d = doc || {};
+        if (!d.enabled && !d.img && !d.title && !d.text){
+          view.innerHTML = '<p class="muted">لا توجد بيانات بعد.</p>';
+          return;
+        }
+        const img = d.img ? `<div style="width:160px;height:100px;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#0b1a13"><img src="${d.img}" alt="" style="width:100%;height:100%;object-fit:cover"></div>` : '';
+        view.innerHTML = `
+          <div style="display:grid;grid-template-columns:160px 1fr;gap:.8rem;align-items:center">
+            ${img || '<div class="muted">لا صورة</div>'}
+            <div>
+              <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.25rem">
+                <span class="pill ${d.enabled ? 'p--approved':'p--pending'}">${d.enabled?'مفعل':'غير مفعل'}</span>
+              </div>
+              <div style="font-weight:900">${(d.title||'—')}</div>
+              <div class="muted" style="white-space:pre-wrap">${(d.text||'')}</div>
+              ${d.link ? `<div style="margin-top:.4rem"><a class="btn btn--ghost btn--sm" href="${d.link}" target="_blank" rel="noopener">${d.btn||'التفاصيل'}</a></div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // حذف البنر الحالي (يعيد تعيين الوثيقة لتكون غير مفعّلة وفارغة)
+      async function deleteBottom(){
+        const k = keySel.value || 'sale';
+        const ok = confirm('حذف البنر لهذه الصفحة؟');
+        if(!ok) return;
+        const res = await fetch('/admin/promo/bottom?key=' + encodeURIComponent(k), { method:'DELETE' });
+        if (!res.ok) { alert('تعذر الحذف'); return; }
+        await loadBottom();
+      }
+
+      async function loadBottom(){
+        try{
+          const doc = await fetchBottom();
+          renderBottomCard(doc);
+        }catch(e){
+          console.error(e);
+          view.innerHTML = '<p class="muted">تعذر جلب البيانات.</p>';
+        }
+      }
+
+      keySel.addEventListener('change', loadBottom);
+      delBtn.addEventListener('click', deleteBottom);
+
+      // أول تحميل
+      loadBottom();
+    })();
+  </script>
 </section>
+
 
 </main>
 
@@ -344,6 +760,7 @@
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
   crossorigin=""
 ></script>
+
 <script>
 (() => {
   'use strict';
@@ -816,41 +1233,7 @@ document.addEventListener('click', async (e)=>{
   /* =========================
      3) Banners (Demo)
      ========================= */
-  const bannersBody = qs('#bannersBody'), bannersEmpty = qs('#bannersEmpty');
-  let banners = [
-    {id:'B-01', owner:'مالك L-1001', place:'الصفحة الرئيسية (Hero)', days:7,  img:'assets/banners/b1.jpg', status:'pending'},
-    {id:'B-02', owner:'VIP مقاول',    place:'صفحة المقاولين',        days:14, img:'assets/banners/b2.jpg', status:'pending'}
-  ];
-  function renderBanners(){
-    const pending = banners.filter(b=>b.status==='pending');
-    bannersEmpty.hidden = pending.length>0;
-    bannersBody.innerHTML='';
-    pending.forEach(b=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${esc(b.owner)}</td>
-        <td>${esc(b.place)}</td>
-        <td>${b.days} يوم</td>
-        <td><a href="${b.img}" target="_blank" rel="noopener">فتح</a></td>
-        <td>
-          <button class="btn btn--ok btn--sm" data-bid="${b.id}" data-act="activate">تفعيل</button>
-          <button class="btn btn--danger btn--sm" data-bid="${b.id}" data-act="reject">رفض</button>
-        </td>`;
-      bannersBody.appendChild(tr);
-    });
-  }
-  bannersBody?.addEventListener('click',(e)=>{
-    const btn=e.target.closest('button[data-bid]'); if(!btn) return;
-    const b = banners.find(x=>x.id===btn.dataset.bid); if(!b) return;
-    if (btn.dataset.act==='activate'){
-      b.status='active'; logAction('activate_banner', `تفعيل بانر (${b.place}) لـ ${b.owner}`, {id:b.id});
-      renderBanners(); toast('تم التفعيل','ok');
-    } else {
-      b.status='rejected'; logAction('reject_banner', `رفض بانر (${b.place}) لـ ${b.owner}`, {id:b.id});
-      renderBanners(); toast('تم الرفض','warn');
-    }
-  });
-
+ 
   /* =========================
      4) Subscriptions (Demo)
      ========================= */
@@ -859,11 +1242,12 @@ document.addEventListener('click', async (e)=>{
     {id:'U-OWN', name:'مالك',      email:'owner@example.com',      plan: 'Basic',  perms:['بيع','إيجار','بانر']},
     {id:'U-CON', name:'مقاول (API)', email:'contractor@example.com', plan: 'Basic', perms:['مقاول','بانر']},
   ];
-  async function apiGetSubs(status){
+async function apiGetSubs(status){
   const params = new URLSearchParams({ status: status || 'pending' });
   const res = await fetch('/admin/subscriptions?' + params.toString(), { headers:{'Accept':'application/json'} });
   const json = await res.json();
   if (!json.ok) throw new Error(json.msg || 'failed');
+   console.log('subs rows:', json.data); // ← شوف هل user.subscriptionExpiresAt واصل
   return json.data || [];
 }
 async function apiApproveSub(id){
@@ -879,45 +1263,113 @@ async function apiRejectSub(id, note){
   return res.json();
 }
 
- async function renderSubs(){
-  subsBody.innerHTML = '';
-  let rows = [];
-  try { rows = await apiGetSubs(subsStatus?.value || 'pending'); } catch { rows = []; }
+function fmtDateISO(d){
+  try{ const dt = new Date(d); 
+       if (isNaN(dt)) return '—';
+       return dt.toLocaleDateString('ar-SY', { year:'numeric', month:'2-digit', day:'2-digit' });
+  }catch(_){ return '—'; }
+}
 
-  if (!rows.length){
-    subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك لهذه الحالة.</td></tr>`;
-    return;
+function dedupeLatestApproved(rows){
+    // رتب الأحدث أولاً: approvedAt ثم createdAt احتياطيًا
+    const sorted = rows.slice().sort((a,b)=>{
+      const da = new Date(a.approvedAt || a.createdAt || 0).getTime();
+      const db = new Date(b.approvedAt || b.createdAt || 0).getTime();
+      return db - da; // الأحدث أولاً
+    });
+    const pick = new Map(); // userId -> row
+    for (const r of sorted){
+      const uid = (r.user && (r.user._id || r.user)) || null;
+      if (!uid) continue;
+      if (!pick.has(uid)) pick.set(uid, r); // بما إننا مرتبين، أول مرة = أحدث
+    }
+    return Array.from(pick.values());
   }
 
-  rows.forEach(r=>{
-    const tr = document.createElement('tr');
-    const uname  = r.user?.name || r.name || '—';
-    const email  = r.user?.email || '—';
-    const plan   = r.plan || 'Premium';
-    tr.innerHTML = `
-      <td>${esc(uname)}</td>
-      <td>${esc(email)}</td>
-      <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
-      <td>${esc(r.notes || '')}</td>
-      <td style="display:flex;gap:.4rem;align-items:center">
-        <button class="btn btn--ok btn--sm" data-sub="${r._id}" data-act="sub-approve">موافقة</button>
-        <form class="inline-reject" data-sub="${r._id}" style="display:inline-flex;gap:.35rem;align-items:center">
-          <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:180px;padding:.3rem .5rem"/>
-          <button class="btn btn--danger btn--sm" type="submit">رفض</button>
-        </form>
-      </td>`;
-    subsBody.appendChild(tr);
-  });
-}
+  async function renderSubs(){
+    subsBody.innerHTML = '';
+    let rows = [];
+    const state = (subsStatus?.value || 'pending');
+
+    try { rows = await apiGetSubs(state); } catch { rows = []; }
+
+    // لو الحالة "مقبول"؛ أظهر فقط أحدث طلب مقبول لكل مستخدم
+    if (state === 'approved') {
+      rows = dedupeLatestApproved(rows);
+    }
+
+    if (!rows.length){
+      subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك لهذه الحالة.</td></tr>`;
+      return;
+    }
+
+    const fmt = (d)=>{
+      try{
+        const x = new Date(d);
+        if (isNaN(x)) return '—';
+        return x.toLocaleDateString('ar-EG', { year:'numeric', month:'2-digit', day:'2-digit' });
+      }catch{ return '—'; }
+    };
+
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      const uname  = r.user?.name  || r.name  || '—';
+      const email  = r.user?.email || '—';
+      const plan   = r.plan || r.user?.subscriptionTier || '—';
+      const expAt  = r.user?.subscriptionExpiresAt ? fmt(r.user.subscriptionExpiresAt) : '—';
+
+      if (state === 'approved') {
+        // عند "مقبول": أظهر الخطة + تاريخ الانتهاء فقط (لا أزرار)
+        tr.innerHTML = `
+          <td>${esc(uname)}</td>
+          <td>${esc(email)}</td>
+          <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
+          <td class="muted">ينتهي في: <strong>${esc(expAt)}</strong></td>
+          <td class="muted">—</td>
+        `;
+      } else {
+        // عند "تحت المراجعة": أزرار + اختيار المدة
+        tr.innerHTML = `
+          <td>${esc(uname)}</td>
+          <td>${esc(email)}</td>
+          <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
+          <td>${esc(r.notes || '')}</td>
+          <td style="display:flex;gap:.4rem;align-items:center">
+            <select class="input" data-dur="${r._id}" style="width:120px">
+              <option value="month" selected>شهر</option>
+              <option value="year">سنة</option>
+            </select>
+            <button class="btn btn--ok btn--sm" data-sub="${r._id}" data-act="sub-approve">موافقة</button>
+            <form class="inline-reject" data-sub="${r._id}" style="display:inline-flex;gap:.35rem;align-items:center">
+              <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:180px;padding:.3rem .5rem"/>
+              <button class="btn btn--danger btn--sm" type="submit">رفض</button>
+            </form>
+          </td>
+        `;
+      }
+
+      subsBody.appendChild(tr);
+    });
+  }
+
 
 subsStatus?.addEventListener('change', renderSubs);
 subsBody?.addEventListener('click', async (e)=>{
   const btn = e.target.closest('button[data-act="sub-approve"][data-sub]');
   if (!btn) return;
   const id = btn.dataset.sub;
+
+  const durSel = subsBody.querySelector(`select[data-dur="${id}"]`);
+  const duration = durSel ? durSel.value : 'month';
+
   try {
-    const res = await apiApproveSub(id);
-    if (!res.ok) throw new Error(res.msg||'failed');
+    const res = await fetch('/admin/subscriptions/'+id+'/approve', {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ duration })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.msg||'failed');
     toast('تمت الموافقة على الاشتراك','ok');
     renderSubs();
   } catch(err) {
@@ -930,18 +1382,19 @@ subsBody?.addEventListener('submit', async (e)=>{
   if (!form) return;
   e.preventDefault();
   const id = form.dataset.sub;
-  const fd = new FormData(form);
-  const note = (fd.get('note')||'').toString();
-  try {
-    const res = await apiRejectSub(id, note);
-    if (!res.ok) throw new Error(res.msg||'failed');
-    toast('تم الرفض','warn');
+  const note = new FormData(form).get('note') || '';
+  try{
+    const r = await fetch('/admin/subscriptions/'+id+'/reject', {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ note })
+    });
+    const j = await r.json();
+    if(!j.ok) throw 0;
+    toast('تم الرفض','ok');
     renderSubs();
-  } catch(err) {
-    console.error(err); toast('تعذّر الرفض','warn');
-  }
+  }catch(_){ toast('تعذر الرفض','warn'); }
 });
-
   /* =========================
      5) History
      ========================= */
@@ -953,7 +1406,9 @@ subsBody?.addEventListener('submit', async (e)=>{
     renderHistory();
   }
   function renderHistory(){
+    if (!historyList) return;
     if (!adminState.length){ historyList.innerHTML='<p class="muted">لا يوجد سجل بعد.</p>'; return; }
+    
     historyList.innerHTML = adminState.slice().reverse().map(a=>{
       const d = new Date(a.ts).toLocaleString('ar-EG');
       return `<div style="display:grid;grid-template-columns:140px 1fr;gap:.6rem;padding:.45rem .2rem;border-bottom:1px dashed #e5e7eb">
@@ -998,7 +1453,6 @@ subsBody?.addEventListener('submit', async (e)=>{
     renderContractorCards();
 
     // الديمو
-    renderBanners();
     renderSubs();
     renderHistory();
     fillPrefs();
@@ -1013,30 +1467,60 @@ subsBody?.addEventListener('submit', async (e)=>{
 <script>
 (async function bannerAdmin(){
   const $  = (s, r=document)=>r.querySelector(s);
-  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
+  // عناصر الواجهة
   const listBox = $('#bnr-list');
   const empty   = $('#bnr-empty');
   const form    = $('#bnr-add-form');
   const enabled = $('#bnr-enabled');
+  const keySel  = $('#bnr-key');
+
+  if (!listBox || !empty || !form || !enabled) return;
+
+  // المفتاح الحالي (افتراضي home-banners إن لم يوجد select)
+  function currentKey(){ return keySel && keySel.value ? keySel.value : 'home-banners'; }
+
+  // مسارات REST تستخدم param :key
+  const paths = {
+    get:      key => `/admin/promo/banners/${encodeURIComponent(key)}`,
+    add:      key => `/admin/promo/banners/${encodeURIComponent(key)}`,
+    enabled:  key => `/admin/promo/banners/${encodeURIComponent(key)}/enabled`,
+    del: (key,id) => `/admin/promo/banners/${encodeURIComponent(key)}/${encodeURIComponent(id)}`
+  };
+
+  // عرض اسم ملف الرفع
+  const fileInput = form.querySelector('#imgFile');
+  const fileName  = form.querySelector('.filebox__name');
+  fileInput?.addEventListener('change', () => {
+    const f = fileInput.files && fileInput.files[0];
+    if (fileName) fileName.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+  });
 
   async function load(){
     try{
-      const r = await fetch('/admin/promo/banners', { headers:{'Accept':'application/json'} });
+      const r = await fetch(paths.get(currentKey()), { headers:{'Accept':'application/json'} });
       const j = await r.json();
       if(!j.ok) throw 0;
       const d = j.data || {enabled:false, items:[]};
       enabled.checked = !!d.enabled;
-      render(d.items);
-    }catch(_){ render([]); }
+      render(d.items||[]);
+    }catch(_){
+      enabled.checked = false;
+      render([]);
+    }
   }
 
   function render(items){
     listBox.innerHTML = '';
-    if(!items.length){ empty.hidden = false; return; }
+    if(!items || !items.length){
+      empty.hidden = false;
+      return;
+    }
     empty.hidden = true;
+
     items
-      .slice().sort((a,b)=>(a.order||0)-(b.order||0))
+      .slice()
+      .sort((a,b)=>(a.order||0)-(b.order||0))
       .forEach(it=>{
         const el = document.createElement('div');
         el.style.cssText='border:1px solid #e5e7f0;border-radius:12px;padding:.6rem;display:grid;grid-template-columns:140px 1fr;gap:.6rem;align-items:center';
@@ -1048,7 +1532,7 @@ subsBody?.addEventListener('submit', async (e)=>{
             <div style="font-weight:800">${it.title||'—'}</div>
             <div class="muted" style="font-size:.95rem;white-space:pre-wrap">${it.text||''}</div>
             <div style="display:flex;gap:.4rem;margin-top:.4rem">
-              <a class="btn btn--ghost btn--sm" href="${it.link||'#'}" target="_blank" rel="noopener">فتح الرابط</a>
+              ${it.link ? `<a class="btn btn--ghost btn--sm" href="${it.link}" target="_blank" rel="noopener">فتح الرابط</a>` : ''}
               <button class="btn btn--danger btn--sm" data-del="${it._id}">حذف</button>
             </div>
           </div>`;
@@ -1056,48 +1540,61 @@ subsBody?.addEventListener('submit', async (e)=>{
       });
   }
 
-  form?.addEventListener('submit', async (e)=>{
+  // إضافة بانر (رفع ملف)
+  form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
     try{
-      const r = await fetch('/admin/promo/banners', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
+      const r = await fetch(paths.add(currentKey()), { method:'POST', body: fd });
       const j = await r.json(); if(!j.ok) throw 0;
-      form.reset(); load();
-    }catch(_){ alert('تعذر إضافة البانر'); }
+      form.reset();
+      if (fileName) fileName.textContent = 'لم تُحدَّد صورة بعد';
+      await load();
+    }catch(_){
+      alert('تعذر إضافة البانر');
+    }
   });
 
-  enabled?.addEventListener('change', async ()=>{
+  // تفعيل/تعطيل بنرات المفتاح الحالي
+  enabled.addEventListener('change', async ()=>{
     try{
-      const r = await fetch('/admin/promo/banners/enabled', {
-        method:'PATCH', headers:{'Content-Type':'application/json'},
+      const r = await fetch(paths.enabled(currentKey()), {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ enabled: enabled.checked })
       });
       const j = await r.json(); if(!j.ok) throw 0;
-    }catch(_){ alert('تعذر تحديث التفعيل'); enabled.checked = !enabled.checked; }
+    }catch(_){
+      alert('تعذر تحديث التفعيل');
+      enabled.checked = !enabled.checked;
+    }
   });
 
-  listBox?.addEventListener('click', async (e)=>{
+  // حذف عنصر
+  listBox.addEventListener('click', async (e)=>{
     const btn = e.target.closest('[data-del]');
     if(!btn) return;
     if(!confirm('حذف هذا البانر؟')) return;
     try{
-      const r = await fetch('/admin/promo/banners/'+btn.dataset.del, { method:'DELETE' });
+      const r = await fetch(paths.del(currentKey(), btn.dataset.del), { method:'DELETE' });
       const j = await r.json(); if(!j.ok) throw 0;
-      load();
-    }catch(_){ alert('تعذر الحذف'); }
+      await load();
+    }catch(_){
+      alert('تعذر الحذف');
+    }
   });
 
+  // إعادة التحميل عند تبديل الصفحة
+  keySel?.addEventListener('change', load);
+
+  // أول تحميل
   load();
 })();
 </script>
+
 <script>
 (async function heroAdmin(){
   const $  = (s,r=document)=>r.querySelector(s);
-  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
   const list  = $('#hero-list');
   const empty = $('#hero-empty');
   const form  = $('#hero-add');
@@ -1138,14 +1635,14 @@ subsBody?.addEventListener('submit', async (e)=>{
     });
   }
 
+  // ✅ هنا التغيير: نرسل FormData بدون Content-Type يدوي
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
     try{
       const r = await fetch('/admin/hero/slides', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
+        method:'POST',
+        body: fd
       });
       const j = await r.json(); if(!j.ok) throw 0;
       form.reset(); load();
@@ -1169,7 +1666,7 @@ subsBody?.addEventListener('submit', async (e)=>{
           body: JSON.stringify({ order: val })
         });
       }
-    }catch{ /* تجاهل */ }
+    }catch{}
   });
 
   list?.addEventListener('click', async (e)=>{
@@ -1186,48 +1683,7 @@ subsBody?.addEventListener('submit', async (e)=>{
   load();
 })();
 </script>
-<script>
-(function quickLinksAdmin(){
-  const $ = (s,r=document)=>r.querySelector(s);
-  const form = $('#ql-form');
-  if(!form) return;
 
-  async function load(){
-    try{
-      const r = await fetch('/admin/quick-links', { headers:{'Accept':'application/json'} });
-      const j = await r.json(); if(!j.ok) throw 0;
-      const d = j.data || {};
-      form.saleImg.value        = d.saleImg        || '';
-      form.rentImg.value        = d.rentImg        || '';
-      form.contractorsImg.value = d.contractorsImg || '';
-      form.enabled.checked      = !!d.enabled;
-    }catch(_){
-      // افتراضيات فارغة
-    }
-  }
-
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
-    payload.enabled = form.enabled.checked;
-    try{
-      const r = await fetch('/admin/quick-links', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const j = await r.json();
-      if(!j.ok) throw 0;
-      alert('تم الحفظ');
-    }catch(_){
-      alert('تعذر الحفظ');
-    }
-  });
-
-  load();
-})();
-</script>
 <script>
 (function homeShowcaseAdmin(){
   const $  = (s,r=document)=>r.querySelector(s);
@@ -1237,7 +1693,7 @@ subsBody?.addEventListener('submit', async (e)=>{
   const itemsB = $('#hs-items');
   const addBtn = $('#hs-add-item');
   const viewB  = $('#hs-view');
-
+if (!form || !itemsB || !addBtn || !viewB) return;
   const itemTpl = (data={}, idx=0)=>`
     <div class="card" data-idx="${idx}" style="display:grid;gap:.5rem">
       <div style="display:grid;grid-template-columns:160px 1fr;gap:.6rem;align-items:center">
@@ -1291,6 +1747,7 @@ subsBody?.addEventListener('submit', async (e)=>{
   }
 
   function renderView(rows){
+    if (!viewB) return;
     viewB.innerHTML = rows.map(row=>{
       const items = (row.items||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
       return `
@@ -1357,6 +1814,96 @@ subsBody?.addEventListener('submit', async (e)=>{
     form.key.dispatchEvent(new Event('change'));
   })();
 })();
+</script>
+<script>
+  // ====== Showcase viewer & delete ======
+  async function fetchShowcases(){
+    const res = await fetch('/admin/home/showcase', { headers:{'accept':'application/json'} });
+    if(!res.ok) throw new Error('Failed to load showcases');
+    const json = await res.json();
+    return (json && json.data) ? json.data : [];
+  }
+
+  function byKey(rows){
+    const map = { rentTop:{items:[]}, saleTop:{items:[]}, bestContractors:{items:[]} };
+    rows.forEach(r => { if(r && r.key && map[r.key] !== undefined) map[r.key] = r; });
+    return map;
+  }
+
+  function escapeHtml(s){
+    return (s||'').toString().replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  }
+
+  function renderShowcaseList(containerId, items, key){
+    const wrap = document.getElementById(containerId);
+    if(!wrap) return;
+    wrap.innerHTML = '';
+
+    if(!Array.isArray(items) || !items.length){
+      wrap.innerHTML = '<p class="muted" style="grid-column:1/-1">لا توجد عناصر بعد.</p>';
+      return;
+    }
+
+    items.forEach((it, idx) => {
+      const card = document.createElement('div');
+      card.className = 'showcase-card';
+
+      card.innerHTML = `
+        <div class="showcase-thumb">
+          ${it.img ? `<img src="${it.img}" alt="">` : ''}
+        </div>
+
+        <div class="showcase-body">
+          <div class="showcase-title">${escapeHtml(it.title || '')}</div>
+          <div class="showcase-desc">${escapeHtml(it.desc || '')}</div>
+        </div>
+
+        <div class="showcase-actions">
+          <div>
+            ${it.link ? `<a class="showcase-link" href="${it.link}" target="_blank" rel="noopener">رابط التفاصيل</a>` : '<span class="muted">—</span>'}
+          </div>
+          <div>
+            <button class="btn btn--danger btn--sm" data-key="${key}" data-idx="${idx}">حذف</button>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(card);
+    });
+
+    // تفويض الحذف (مرّة واحدة لتفادي التكرار)
+    wrap.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-key]');
+      if(!btn) return;
+      const k = btn.getAttribute('data-key');
+      const i = btn.getAttribute('data-idx');
+      if(!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return;
+      try{
+        const res = await fetch(`/admin/home/showcase/${encodeURIComponent(k)}/item/${encodeURIComponent(i)}`, {
+          method:'DELETE',
+          headers:{ 'accept':'application/json' }
+        });
+        if(!res.ok) throw new Error('Delete failed');
+        await loadShowcaseLists();
+        (window.showToast ? showToast('تم الحذف','ok') : null);
+      }catch(err){
+        console.error(err);
+        (window.showToast ? showToast('تعذر الحذف','warn') : null);
+      }
+    }, { once:true });
+  }
+
+  async function loadShowcaseLists(){
+    const rows = await fetchShowcases();
+    const map  = byKey(rows);
+    renderShowcaseList('list-rentTop',         map.rentTop.items || [],         'rentTop');
+    renderShowcaseList('list-saleTop',         map.saleTop.items || [],         'saleTop');
+    renderShowcaseList('list-bestContractors', map.bestContractors.items || [], 'bestContractors');
+  }
+
+  // شغّل التحميل أول ما تفتح الصفحة
+  (async function initShowcaseLists(){
+    try { await loadShowcaseLists(); } catch(e){ console.error(e); }
+  })();
 </script>
 
 </body>

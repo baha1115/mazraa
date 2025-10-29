@@ -1,1 +1,45 @@
-ايضا اريد لهده الصفحة ان تظهر الاوصاف قبل الوصف العام
+حسنا اضفت هذه الاكواد subscriptionExpiresAt: { type: Date, default: null },  // نهاية الاشتراك الحالي
+subscriptionGraceUntil: { type: Date, default: null }, // نهاية مهلة السماح أسبوع
+في usermodel 
+كذالك اضفت هذه الاكواد في farmmodel isSuspended: { type: Boolean, default: false }, // مُعلّق (خارج الظهور)
+suspendedReason: { type: String, default: '' },
+deletedAt: { type: Date, default: null }  // حذف ناعم بعد انتهاء المهلة
+كذالك عملت موديل جديد باسم subscriptionConfig وضعت بها هذا الكود 
+const mongoose = require('mongoose');
+
+const subscriptionConfigSchema = new mongoose.Schema({
+  key: { type: String, unique: true, default: 'sub-plans' },
+  monthDays:   { type: Number, default: 30 },
+  yearDays:    { type: Number, default: 365 },
+  basicLimit:  { type: Number, default: 1 },
+  premiumLimit:{ type: Number, default: 5 },
+  vipLimit:    { type: Number, default: 999 }
+}, { timestamps: true });
+
+module.exports = mongoose.model('SubscriptionConfig', subscriptionConfigSchema);
+كذالك اضفت هذا الكود في اخر adminrouter 
+router.get('/admin/sub-plans', requireAdmin, async (req, res) => {
+  try {
+    const doc = await SubscriptionConfig.findOne({ key: 'sub-plans' }).lean();
+    res.json({ ok:true, data: doc || { monthDays:30, yearDays:365, basicLimit:1, premiumLimit:5, vipLimit:999 } });
+  } catch (e) { console.error(e); res.status(500).json({ ok:false }); }
+});
+
+// POST
+router.post('/admin/sub-plans', requireAdmin, async (req, res) => {
+  try {
+    const { monthDays=30, yearDays=365, basicLimit=1, premiumLimit=5, vipLimit=999 } = req.body;
+    const doc = await SubscriptionConfig.findOneAndUpdate(
+      { key:'sub-plans' },
+      { $set:{
+        monthDays:Number(monthDays)||30,
+        yearDays:Number(yearDays)||365,
+        basicLimit:Number(basicLimit)||1,
+        premiumLimit:Number(premiumLimit)||5,
+        vipLimit:Number(vipLimit)||999
+      }},
+      { new:true, upsert:true }
+    );
+    res.json({ ok:true, data:doc });
+  } catch (e) { console.error(e); res.status(500).json({ ok:false }); }
+});

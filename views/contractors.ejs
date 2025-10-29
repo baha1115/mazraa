@@ -72,21 +72,54 @@
     <div class="container">
       <details class="filter-dropdown" open>
         <summary id="filters-title">فلترة المقاولين</summary>
-        <form id="contractor-filters" class="filters-form" action="#results" method="get" novalidate>
-          <div class="filters-grid" style="display:grid;gap:.8rem;grid-template-columns:repeat(12,1fr)">
-            <div class="field" style="grid-column:span 6">
-              <label class="label" for="specialization">التخصص</label>
-              <input id="specialization" name="specialization" type="text" placeholder="مثال: كهرباء، مضخات، طاقة شمسية…">
-            </div>
-            <div class="field" style="grid-column:span 6">
-              <label class="label" for="region">المنطقة</label>
-              <input id="region" name="region" type="text" placeholder="مثال: ريف دمشق، حمص، درعا…">
-            </div>
-            <div class="field" style="grid-column:span 12;display:flex;justify-content:flex-end">
-              <button class="btn btn-primary" type="submit" style="background:#0f172a;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem">تطبيق</button>
-            </div>
-          </div>
-        </form>
+   <form id="contractor-filters" class="filters-form" action="#results" method="get" novalidate>
+  <div class="filters-grid" style="display:grid;gap:.8rem;grid-template-columns:repeat(12,1fr)">
+    <!-- التخصص: قائمة منسدلة -->
+    <div class="field" style="grid-column:span 6">
+      <label class="label" for="specialization">التخصص</label>
+      <select id="specialization" name="specialization" class="input">
+        <option value="">اختر التخصص…</option>
+        <option>كهرباء زراعية</option>
+        <option>مضخات</option>
+        <option>طاقة شمسية</option>
+        <option>ري (تنقيط/رش)</option>
+        <option>بناء ريفي</option>
+        <option>تشخيص فني</option>
+        <option>صيانة وتركيبات</option>
+        <option>حدادة/لحام</option>
+        <option>ألمنيوم</option>
+        <option>تبريد/تكييف زراعي</option>
+      </select>
+    </div>
+
+    <!-- المحافظة: قائمة منسدلة -->
+    <div class="field" style="grid-column:span 6">
+      <label class="label" for="city">المحافظة</label>
+      <select id="city" name="city" class="input">
+        <option value="">اختر المحافظة…</option>
+        <option>دمشق</option>
+        <option>ريف دمشق</option>
+        <option>حلب</option>
+        <option>حمص</option>
+        <option>حماة</option>
+        <option>اللاذقية</option>
+        <option>طرطوس</option>
+        <option>إدلب</option>
+        <option>دير الزور</option>
+        <option>الحسكة</option>
+        <option>الرقة</option>
+        <option>درعا</option>
+        <option>القنيطرة</option>
+        <option>السويداء</option>
+      </select>
+    </div>
+
+    <div class="field" style="grid-column:span 12;display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" type="submit" style="background:#0f172a;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem">تطبيق</button>
+    </div>
+  </div>
+</form>
+
       </details>
     </div>
   </section>
@@ -120,7 +153,9 @@
                const img = (Array.isArray(c.photos) && c.photos[0]) || c.avatar || '/Public/assets/contractors/default.jpg';
                const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '');
                const region = c.region || '';
-               const tier = c.subscriptionTier || 'Basic';
+               const tier = c.userTier || c.subscriptionTier || 'Basic';
+               if (tier === 'VIP') { return; } // ← لا نرسم VIP في السلايدر العام
+
             %>
               <div class="swiper-slide">
                 <article class="contractor-card">
@@ -146,7 +181,7 @@
     </div>
   </section>
 
-  <%- include('partials/promo', { promoContractors: (typeof promoContractors!=='undefined'?promoContractors:null) }) %>
+    <%- include('partials/promo', { promoBottom }) %>
  <%- include('partials/footer') %>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -174,7 +209,7 @@
       const name  = htmlEscape(c.name || '—');
       const spec  = htmlEscape(Array.isArray(c.services) ? c.services.join('، ') : (c.services||'—'));
       const reg   = htmlEscape(c.region || '—');
-      const tier  = (c.subscriptionTier || 'Basic');
+      const tier = (c.userTier || c.subscriptionTier || 'Basic');
       const rating= Number(c.ratingAvg||0).toFixed(2);
       const rcnt  = Number(c.ratingCount||0);
       return `
@@ -226,6 +261,7 @@
 
     let allContractors = [];
     let vipOnlyList    = [];
+    let nonVipList     = []; 
     let listSwiper = null, vipSwiper = null;
 
     function destroySwiper(sw){ if (sw) try{ sw.destroy(true,true); }catch(_){ } }
@@ -258,17 +294,25 @@
       if (has) initVipSwiper(); else destroySwiper(vipSwiper);
     }
 
-    function applyFilters(){
-      const qSpec = (form?.specialization?.value||'').trim().toLowerCase();
-      const qReg  = (form?.region?.value||'').trim().toLowerCase();
-      const pass = (c)=>{
-        const spec = (Array.isArray(c.services)? c.services.join('، ') : (c.services||'')).toString().toLowerCase();
-        const reg  = (c.region||'').toString().toLowerCase();
-        return (!qSpec || spec.includes(qSpec)) && (!qReg || reg.includes(qReg));
-      };
-      renderList(allContractors.filter(pass));
-      renderVip(vipOnlyList.filter(pass));
-    }
+   function applyFilters(){
+  const qSpec = (form?.specialization?.value || '').trim().toLowerCase();
+  const qCity = (form?.city?.value || '').trim().toLowerCase();
+
+  const pass = (c) => {
+    // الخدمات قد تكون Array أو نص
+    const spec = (Array.isArray(c.services) ? c.services.join('، ') : (c.services || '')).toString().toLowerCase();
+    // نعتمد المحافظة من حقل city (وليس region)
+    const city = (c.city || '').toString().toLowerCase();
+
+    const okSpec = !qSpec || spec.includes(qSpec);
+    const okCity = !qCity || city.includes(qCity);
+    return okSpec && okCity;
+  };
+
+  renderList(nonVipList.filter(pass));
+  renderVip(vipOnlyList.filter(pass));
+}
+
 
     (async function init(){
       try {
@@ -290,13 +334,22 @@
       const rank = { VIP:0, Premium:1, Basic:2 };
       allContractors.sort((a,b)=>(rank[a.subscriptionTier||'Basic']??9)-(rank[b.subscriptionTier||'Basic']??9));
 
-      renderList(allContractors);
-      renderVip(vipOnlyList);
+      // بعد الترتيب:
+nonVipList = allContractors.filter(c => ((c.userTier || c.subscriptionTier || 'Basic') !== 'VIP'));
 
-      if (form){
-        form.addEventListener('submit', e=>{ e.preventDefault(); applyFilters(); });
-        $$('#contractor-filters input').forEach(inp=> inp.addEventListener('input', applyFilters));
-      }
+// السلايدر العام يعرض غير الـ VIP فقط
+renderList(nonVipList);
+
+// سلايدر الـ VIP كما هو
+renderVip(vipOnlyList);
+
+
+    if (form){
+  form.addEventListener('submit', e=>{ e.preventDefault(); applyFilters(); });
+  // استمع لتغيّر القوائم المنسدلة أيضًا
+  $$('#contractor-filters select').forEach(sel => sel.addEventListener('change', applyFilters));
+}
+
     })();
   </script>
 </body>

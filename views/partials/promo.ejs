@@ -1,17 +1,110 @@
-<% if (promoContractors && promoContractors.enabled) { %>
-<section id="promo" class="section promo" aria-labelledby="promo-title">
-  <div class="container">
-    <article class="promo-banner" data-controlled-by="admin">
-      <div class="promo-media">
-        <img src="<%= promoContractors.img || '/Public/assets/contractors/promo-01.jpg' %>"
-             alt="<%= promoContractors.title || 'عرض ترويجي' %>" loading="lazy" />
+<%
+/* نتوقع promoBottom = { enabled, img, title, text, link, btn } */
+const p = typeof promoBottom !== 'undefined' ? promoBottom : promo;
+if (p && p.enabled && (p.img || p.title || p.text)) {
+%>
+<style>
+  /* ===== Promo Bottom (scoped, no conflicts) ===== */
+  .pbx { --ink:#0f172a; --ink60:#475569; --white:#fff;
+         --g1:#16a34a; --g2:#22c55e; --y:#facc15; --r:18px; }
+
+  .pbx { margin:1.25rem 0 2rem; }
+  .pbx__shell { max-width:min(1180px,92%); margin-inline:auto; }
+  .pbx__frame { padding:1px; border-radius:var(--r);
+    background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(250,204,21,.25));
+  }
+
+  /* Flex بدل Grid لتفادي فراغات عند قلة المحتوى */
+  .pbx__wrap {
+    display:flex; gap:1rem; align-items:center; justify-content:space-between;
+    border-radius:var(--r); overflow:clip;
+    background:
+      radial-gradient(520px 200px at 110% -20%, #fef9c3 0%, transparent 60%),
+      radial-gradient(520px 200px at -20% 120%, #ecfccb 0%, transparent 60%),
+      linear-gradient(#fff,#fbfff7);
+    box-shadow:0 12px 30px rgba(2,44,34,.10);
+    padding:1rem 1.1rem;
+  }
+
+  /* في RTL: أول عنصر (الصورة) يظهر يمينًا تلقائيًا */
+  .pbx__media { flex:0 0 320px; max-width:320px; }
+  .pbx__box {
+    height:200px; border-radius:14px; overflow:hidden; background:#0b1a13;
+    border:1px solid #e5e7eb; box-shadow:0 10px 22px rgba(0,0,0,.08);
+  }
+  .pbx__box img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .pbx__body { flex:1 1 auto; min-width:0; text-align:center;display: flex;flex-direction: column;align-items: center;justify-content: center; }
+  .pbx__eyebrow {
+    display:inline-flex; align-items:center; gap:.45rem;
+    padding:.28rem .6rem; border-radius:999px; font-weight:800;
+    color:#64748b; font-size:.9rem;
+    background:rgba(22,163,74,.08); border:1px solid rgba(34,197,94,.25);
+    margin-bottom:.45rem;
+  }
+  .pbx__eyebrow::before{
+    content:""; width:10px; height:10px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, var(--y), var(--g2));
+    box-shadow:0 0 0 3px rgba(34,197,94,.15);
+  }
+
+  .pbx__title { margin:.1rem 0 .4rem; font-weight:900; color:var(--ink);
+    font-size: clamp(1.05rem, 1rem + .8vw, 1.45rem);
+  }
+  .pbx__text  { margin:0 0 .8rem; color:#475569; line-height:1.8; font-size:.98rem; }
+
+  .pbx__actions{ display:flex; gap:.6rem; flex-wrap:wrap }
+  .pbx__btn{
+    display:inline-flex; align-items:center; gap:.45rem; white-space:nowrap;
+    padding:.58rem 1rem; border-radius:12px; font-weight:800; text-decoration:none;
+    color:var(--white); border:1px solid transparent;
+    background:linear-gradient(135deg,#10b981,#059669);
+    box-shadow:0 12px 26px rgba(4,120,87,.18);
+  }
+  .pbx__btn:hover{ filter:brightness(.98) }
+
+  /* بدون صورة = المحتوى يمتد بعرض كامل */
+  .pbx__media:empty{ display:none }
+  .pbx__media:empty + .pbx__body{ flex-basis:100% }
+
+  /* موبايل: المحتوى تحت الصورة */
+  @media (max-width: 760px){
+    .pbx__wrap{ flex-direction:column; align-items:stretch; padding:.9rem }
+    .pbx__media{ flex-basis:auto; max-width:none }
+    .pbx__box{ height:220px }
+  }
+
+  /* احتياطي عند LTR */
+  html[dir="ltr"] .pbx__wrap{ flex-direction:row-reverse }
+  html[dir="ltr"] .pbx__media{ order:2 } /* الصورة يمين */
+  html[dir="ltr"] .pbx__body { order:1 }
+</style>
+
+<section class="pbx" dir="rtl" aria-label="عرض ترويجي">
+  <div class="pbx__shell">
+    <div class="pbx__frame">
+      <div class="pbx__wrap">
+        <% if (p.img) { %>
+          <div class="pbx__media">
+            <div class="pbx__box"><img src="<%= p.img %>" alt=""></div>
+          </div>
+        <% } %>
+
+        <div class="pbx__body">
+          <div class="pbx__eyebrow">عرض مميّز</div>
+          <% if (p.title) { %><h3 class="pbx__title"><%= p.title %></h3><% } %>
+          <% if (p.text)  { %><p class="pbx__text"><%= p.text %></p><% } %>
+          <% if (p.link)  { %>
+            <div class="pbx__actions">
+              <a class="pbx__btn" href="<%= p.link %>" target="_blank" rel="noopener">
+                <%= p.btn || 'التفاصيل' %>
+              </a>
+            </div>
+          <% } %>
+        </div>
+
       </div>
-      <div class="promo-body">
-        <h3 id="promo-title"><%= promoContractors.title || 'عنوان ترويجي' %></h3>
-        <p class="promo-text" style="color: aliceblue;"><%= promoContractors.text || '' %></p>
-        <a class="btn btn-primary" href="<%= promoContractors.link || '/contractors' %>">عرض التفاصيل</a>
-      </div>
-    </article>
+    </div>
   </div>
 </section>
 <% } %>

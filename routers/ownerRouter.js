@@ -56,29 +56,99 @@ const landSchema = Joi.object({
     address: Joi.string().allow(''),
   }).allow(null),
 });
+// === أعلى ownerRouter.js ===
+const multer = require('multer');
+const sharp = require('sharp');
+const path = require('path');
+const fsp = require('fs/promises');
+
+// نرفع في الذاكرة
+const uploadMem = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 6 * 1024 * 1024 }, // 6MB لكل صورة (عدّلها لو أردت)
+});
+
+// حفظ صورة واحدة بالـsharp في uploads/farms
+async function saveSharpImage(buffer, subdir = 'farms', baseName = Date.now().toString()) {
+  const outDir = path.join(__dirname, '..', 'uploads', subdir);
+  await fsp.mkdir(outDir, { recursive: true });
+  const outName = `${baseName}.jpg`;
+  const outFull = path.join(outDir, outName);
+
+  await sharp(buffer)
+    .resize({ width: 1600, withoutEnlargement: true })
+    .jpeg({ quality: 80, mozjpeg: true })
+    .toFile(outFull);
+
+  return `/uploads/${subdir}/${outName}`;
+}
+
+// لو استقبلنا DataURL (base64) نحولها إلى Buffer ونحفظها
+async function saveDataUrl(dataUrl, subdir = 'farms') {
+  const m = /^data:image\/\w+;base64,/.test(dataUrl);
+  if (!m) return null;
+  const b64 = dataUrl.split(',')[1];
+  const buffer = Buffer.from(b64, 'base64');
+  return saveSharpImage(buffer, subdir);
+}
+
+// مُوحِّد للإدخالات: يعيد مصفوفة مسارات صور مضغوطة من req.files أو من body.photos
+async function buildPhotosArray(req, subdir = 'farms') {
+  const out = [];
+
+  // 1) ملفات multipart: photos[] (إن وُجدت)
+  const files = Array.isArray(req.files) ? req.files : (req.files?.photos || []);
+  for (const f of files) {
+    if (f?.buffer) {
+      const p = await saveSharpImage(f.buffer, subdir);
+      out.push(p);
+    }
+  }
+
+  // 2) JSON/نص: body.photos = [url|dataURL,...]
+  //    - لو كانت dataURL نضغطها
+  //    - لو كانت رابط http(s) نتركه كما هو
+  let bodyPhotos = req.body?.photos;
+  if (typeof bodyPhotos === 'string') {
+    try { bodyPhotos = JSON.parse(bodyPhotos); } catch { /* تجاهل */ }
+  }
+  if (Array.isArray(bodyPhotos)) {
+    for (const item of bodyPhotos) {
+      if (typeof item === 'string' && item.startsWith('data:image/')) {
+        const p = await saveDataUrl(item, subdir);
+        if (p) out.push(p);
+      } else if (typeof item === 'string' && /^https?:\/\//.test(item)) {
+        out.push(item);
+      } else if (typeof item === 'string' && item.startsWith('/uploads/')) {
+        // صورة قديمة محفوظة في السيرفر (إبقاء)
+        out.push(item);
+      }
+    }
+  }
+
+  // إزالة التكرارات
+  return Array.from(new Set(out));
+}
 
 /* ========= Routes ========= */
 
 // POST /owner/lands — إنشاء أرض جديدة مع فحص الحصة حسب الخطة
-router.post('/owner/lands', requireAuth, async (req, res) => {
+// POST /owner/lands — إنشاء أرض جديدة مع فحص الحصة + ضغط الصور
+router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (req, res) => {
   try {
-    // 1) فاليديشن
+    // الفاليديشن كما هو عندك
     const { value, error } = landSchema.validate(req.body || {}, { abortEarly:false });
     if (error) {
       return res.status(400).json({ ok:false, msg:'Validation error', details:error.details });
     }
 
     const userId = req.session.user._id;
-
-    // 2) اجلب خطة المستخدم (User.plan أو subscriptionTier)
     const user = await User.findById(userId).lean();
     const plan = (user?.subscriptionTier || 'Basic');
-    const limit = planLimit(plan);
 
-    // 3) عدّ الأراضي الحالية للمستخدم
-    // إن أردت احتساب pending/approved فقط، استخدم: { status: { $in: ['pending','approved'] } }
+    // نفس منطق الحصة الحالي لديك
     const used = await Farm.countDocuments({ owner: userId });
-
+    const limit = (plan === 'VIP') ? Infinity : (plan === 'Premium' ? 2 : 1);
     if (used >= limit) {
       const limitTxt = (limit === Infinity) ? 'غير محدود' : String(limit);
       return res.status(403).json({
@@ -87,17 +157,17 @@ router.post('/owner/lands', requireAuth, async (req, res) => {
       });
     }
 
-    // 4) جهّز الحقول: ownerInfo, description, location, videoUrl
+    // هنا النوطة المهمة: تكوين مصفوفة الصور الموحّدة
+    const photos = await buildPhotosArray(req, 'farms');
+
+    // باقي الحقول كما عندك بالضبط:
     const ownerInfo = {
       first: (value.ownerFirst || '').trim(),
       last:  (value.ownerLast  || '').trim(),
       whatsapp: (value.ownerWhatsapp || '').trim(),
     };
-
-    // اختر الوصف المرسل (description أولاً ثم desc fallback)
     const description = (value.description ?? value.desc ?? '').toString().trim();
 
-    // تحقق من location
     let location;
     if (value.location && typeof value.location === 'object') {
       const lat = Number(value.location.lat);
@@ -111,24 +181,19 @@ router.post('/owner/lands', requireAuth, async (req, res) => {
     const doc = await Farm.create({
       owner: userId,
       ownerInfo,
-
       title: value.title.trim(),
       kind: value.kind === 'rent' ? 'rent' : 'sale',
       area: (value.area || '').trim(),
       city: (value.city || '').trim(),
       size: Number(value.size) || 0,
       price: Number(value.price) || 0,
-
-      photos: Array.isArray(value.photos) ? value.photos : [],
-        poolDesc: (value.poolDesc || '').toString().trim(),
-  amenitiesDesc: (value.amenitiesDesc || '').toString().trim(),
-  buildingDesc: (value.buildingDesc || '').toString().trim(),
+      photos, // ← الصور المضغوطة/الموحدة هنا
+      poolDesc: (value.poolDesc || '').toString().trim(),
+      amenitiesDesc: (value.amenitiesDesc || '').toString().trim(),
+      buildingDesc: (value.buildingDesc || '').toString().trim(),
       description,
       location,
-
-      // مهم: الفيديو في الجذر وليس داخل location
       videoUrl: (value.videoUrl || '').trim(),
-
       status: 'pending',
       approvedAt: null,
       reviewNote: '',
@@ -184,9 +249,13 @@ router.get('/owner/lands/quota', requireAuth, async (req, res) => {
 });
 // PATCH /owner/lands/:id  — تعديل أرض موجودة للمستخدم الحالي
 // PATCH /owner/lands/:id — تعديل أرض موجودة للمستخدم الحالي
-router.patch('/owner/lands/:id', requireAuth, async (req,res)=>{
+// PATCH /owner/lands/:id — تعديل أرض + دعم صور جديدة مضغوطة
+router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), async (req,res)=>{
   try{
     const b = req.body || {};
+
+    // ابنِ قائمة الصور الموحّدة (تُبقي القديمة وتضيف الجديدة)
+    const photos = await buildPhotosArray(req, 'farms');
 
     const update = {
       title: (b.title||'').trim(),
@@ -195,10 +264,10 @@ router.patch('/owner/lands/:id', requireAuth, async (req,res)=>{
       city : (b.city||'').trim(),
       size : Number(b.size)||0,
       price: Number(b.price)||0,
-      photos: Array.isArray(b.photos) ? b.photos : [],
-        poolDesc: (b.poolDesc || '').toString(),
-  amenitiesDesc: (b.amenitiesDesc || '').toString(),
-  buildingDesc: (b.buildingDesc || '').toString(),
+      photos, // ← هنا
+      poolDesc: (b.poolDesc || '').toString(),
+      amenitiesDesc: (b.amenitiesDesc || '').toString(),
+      buildingDesc: (b.buildingDesc || '').toString(),
       description: (b.description||b.desc||'').toString(),
       videoUrl: (b.videoUrl||'').trim(),
       ownerInfo: {
@@ -222,7 +291,7 @@ router.patch('/owner/lands/:id', requireAuth, async (req,res)=>{
     }
 
     const doc = await Farm.findOneAndUpdate(
-      { _id: req.params.id, owner: req.session.user._id }, // ← هنا التعديل
+      { _id: req.params.id, owner: req.session.user._id },
       { $set: update },
       { new:true }
     );

@@ -17,8 +17,12 @@ const FarmSchema = new mongoose.Schema({
   price: Number,
 // ضمن مخطط Farm
 views: { type: Number, default: 0 },
+// أمّا تضيف حقل حالة أدق، أو حقول فلاغ:
+isSuspended: { type: Boolean, default: false }, // مُعلّق (خارج الظهور)
+suspendedReason: { type: String, default: '' },
+deletedAt: { type: Date, default: null }  // حذف ناعم بعد انتهاء المهلة
 
-
+,
   photos: [String],
   poolDesc: { type: String, default: '' },       // وصف المسبح
   amenitiesDesc: { type: String, default: '' },  // وصف المرافق

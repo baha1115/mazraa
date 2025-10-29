@@ -24,6 +24,11 @@ const ContractorRequestSchema = new mongoose.Schema({
   approvedAt: { type: Date, default: null },
   rejectedAt: { type: Date, default: null },
   subscriptionTier: { type:String, enum:['Basic','Premium','VIP'], default:'Basic' }, 
+  // داخل Schema طلب المقاول
+isSuspended:    { type: Boolean, default: false }, // موقوف مؤقتًا (لا يظهر)
+suspendedReason:{ type: String,  default: ''    }, // سبب: "limit" أو "expired"
+deletedAt:      { type: Date,    default: null  }  // حذف ناعم بعد نهاية المهلة
+,
   // ⭐ التقييمات
   ratingAvg:   { type: Number, default: 0 },  // معدل التقييم (0..5)
   ratingCount: { type: Number, default: 0 },  // عدد التقييمات

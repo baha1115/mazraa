@@ -90,10 +90,26 @@
       <form id="rent-filters" class="filters-form" action="#results" method="get" novalidate>
         <div class="filters-grid">
           <!-- تظهر دائمًا -->
-          <div class="field">
-            <label class="label" for="city">المحافظة</label>
-            <input id="city" name="city" type="text" placeholder="اكتب اسم المحافظة" />
-          </div>
+<div class="field">
+  <label class="label" for="city">المحافظة</label>
+  <select id="city" name="city" class="input">
+    <option value="">اختر المحافظة…</option>
+    <option>دمشق</option>
+    <option>ريف دمشق</option>
+    <option>حلب</option>
+    <option>حمص</option>
+    <option>حماة</option>
+    <option>اللاذقية</option>
+    <option>طرطوس</option>
+    <option>إدلب</option>
+    <option>دير الزور</option>
+    <option>الحسكة</option>
+    <option>الرقة</option>
+    <option>درعا</option>
+    <option>القنيطرة</option>
+    <option>السويداء</option>
+  </select>
+</div>
 
           <div class="field">
             <label class="label" for="area">المنطقة</label>
@@ -166,6 +182,8 @@
      const hasVideo = !!(farm.videoUrl);
      const tier     = (farm?.owner?.subscriptionTier || farm?.ownerTier || 'Basic');  // 👈 بدل isVip فقط
      const vw       = Number(farm.views || 0);
+    if (tier === 'VIP') { return; } // لا نرسم VIP في السلايدر العام
+
 %>
   <div class="swiper-slide">
     <article class="farm-card">
@@ -203,7 +221,7 @@
   </div>
 </section>
 
-<%- include('partials/promo', { promoContractors }) %>
+  <%- include('partials/promo', { promoBottom }) %>
 
 <%- include('partials/footer') %>
 
@@ -320,7 +338,7 @@ let allRent = [];
 let vipAll  = [];
 let rentSwiper = null;
 let vipSwiper  = null;
-
+let nonVipRent = [];
 function destroySwiper(sw){
   if (sw) try{ sw.destroy(true,true); }catch(_){}
 }
@@ -398,7 +416,7 @@ function applyFilters(){
     return okArea && okCity && okPrice && okSize;
   };
 
-  const filteredRent = allRent.filter(pass);
+  const filteredRent = nonVipRent.filter(pass); 
   const filteredVip  = vipAll.filter(pass);
   renderRent(filteredRent);
   renderVip(filteredVip);
@@ -408,8 +426,16 @@ function applyFilters(){
 async function init(){
   try {
     const apiRent = await fetchJSON('/api/farms/rent'); // كل الإيجار المقبول
-    allRent = Array.isArray(apiRent) ? apiRent : [];
-    renderRent(allRent);
+allRent = Array.isArray(apiRent) ? apiRent : [];
+
+// استبعاد VIP من السلايدر العام
+nonVipRent = allRent.filter(f => {
+  const tier = (f?.owner?.subscriptionTier) || f.ownerTier || 'Basic';
+  return tier !== 'VIP';
+});
+
+renderRent(nonVipRent);
+
   } catch(e){ console.warn('rent fetch error:', e); renderRent([]); }
 
   try {

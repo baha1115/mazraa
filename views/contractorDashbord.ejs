@@ -150,24 +150,25 @@
             <input type="tel" name="phone" class="input" value="<%= safeProfile.phone || '' %>" />
           </label>
 
-      <label class="field">
-  <span class="label">المنطقة</span>
-  <input
-    name="region" maxlength="80"
-    class="input"
-    placeholder="اكتب المنطقة (مثال: ريف دمشق)"
-    value="<%= safeProfile?.region || '' %>"
-    list="region-suggestions"
-  />
-  <!-- اقتراحات اختيارية (ليست إلزامية) -->
-  <datalist id="region-suggestions">
-    <option value="ريف دمشق"></option>
-    <option value="حماة"></option>
-    <option value="حمص"></option>
-    <option value="درعا"></option>
-    <option value="الرياض"></option>
-    <option value="القصيم"></option>
-  </datalist>
+    <label class="field">
+  <span class="label">المحافظة</span>
+  <select name="city" id="city" class="input" required>
+    <option value="">اختر المحافظة…</option>
+    <option value="دمشق"        <%= (safeProfile.city==='دمشق')        ? 'selected' : '' %>>دمشق</option>
+    <option value="ريف دمشق"    <%= (safeProfile.city==='ريف دمشق')    ? 'selected' : '' %>>ريف دمشق</option>
+    <option value="حلب"         <%= (safeProfile.city==='حلب')         ? 'selected' : '' %>>حلب</option>
+    <option value="حمص"         <%= (safeProfile.city==='حمص')         ? 'selected' : '' %>>حمص</option>
+    <option value="حماة"        <%= (safeProfile.city==='حماة')        ? 'selected' : '' %>>حماة</option>
+    <option value="اللاذقية"    <%= (safeProfile.city==='اللاذقية')    ? 'selected' : '' %>>اللاذقية</option>
+    <option value="طرطوس"       <%= (safeProfile.city==='طرطوس')       ? 'selected' : '' %>>طرطوس</option>
+    <option value="إدلب"        <%= (safeProfile.city==='إدلب')        ? 'selected' : '' %>>إدلب</option>
+    <option value="دير الزور"   <%= (safeProfile.city==='دير الزور')   ? 'selected' : '' %>>دير الزور</option>
+    <option value="الحسكة"      <%= (safeProfile.city==='الحسكة')      ? 'selected' : '' %>>الحسكة</option>
+    <option value="الرقة"       <%= (safeProfile.city==='الرقة')       ? 'selected' : '' %>>الرقة</option>
+    <option value="درعا"        <%= (safeProfile.city==='درعا')        ? 'selected' : '' %>>درعا</option>
+    <option value="القنيطرة"    <%= (safeProfile.city==='القنيطرة')    ? 'selected' : '' %>>القنيطرة</option>
+    <option value="السويداء"    <%= (safeProfile.city==='السويداء')    ? 'selected' : '' %>>السويداء</option>
+  </select>
 </label>
 
           <label class="field field--full">
@@ -181,15 +182,39 @@
             <input maxlength="100" name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
           </label>
 
-          <label class="field">
-            <span class="label">الخدمات (افصل بفواصل)</span>
-            <input name="services" maxlength="500" class="input" placeholder="كهرباء زراعية, مضخات, طاقة شمسية" value="<%= Array.isArray(safeProfile.services)? safeProfile.services.join(', ') : (safeProfile.services||'') %>">
-          </label>
+          <% const selectedService = Array.isArray(safeProfile.services)
+      ? (safeProfile.services[0] || '')
+      : (safeProfile.services || ''); %>
 
-          <label class="field">
-            <span class="label">المحافظة</span>
-            <input name="city" class="input" maxlength="80" value="<%= safeProfile.city || '' %>">
-          </label>
+<label class="field">
+  <span class="label">الخدمة / التخصص</span>
+  <select name="services" id="serviceSelect" class="input" required>
+    <option value="">اختر الخدمة…</option>
+
+    <option value="كهرباء زراعية" <%= selectedService==='كهرباء زراعية' ? 'selected' : '' %>>كهرباء زراعية</option>
+    <option value="مضخات"         <%= selectedService==='مضخات' ? 'selected' : '' %>>مضخات</option>
+    <option value="طاقة شمسية"    <%= selectedService==='طاقة شمسية' ? 'selected' : '' %>>طاقة شمسية</option>
+    <option value="ري (تنقيط/رش)" <%= selectedService==='ري (تنقيط/رش)' ? 'selected' : '' %>>ري (تنقيط/رش)</option>
+    <option value="بناء ريفي"     <%= selectedService==='بناء ريفي' ? 'selected' : '' %>>بناء ريفي</option>
+    <option value="تشخيص فني"     <%= selectedService==='تشخيص فني' ? 'selected' : '' %>>تشخيص فني</option>
+    <option value="صيانة وتركيبات"<%= selectedService==='صيانة وتركيبات' ? 'selected' : '' %>>صيانة وتركيبات</option>
+    <option value="حدادة/لحام"    <%= selectedService==='حدادة/لحام' ? 'selected' : '' %>>حدادة/لحام</option>
+    <option value="ألمنيوم"       <%= selectedService==='ألمنيوم' ? 'selected' : '' %>>ألمنيوم</option>
+    <option value="تبريد/تكييف زراعي" <%= selectedService==='تبريد/تكييف زراعي' ? 'selected' : '' %>>تبريد/تكييف زراعي</option>
+  </select>
+</label>
+
+      <label class="field">
+  <span class="label">المنطقة</span>
+  <input
+    name="region" maxlength="80"
+    class="input"
+    placeholder="اكتب المنطقة"
+    value="<%= safeProfile?.region || '' %>"
+  />
+</label>
+
+      
 
           <label class="field field--full">
             <span class="label">الوصف</span>
@@ -368,6 +393,35 @@
   const pickWork  = qs('#pickWork');
   const thumbs    = qs('#thumbs');
 
+   const MAX_TOTAL_BYTES = 5 * 1024 * 1024;
+
+  // تقدير حجم DataURL بالبايتات
+  function dataUrlBytes(src){
+    if (typeof src !== 'string') return 0;
+    const comma = src.indexOf(',');
+    if (comma < 0) return 0;
+    const b64 = src.slice(comma+1);
+    // تحويل طول base64 إلى bytes:
+    return Math.max(0, Math.floor(b64.length * 3 / 4) - (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0));
+  }
+
+  // احسب بايتات الصور الموجودة حالياً (DataURL فقط؛ الروابط http تُحسب 0 لأن حجمها غير معروف)
+  function currentGalleryBytes(photosArr){
+    return (photosArr||[]).reduce((sum,src)=> sum + (src.startsWith('data:image') ? dataUrlBytes(src) : 0), 0);
+  }
+
+  // احسب بايتات ملف avatar الحالي إن كان DataURL
+  function currentAvatarBytes(avatarSrc){
+    return (typeof avatarSrc === 'string' && avatarSrc.startsWith('data:image')) ? dataUrlBytes(avatarSrc) : 0;
+  }
+
+  // احسب مجموع الأحجام: الموجود حالياً (avatar + photos) + الملفات الجديدة
+  function willExceedTotalLimit({ existingPhotos, existingAvatar, newFiles = [] }){
+    const existing = currentGalleryBytes(existingPhotos) + currentAvatarBytes(existingAvatar);
+    const incoming = newFiles.reduce((s,f)=> s + (f?.size||0), 0);
+    return (existing + incoming) > MAX_TOTAL_BYTES;
+  }
+
   function renderThumbs(){
     if (!thumbs) return;
     thumbs.innerHTML = '';
@@ -401,15 +455,29 @@
   });
   workDrop?.addEventListener('click', ()=> workInput?.click());
   pickWork?.addEventListener('click', ()=> workInput?.click());
-  workDrop?.addEventListener('drop', async (e)=>{
+    workDrop?.addEventListener('drop', async (e)=>{
     const files = Array.from(e.dataTransfer?.files||[]).filter(f=>f.type.startsWith('image/'));
     if (!files.length) return toast('اختر صورًا فقط','warn');
+
+    // تحقق إجمالي 5MB (المعرض + avatar + هذه الدفعة)
+    if (willExceedTotalLimit({ existingPhotos: photos, existingAvatar: avatar, newFiles: files })) {
+      return toast('إجمالي حجم الصور (المعرض + الصورة الشخصية) يتجاوز 5MB','warn');
+    }
+
     for (const f of files){ photos.push(await readAsDataURL(f)); }
     renderThumbs();
   });
+
   workInput?.addEventListener('change', async (e)=>{
     const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith('image/'));
     if (!files.length) return toast('اختر صورًا فقط','warn');
+
+    if (willExceedTotalLimit({ existingPhotos: photos, existingAvatar: avatar, newFiles: files })) {
+      // لا نضيف شيئًا
+      e.target.value = ''; // مسح الاختيار
+      return toast('إجمالي حجم الصور (المعرض + الصورة الشخصية) يتجاوز 5MB','warn');
+    }
+
     for (const f of files){ photos.push(await readAsDataURL(f)); }
     renderThumbs();
   });
@@ -424,6 +492,12 @@
   avatarDrop?.addEventListener('drop', async (e)=>{
     const file = (e.dataTransfer?.files||[])[0];
     if(!file || !file.type.startsWith('image/')) return toast('اختر صورة صحيحة','warn');
+
+    // تحقق إجمالي 5MB = (صور المعرض الحالية + avatar الجديد)
+    if (willExceedTotalLimit({ existingPhotos: photos, existingAvatar: '', newFiles: [file] })) {
+      return toast('إجمالي الصور سيتجاوز 5MB. اختر صورة شخصية أصغر.','warn');
+    }
+
     avatar = await readAsDataURL(file);
     if (avatarPreview) avatarPreview.src = avatar;
   });
@@ -431,6 +505,12 @@
   avatarInput?.addEventListener('change', async (e)=>{
     const f=e.target.files?.[0];
     if(!f || !f.type.startsWith('image/')) return toast('اختر صورة صحيحة','warn');
+
+    if (willExceedTotalLimit({ existingPhotos: photos, existingAvatar: '', newFiles: [f] })) {
+      e.target.value = '';
+      return toast('إجمالي الصور سيتجاوز 5MB. اختر صورة شخصية أصغر.','warn');
+    }
+
     avatar = await readAsDataURL(f);
     if (avatarPreview) avatarPreview.src = avatar;
   });
@@ -438,7 +518,13 @@
   /* ============== حفظ الملف (POST أو PATCH) ============== */
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
+     const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
+    if (totalB64 > MAX_TOTAL_BYTES) {
+      e.preventDefault();
+      return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
+    }
     const fd = new FormData(form);
+     const service = (fd.get('services')||'').toString().trim();
     const payload = {
       name:        (fd.get('name')||'').toString().trim(),
       email:       (fd.get('email')||'').toString().trim(),
@@ -446,7 +532,7 @@
       region:      (fd.get('region')||'').toString().trim(),
       bio:         (fd.get('bio')||'').toString().trim(),
       companyName: (fd.get('companyName')||'').toString().trim(),
-      services:    (fd.get('services')||'').toString().split(',').map(s=>s.trim()).filter(Boolean),
+      services: service ? [service] : [],
       city:        (fd.get('city')||'').toString().trim(),
       description: (fd.get('description')||'').toString().trim(),
       videoUrl: (fd.get('videoUrl')||'').toString().trim(),   // ← أضِف هذا السطر
@@ -566,7 +652,12 @@
       setVal('[name="phone"]'      , doc.phone || '');
       setVal('[name="region"]'     , doc.region || '');
       setVal('[name="companyName"]', doc.companyName || '');
-      setVal('[name="services"]'   , Array.isArray(doc.services)? doc.services.join(', ') : (doc.services||''));
+      const svcEl = form?.querySelector('[name="services"]');
+if (svcEl) {
+  const v = Array.isArray(doc.services) ? (doc.services[0] || '') : (doc.services || '');
+  svcEl.value = v;
+}
+
       setVal('[name="city"]'       , doc.city || '');
       setVal('[name="description"]', doc.description || '');
       setVal('[name="videoUrl"]'   , doc.videoUrl || '');             // ← NEW

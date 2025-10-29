@@ -10,7 +10,9 @@ const nodemailer     = require('nodemailer');
 const methodOverride = require('method-override');
 const cookieParser   = require('cookie-parser');
 const { randomUUID } = require('crypto');
-
+const compression = require('compression');
+const ContractorRequest = require('./models/contractorRequestModel');
+const SubscriptionConfig = require('./models/SubscriptionConfig');
 // Utils / Mailer
 const { verifyTransporter } = require('./utils/mailer2');
 verifyTransporter();
@@ -24,6 +26,122 @@ const loginRouter  = require('./routers/loginrouter');
 const publicRouter = require('./routers/public');       // إن كان موجودًا
 const adminRouter  = require('./routers/adminRouter');
 const ownerRouter  = require('./routers/ownerRouter');  // إن وُجد
+//daily subs job
+async function applyContractorLimitsForUser(userId, tier) {
+  try {
+    const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
+    const basicLimit   = cfg?.basicLimit   ?? 1;
+    const premiumLimit = cfg?.premiumLimit ?? 2;   // اختيارك هنا 2 تمام
+    const vipLimit     = cfg?.vipLimit     ?? 999;
+
+    const limitMap = { Basic: basicLimit, Premium: premiumLimit, VIP: vipLimit };
+    const allow = limitMap[tier] ?? basicLimit;
+
+    // pending + approved فقط، غير مؤرشفة
+    const reqs = await ContractorRequest
+      .find({ user: userId, status: { $in: ['pending','approved'] }, archivedAt: null })
+      .sort({ createdAt: -1 }); // أو approvedAt: -1 ثم createdAt: -1 لو أردت
+
+    const keep    = reqs.slice(0, allow);
+    const suspend = reqs.slice(allow);
+
+    if (keep.length) {
+      await ContractorRequest.updateMany(
+        { _id: { $in: keep.map(r => r._id) } },
+        { $set: { isSuspended: false, suspendedReason: '' } }
+      );
+    }
+
+    if (suspend.length) {
+      await ContractorRequest.updateMany(
+        { _id: { $in: suspend.map(r => r._id) } },
+        { $set: { isSuspended: true, suspendedReason: 'limit' } }
+      );
+    }
+  } catch (e) {
+    console.error('applyContractorLimitsForUser error:', e);
+  }
+}
+const msDay = 24*60*60*1000;
+
+if (!global.__subCleanupJobStarted) {
+  global.__subCleanupJobStarted = true;
+
+  setInterval(async () => {
+    try {
+      const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
+      const basicLimit = cfg?.basicLimit ?? 1;
+
+      const now = new Date();
+
+      // (1) انتهى الاشتراك ولم تُحدَّد مهلة بعد -> مهلة أسبوع + تحويل إلى Basic + تعليق الزائد (مزارع + مقاولين)
+      const expired = await User.find({
+        subscriptionExpiresAt: { $ne: null, $lte: now },
+        $or: [
+          { subscriptionGraceUntil: null },
+          { subscriptionGraceUntil: { $exists: false } }
+        ]
+      }).lean();
+
+      for (const u of expired) {
+        const graceUntil = new Date(Date.now() + 7*msDay);
+        await User.findByIdAndUpdate(u._id, { $set: { subscriptionGraceUntil: graceUntil, subscriptionTier: 'Basic' } });
+
+        // المزارع: أبقِ حد الـ Basic وعلّق الباقي
+        const farms = await Farm.find({ owner: u._id, deletedAt: null }).sort({ createdAt: -1 });
+        const keep = farms.slice(0, basicLimit);
+        const suspend = farms.slice(basicLimit);
+
+        if (keep.length) {
+          await Farm.updateMany(
+            { _id: { $in: keep.map(f => f._id) } },
+            { $set: { isSuspended: false, suspendedReason: '' } }
+          );
+        }
+        if (suspend.length) {
+          await Farm.updateMany(
+            { _id: { $in: suspend.map(f => f._id) } },
+            { $set: { isSuspended: true, suspendedReason: 'limit' } }
+          );
+        }
+
+        // المقاولون: طبّق حدود الـ Basic أيضًا
+        await applyContractorLimitsForUser(u._id, 'Basic');
+      }
+
+      // (2) انتهت مهلة السماح -> حذف ناعم زوائد المزارع + إبقاء حد الـ Basic، وتطبيق حدود Basic للمقاولين
+      const graceOver = await User.find({
+        subscriptionGraceUntil: { $ne: null, $lte: now }
+      }).lean();
+
+      for (const u of graceOver) {
+        const farms = await Farm.find({ owner: u._id, deletedAt: null }).sort({ createdAt: -1 });
+        const keep = farms.slice(0, basicLimit);
+        const remove = farms.slice(basicLimit);
+
+        if (remove.length) {
+          await Farm.updateMany(
+            { _id: { $in: remove.map(f => f._id) } },
+            { $set: { deletedAt: new Date(), isSuspended: true, suspendedReason: 'expired' } }
+          );
+        }
+
+        if (keep.length) {
+          await Farm.updateMany(
+            { _id: { $in: keep.map(f => f._id) } },
+            { $set: { isSuspended: false, suspendedReason: '' } }
+          );
+        }
+
+        // المقاولون: إبقاء حد Basic وتعليق الباقي
+        await applyContractorLimitsForUser(u._id, 'Basic');
+      }
+
+    } catch (err) {
+      console.error('Subscription cleanup job error:', err);
+    }
+  }, 12 * 60 * 60 * 1000); // كل 12 ساعة
+}
 
 // App init
 const app  = express();
@@ -36,22 +154,36 @@ const port = process.env.PORT || 3000;
 // يسمح باستخدام ?_method=PATCH/DELETE
 app.use(methodOverride('_method'));
 app.use(cookieParser());
-
+// ✅ فعّل الضغط هنا (قبل static/routers)
+app.use(compression({
+  threshold: 1024, // لا نضغط الردود الأصغر من 1KB
+  filter: (req, res) => {
+    // تجاهل أنواع المحتوى المضغوطة أصلًا (صور/فيديو/أرشيف..)
+    const type = (res.getHeader('Content-Type') || '').toString().toLowerCase();
+    if (
+      type.includes('image/') ||
+      type.includes('video/') ||
+      type.includes('audio/') ||
+      type.includes('font/')  ||
+      type.includes('pdf')    ||
+      type.includes('zip')    ||
+      type.includes('x-7z')   ||
+      type.includes('x-rar')
+    ) return false;
+    return compression.filter(req, res);
+  }
+}));
 // Static
 app.use('/public',  express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Body parsers
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.use(express.json({ limit: '25mb' }));
-
 // Proxy
 app.set('trust proxy', 1);
-
 // View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
 // ---------------------------------------------------------------------------
 // اتصال قاعدة البيانات
 // ---------------------------------------------------------------------------

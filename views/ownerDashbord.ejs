@@ -75,6 +75,8 @@
     @media (max-width:1100px){.thumbs{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:900px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.thumbs{grid-template-columns:repeat(3,1fr)}#map{height:300px}}
     :focus-visible{outline:none;box-shadow:var(--ring);border-radius:10px}
+    #map { cursor: crosshair; }
+
   </style>
 </head>
 <body>
@@ -116,7 +118,26 @@
             <select name="kind" class="input"><option value="sale">بيع</option><option value="rent">إيجار</option></select>
           </label>
           <label class="field"><span class="label">المنطقة</span><input name="area" class="input" required/></label>
-          <label class="field"><span class="label">المحافظة</span><input name="city" class="input"/></label>
+          <label class="field">
+  <span class="label">المحافظة</span>
+  <select name="city" class="input" required>
+    <option value="">اختر المحافظة…</option>
+    <option>دمشق</option>
+    <option>ريف دمشق</option>
+    <option>حلب</option>
+    <option>حمص</option>
+    <option>حماة</option>
+    <option>اللاذقية</option>
+    <option>طرطوس</option>
+    <option>إدلب</option>
+    <option>دير الزور</option>
+    <option>الحسكة</option>
+    <option>الرقة</option>
+    <option>درعا</option>
+    <option>القنيطرة</option>
+    <option>السويداء</option>
+  </select>
+</label>
           <label class="field"><span class="label">المساحة (م²)</span><input name="size" type="number" class="input" min="0" required/></label>
           <label class="field"><span class="label">السعر</span><input name="price" type="number" class="input" min="0" required/></label>
 
@@ -475,6 +496,14 @@ if (ft1) ft1.textContent = 'تعديل أرض';
 
       let marker = L.marker([33.5138,36.2765], {draggable:true}).addTo(map);
       marker.setOpacity(0); // مخفي إلى أن يختار المستخدم مكانًا
+     // عند الضغط على الخريطة: ثبّت العلامة واملأ الحقول
+map.on('click', async (e) => {
+  const { lat, lng } = e.latlng;
+  // حاول نجيب عنوان بنقطة عكسية (إن فشل، نخليها فاضية)
+  let addr = '';
+  try { addr = await reverseGeocode(lat, lng); } catch {}
+  setLocation(lat, lng, addr, true); // هذه الدالة موجودة عندك وتتعامل مع الحقول + marker
+});
 
       const latInput = qs('input[name="lat"]');
       const lngInput = qs('input[name="lng"]');
@@ -554,7 +583,16 @@ if (ft1) ft1.textContent = 'تعديل أرض';
       const thumbs = qs('#thumbs');
       // مخزن مؤقت لصور النموذج الحالي (Base64 DataURLs)
       let pendingPhotos = [];
+      const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // 5MB
 
+function dataUrlBytes(src){
+  if (typeof src !== 'string') return 0;
+  const i = src.indexOf(',');
+  const b64 = i >= 0 ? src.slice(i+1) : src;
+  // تحويل طول الـ base64 إلى bytes بدقّة جيدة
+  const pad = b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0;
+  return Math.max(0, Math.floor(b64.length * 3 / 4) - pad);
+}
       pickBtn.addEventListener('click', ()=> fileInput.click());
       fileInput.addEventListener('change', (e)=> handleFiles(e.target.files));
 
@@ -577,17 +615,30 @@ if (ft1) ft1.textContent = 'تعديل أرض';
       });
 
       function handleFiles(files){
-        const arr = Array.from(files).filter(f=>f.type.startsWith('image/'));
-        if (!arr.length){ toast('الرجاء اختيار صور فقط','warn'); return; }
-        arr.forEach(file=>{
-          const reader = new FileReader();
-          reader.onload = ()=> {
-            pendingPhotos.push(reader.result); // DataURL
-            renderThumbs();
-          };
-          reader.readAsDataURL(file);
-        });
-      }
+  const arr = Array.from(files).filter(f=> f.type.startsWith('image/'));
+  if (!arr.length){ toast('الرجاء اختيار صور فقط','warn'); return; }
+
+  // حجم الصور الموجودة حالياً (محفوظة كـ DataURL)
+  const existingBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
+  // حجم الملفات الجديدة قبل التحويل
+  const newBytes = arr.reduce((s,f)=> s + (f.size||0), 0);
+
+  if (existingBytes + newBytes > MAX_TOTAL_BYTES){
+    toast('إجمالي حجم الصور يتجاوز 5MB. رجاءً قلّل عدد/حجم الصور.', 'warn');
+    return;
+  }
+
+  // لو الحد ممتاز، حوّل وأضِف
+  arr.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      pendingPhotos.push(reader.result); // DataURL
+      renderThumbs();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 
       function renderThumbs(){
         thumbs.innerHTML = '';
@@ -616,6 +667,13 @@ if (submitBtnPrimary) {
 
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  // فحص إجمالي حجم الـ DataURL قبل الإرسال
+const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
+if (totalBytes > MAX_TOTAL_BYTES){
+  toast('إجمالي حجم الصور يتجاوز 5MB. قلّل عدد/حجم الصور.', 'warn');
+  return; // منع الإرسال
+}
+
 if (!_quotaReady) {
     toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
     return; // منع الإرسال حتى تُحمّل الحصّة
