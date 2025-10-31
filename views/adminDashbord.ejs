@@ -235,6 +235,62 @@
 @media (max-width:640px){
   .showcase-thumb{ height:120px; }
 }
+/* ===== Mobile upgrades ===== */
+.mobile-tabs {
+  position: fixed; right: 0; left: 0; bottom: 0; z-index: 60;
+  display: flex; gap: .2rem; justify-content: space-around;
+  padding: .4rem; background: #fff; border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -8px 18px rgba(0,0,0,.06);
+}
+.mobile-tabs__btn {
+  flex: 1; padding: .55rem .4rem; border-radius: 10px; border: 1px solid #e5e7eb;
+  background: #fff; font-weight: 800; font-size: .9rem;
+}
+.mobile-tabs__btn.is-active {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(135deg, var(--g600), var(--g700));
+  box-shadow: 0 8px 18px rgba(4,120,87,.18);
+}
+
+@media (max-width: 980px){
+  body{ padding-bottom: 64px; }          /* علشان ما تغطي القائمة السفلية المحتوى */
+  .layout{ grid-template-columns: 1fr; }
+  .sidebar{ display: none; }             /* نخبي القائمة الجانبية على الموبايل */
+  .panel{ padding: .8rem .8rem 1rem; }
+  .head{ flex-direction: column; align-items: flex-start; gap: .4rem; }
+
+  /* بطاقات الأراضي */
+  .land{ grid-template-columns: 1fr; }
+  .land__media{ width: 100%; height: 160px; }
+
+  /* شبكة الكروت */
+  .cards{ grid-template-columns: 1fr; gap: .6rem; }
+  .showcase-grid{ grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); }
+
+  /* الدروار على عرض الشاشة */
+  .drawer{ right: -100%; width: 100%; }
+  .drawer[aria-hidden="false"]{ right: 0; }
+
+  /* جدول الاشتراكات → بطاقات قابلة للقراءة */
+  .table-wrap{ border-radius: 12px; overflow: hidden; }
+  table{ display: block; }
+  thead{ display: none; }
+  tbody, tr, td{ display: block; width: 100%; }
+  tbody tr{ padding: .6rem .8rem; border-bottom: 1px solid #f1f5f9; }
+  tbody td{ padding: .45rem 0; border-bottom: 0; }
+  tbody td:nth-child(1)::before{ content: 'الاسم: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(2)::before{ content: 'الإيميل: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(3)::before{ content: 'النوع: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(4)::before{ content: 'الصلاحيات/الملاحظات: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(5)::before{ content: 'تحرير: '; color:#64748b; font-weight:700; }
+
+  /* منع تكبير iOS وقت التركيز على الحقول */
+  .input{ font-size: 16px; }
+}
+
+@media (min-width: 981px){
+  .mobile-tabs{ display: none; }         /* نخفي قائمة الموبايل على الديسكتوب */
+}
 
 </style>
 
@@ -608,7 +664,7 @@
     <!-- 6) Admin settings -->
    
     <!-- 6) Admin settings -->
-<<section id="view-settings" class="panel">
+<section id="view-settings" class="panel">
   <div class="head"><h2>إضافة بانرات</h2></div>
 
   <form id="bottom-form" class="card" action="/admin/promo/bottom" method="post" enctype="multipart/form-data" style="display:grid;gap:.6rem;max-width:720px">
@@ -745,6 +801,15 @@
 
 
 </main>
+<!-- Mobile bottom nav -->
+<nav class="mobile-tabs" aria-label="التنقل السريع">
+  <button class="mobile-tabs__btn is-active" data-view="farms">الأراضي</button>
+  <button class="mobile-tabs__btn" data-view="contractors">المقاولون</button>
+  <button class="mobile-tabs__btn" data-view="banners">البانرات</button>
+  <button class="mobile-tabs__btn" data-view="subs">الاشتراكات</button>
+  <button class="mobile-tabs__btn" data-view="history">العلوي</button>
+  <button class="mobile-tabs__btn" data-view="settings">السفلي</button>
+</nav>
 
 <!-- Drawer -->
 <aside id="drawer" class="drawer" aria-hidden="true" role="dialog" aria-labelledby="drawerTitle">
@@ -1903,6 +1968,41 @@ if (!form || !itemsB || !addBtn || !viewB) return;
   // شغّل التحميل أول ما تفتح الصفحة
   (async function initShowcaseLists(){
     try { await loadShowcaseLists(); } catch(e){ console.error(e); }
+  })();
+</script>
+<script>
+  // … بعد تعريف views = { farms, contractors, banners, subs, history, settings }
+  (function navUnify(){
+    const sideBtns   = Array.from(document.querySelectorAll('.menu__item'));
+    const mobileBtns = Array.from(document.querySelectorAll('.mobile-tabs__btn'));
+    const views = {
+      farms:        document.querySelector('#view-farms'),
+      contractors:  document.querySelector('#view-contractors'),
+      banners:      document.querySelector('#view-banners'),
+      subs:         document.querySelector('#view-subs'),
+      history:      document.querySelector('#view-history'),
+      settings:     document.querySelector('#view-settings'),
+    };
+
+    function activateView(name){
+      Object.entries(views).forEach(([k,sec])=>{
+        if (sec) sec.classList.toggle('is-visible', k===name);
+      });
+      sideBtns.forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+      mobileBtns.forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+    }
+
+    // اربط الجانبي
+    sideBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+    });
+    // اربط السفلي
+    mobileBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+    });
+
+    // تفعيل افتراضي
+    activateView('farms');
   })();
 </script>
 

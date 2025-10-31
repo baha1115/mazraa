@@ -30,7 +30,9 @@
        const name     = contractor.name || contractor.companyName || '—';
        const services = Array.isArray(contractor.services) ? contractor.services.join('، ') : (contractor.services || '—');
        const region   = contractor.region || contractor.city || '—';
-       const tier     = contractor.subscriptionTier || 'Basic';
+      const rawTier  = contractor.userTier || contractor.subscriptionTier || 'Basic';
+const tier     = ({ vip:'VIP', premium:'Premium', basic:'Basic' }[String(rawTier).toLowerCase()]) || rawTier;
+
        const photos   = (Array.isArray(contractor.photos) && contractor.photos.length) ? contractor.photos : [avatar];
   %>
 
@@ -236,7 +238,7 @@
 </section>
 <% } %>
 
-  <%- include('partials/promo', { promoContractors }) %>
+  
  <%- include('partials/footer') %>
 
    <script src="../Public/contractorsingle.js"></script>

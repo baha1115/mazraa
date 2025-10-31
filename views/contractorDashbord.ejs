@@ -90,6 +90,57 @@
     @media (max-width:640px){
       .thumbs{grid-template-columns:repeat(2,1fr)}
     }
+    /* ====== تحسينات موبايل عامة ====== */
+.mobile-tabs{
+  position: fixed; inset: auto 0 0 0; z-index: 60;
+  display: flex; gap: .25rem; justify-content: space-around;
+  padding: .45rem; background:#fff; border-top:1px solid #e5e7eb;
+  box-shadow: 0 -8px 18px rgba(0,0,0,.06);
+}
+.mobile-tabs__btn{
+  flex:1; padding:.55rem .5rem; border-radius:12px;
+  border:1px solid #e5e7eb; background:#fff; font-weight:800;
+}
+.mobile-tabs__btn.is-active{
+  color:#fff; border-color:transparent;
+  background: linear-gradient(135deg, var(--g600), var(--g700));
+  box-shadow: 0 8px 18px rgba(4,120,87,.18);
+}
+
+/* شبكة الكروت لطلبات المقاول */
+.cards{
+  display:grid; gap:.7rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+}
+
+/* شريط حفظ ثابت أسفل الموبايل */
+.fixed-actions{
+  position: fixed; left:0; right:0;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px)); /* فوق شريط التنقّل */
+  background:#fff; padding:.6rem .9rem; z-index:55;
+  border-top:1px solid #e5e7eb; box-shadow:0 -8px 18px rgba(0,0,0,.07);
+}
+
+/* تحسينات لمس ومسافات */
+.menu__item{ min-height:44px; }           /* مساحة لمس كافية */
+.input{ font-size:16px; }                  /* منع تكبير iOS */
+.drop{ padding:1.1rem; }                   /* صندوق الرفع أريح */
+
+@media (max-width:980px){
+  body{ padding-bottom: 120px; }           /* مساحة لشريطيْ الأسفل */
+  .layout{ grid-template-columns: 1fr; }
+  .sidebar{ display:none; }                /* أخفِ القائمة الجانبية على الموبايل */
+  .panel{ padding: .9rem .85rem 1.1rem; }
+  .avatar img{ width:72px; height:72px; }  /* صورة شخصية أصغر */
+  .thumbs{ grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width:640px){
+  .thumbs{ grid-template-columns: repeat(2,1fr); }
+}
+@media (min-width:981px){
+  .mobile-tabs{ display:none; }            /* التنقّل السفلي للديسكتوب غير لازم */
+}
+
   </style>
 </head>
 <body>
@@ -147,7 +198,7 @@
 
           <label class="field">
             <span class="label">الهاتف</span>
-            <input type="tel" name="phone" class="input" value="<%= safeProfile.phone || '' %>" />
+            <input type="tel" name="phone" class="input" placeholder="+963XXXXXXXXX" value="<%= safeProfile.phone || '' %>" />
           </label>
 
     <label class="field">
@@ -261,10 +312,18 @@
             <div id="thumbs" class="thumbs" aria-live="polite"></div>
           </div>
 
-          <div class="actions field--full">
-            <button class="btn" type="submit">حفظ وإرسال للمراجعة</button>
-            <span class="muted">لن يُنشر أي تعديل إلا بعد موافقة الإدارة.</span>
-          </div>
+         <!-- قبل -->
+<div class="actions field--full">
+  <button class="btn" type="submit">حفظ وإرسال للمراجعة</button>
+  <span class="muted">لن يُنشر أي تعديل إلا بعد موافقة الإدارة.</span>
+</div>
+
+<!-- بعد (أضف id ليستعمله الـ CSS/JS) -->
+<div id="profileActions" class="actions field--full">
+  <button class="btn" type="submit">حفظ وإرسال للمراجعة</button>
+  <span class="muted">لن يُنشر أي تعديل إلا بعد موافقة الإدارة.</span>
+</div>
+
         </form>
       </section>
 
@@ -291,7 +350,7 @@
 
     <label class="field">
       <span class="label">واتساب</span>
-      <input name="whatsapp" class="input" placeholder="+216XXXXXXXX" required>
+      <input name="whatsapp" class="input" placeholder="+963XXXXXXXX" required>
     </label>
 
     <label class="field field--full">
@@ -308,7 +367,13 @@
 
 
       <!-- الإعدادات -->
-   
+   <!-- تنقّل سفلي للموبايل -->
+<nav class="mobile-tabs" aria-label="التنقّل السريع">
+  <button class="mobile-tabs__btn is-active" data-view="profile">الملف</button>
+  <button class="mobile-tabs__btn" data-view="requests">طلباتي</button>
+  <button class="mobile-tabs__btn" data-view="subscription">الاشتراك</button>
+</nav>
+
 
   <!-- تنبيهات -->
   <div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
@@ -516,48 +581,66 @@
   });
 
   /* ============== حفظ الملف (POST أو PATCH) ============== */
-  form?.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-     const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
-    if (totalB64 > MAX_TOTAL_BYTES) {
-      e.preventDefault();
-      return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
-    }
-    const fd = new FormData(form);
-     const service = (fd.get('services')||'').toString().trim();
-    const payload = {
-      name:        (fd.get('name')||'').toString().trim(),
-      email:       (fd.get('email')||'').toString().trim(),
-      phone:       (fd.get('phone')||'').toString().trim(),
-      region:      (fd.get('region')||'').toString().trim(),
-      bio:         (fd.get('bio')||'').toString().trim(),
-      companyName: (fd.get('companyName')||'').toString().trim(),
-      services: service ? [service] : [],
-      city:        (fd.get('city')||'').toString().trim(),
-      description: (fd.get('description')||'').toString().trim(),
-      videoUrl: (fd.get('videoUrl')||'').toString().trim(),   // ← أضِف هذا السطر
-      avatar,
-      photos,
-      submitForReview: true
-    };
+ form?.addEventListener('submit', async (e)=>{
+  e.preventDefault();
 
-    const url    = editingId ? ('/contractor/requests/' + editingId) : '/contractor/profile';
-    const method = editingId ? 'PATCH' : 'POST';
+  // 1) فعِّل فحص required/pattern من المتصفح
+  if (!form.checkValidity()) {
+    form.reportValidity();      // يبرز الحقول الناقصة (مثل اسم المؤسسة)
+    return;
+  }
 
-    try{
-      const res  = await fetch(url, { method, headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
-      const json = await res.json().catch(()=>({ok:false}));
-      if (json && json.ok){
-        toast(editingId ? 'تم تعديل الطلب وإرساله للمراجعة' : 'تم الحفظ وإرسال التعديلات للمراجعة','ok');
-        editingId = null;
-        renderRequests();
-      } else {
-        toast(json.msg || 'تعذر الحفظ','warn');
-      }
-    }catch(err){
-      console.error(err); toast('خطأ في الاتصال','warn');
+  // 2) تحقّق إضافي على اسم المؤسسة حتى لو تجاوز المستخدم المتصفح
+  const fd0 = new FormData(form);
+  const companyName = (fd0.get('companyName')||'').toString().trim();
+  if (!companyName) {
+    toast('أدخل اسم المؤسسة','warn');
+    return;
+  }
+
+  // 3) فحص حدّ الصور (الكود الموجود لديك كما هو)
+  const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
+  if (totalB64 > MAX_TOTAL_BYTES) {
+    return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
+  }
+
+  // 4) بناء الـpayload (نستخدم companyName بعد التنظيف)
+  const service = (fd0.get('services')||'').toString().trim();
+  const payload = {
+    name:        (fd0.get('name')||'').toString().trim(),
+    email:       (fd0.get('email')||'').toString().trim(),
+    phone:       (fd0.get('phone')||'').toString().trim(),
+    region:      (fd0.get('region')||'').toString().trim(),
+    bio:         (fd0.get('bio')||'').toString().trim(),
+    companyName,                                    // ← هنا
+    services:    service ? [service] : [],
+    city:        (fd0.get('city')||'').toString().trim(),
+    description: (fd0.get('description')||'').toString().trim(),
+    videoUrl:    (fd0.get('videoUrl')||'').toString().trim(),
+    avatar,
+    photos,
+    submitForReview: true
+  };
+
+  const url    = editingId ? ('/contractor/requests/' + editingId) : '/contractor/profile';
+  const method = editingId ? 'PATCH' : 'POST';
+
+  try{
+    const res  = await fetch(url, { method, headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+    const json = await res.json().catch(()=>({ok:false}));
+    if (json && json.ok){
+      toast(editingId ? 'تم تعديل الطلب وإرساله للمراجعة' : 'تم الحفظ وإرسال التعديلات للمراجعة','ok');
+      editingId = null;
+      renderRequests();
+    } else {
+      toast(json.msg || 'تعذر الحفظ','warn');
     }
-  });
+  }catch(err){
+    console.error(err);
+    toast('خطأ في الاتصال','warn');
+  }
+});
+
 
   /* ============== طلباتي (كروت بسيطة) ============== */
   const reqList  = document.getElementById('requestsList');
@@ -787,6 +870,52 @@ if (svcEl) {
     // افتح واتساب
     window.open(waLink(to, msg), '_blank', 'noopener');
   });
+})();
+</script>
+<script>
+(() => {
+  // 1) فعّل إظهار قسم واحد فقط عند البدء (تجنّب عرض لوحتين معًا)
+  const views = {
+    profile:      document.querySelector('#view-profile'),
+    requests:     document.querySelector('#view-requests'),
+    subscription: document.querySelector('#view-subscription'),
+    services:     document.querySelector('#view-services'),
+    settings:     document.querySelector('#view-settings'),
+  };
+
+  function activateView(name){
+    Object.entries(views).forEach(([k,sec])=> sec?.classList.toggle('is-visible', k===name));
+    document.querySelectorAll('.menu__item').forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+    document.querySelectorAll('.mobile-tabs__btn').forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+  }
+
+  // اربط القائمة الجانبية والسفلية معًا
+  document.querySelectorAll('.menu__item').forEach(btn=>{
+    btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+  });
+  document.querySelectorAll('.mobile-tabs__btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+  });
+
+  // اجعل الافتراضي "الملف الشخصي"
+  activateView('profile');
+
+  // 2) شريط حفظ ثابت على الموبايل
+  const actions = document.getElementById('profileActions');
+  function toggleFixedActions(){
+    if (!actions) return;
+    if (window.matchMedia('(max-width: 980px)').matches) actions.classList.add('fixed-actions');
+    else actions.classList.remove('fixed-actions');
+  }
+  toggleFixedActions();
+  window.addEventListener('resize', toggleFixedActions);
+
+  // 3) تحسين تحميل الصور (lazy)
+  const avatar = document.getElementById('avatarPreview');
+  if (avatar){ avatar.setAttribute('loading','lazy'); avatar.setAttribute('decoding','async'); }
+
+  // لو عندك دالة renderThumbs في سكربتك، بدّل سطر إنشاء الصورة ليشمل loading="lazy"
+  // مثال:  t.innerHTML = `<img src="${src}" alt="" loading="lazy" decoding="async"><button ...>حذف</button>`;
 })();
 </script>
 

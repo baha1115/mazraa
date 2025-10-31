@@ -75,30 +75,35 @@ async function applyPlanLimitsForUser(userId, tier) {
 // --- أعلى adminRouter.js ---
 const path = require('path');
 const fs = require('fs/promises');
+// --- Cloudinary (رفع الصور من الذاكرة) ---
 const multer = require('multer');
-const sharp = require('sharp');
-
-// بدّل التخزين إلى الذاكرة
-const upload = multer({
+const uploadMem = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  limits: { fileSize: 8 * 1024 * 1024 } // حد 8MB للصورة (عدّل لو تحب)
 });
 
-// حفظ صورة مضغوطة داخل /uploads/<subdir> باسم baseName.jpg
-async function saveSharpImageToUploads(fileBuffer, subdir, baseName = Date.now().toString()) {
-  const uploadsDir = path.join(__dirname, '..', 'uploads', subdir);
-  await fs.mkdir(uploadsDir, { recursive: true });
+const { uploadBufferToCloudinary } = require('../utils/cloudinary');
 
-  const outName = `${baseName}.jpg`;
-  const outFull = path.join(uploadsDir, outName);
-
-  await sharp(fileBuffer)
-    .resize({ width: 1600, withoutEnlargement: true })
-    .jpeg({ quality: 80, mozjpeg: true })
-    .toFile(outFull);
-
-  return `/uploads/${subdir}/${outName}`;
+// مساعد صغير: يرفع ملف واحد إن وُجد ويرجع secure_url
+async function uploadImgIfAny(file, { folder = 'promo', publicIdPrefix = 'img' } = {}) {
+  if (!file?.buffer) return '';
+  const r = await uploadBufferToCloudinary(file.buffer, {
+    folder,
+    publicId: `${publicIdPrefix}_${Date.now()}`
+  });
+  return r?.secure_url || '';
 }
+
+// مساعد لاختيار مفتاح البنرات من query/params مع افتراضي
+function bannerKey(req) {
+  return (req.query.key || req.params.key || 'home-banners');
+}
+
+// مفتاح البانر السفلي (sale | rent | contractors)
+function bottomKey(req) {
+  return (req.query.key || req.body.__key__ || 'sale');
+}
+
 
 // حارس: يجب أن يكون المستخدم أدمن
 function requireAdmin(req, res, next) {
@@ -475,15 +480,6 @@ router.patch('/subscriptions/:id/reject', requireAdmin, async (req, res) => {
   if (!r) return res.status(404).json({ ok:false, msg:'Not found' });
   res.json({ ok:true, msg:'Rejected', data:r });
 });
-// صفحة لوحة الأدمن الأساسية
-router.get('/', requireAdmin, async (req, res) => {
-  const Promo = require('../models/PromoConfig'); // انتبه للاسم الصحيح
-  const promo = await Promo.findOne({ key: 'contractors' }).lean();
-  res.render('adminDashbord', {
-    user: req.session.user,
-    promo: promo || {}   // ← مهم جداً
-  });
-});
 
 // صفحة إدارة برومو (إن وجدت)
 router.get('/promo/contractors', requireAdmin, async (req,res)=>{
@@ -498,36 +494,61 @@ router.get('/promo/contractors', requireAdmin, async (req,res)=>{
 
 // حفظ إعدادات البرومو
 // حفظ إعدادات البرومو (البنر السفلي) — يدعم رفع صورة
+// حفظ إعدادات برومو المقاولين — رفع الصورة إلى Cloudinary
 router.post(
   '/promo/contractors',
   requireAdmin,
-  upload.single('imgFile'), // ← جديد: استقبال ملف باسم imgFile
+  uploadMem.single('imgFile'),          // حقل الملف في الفورم اسمه imgFile كما هو
   async (req, res) => {
-    const Promo = require('../models/PromoConfig'); // أو PromoBlock حسب ملفك
-    // اختر المصدر: الملف المرفوع أو رابط احتياطي من الحقل النصّي
-    const imgFromUpload = req.file ? `/uploads/promo/${req.file.filename}` : '';
-    const imgFromUrl    = (req.body.img || '').trim();
-    const payload = {
-      enabled: req.body.enabled === 'on',
-      img:      imgFromUpload || imgFromUrl, // ← الأهم
-      title:   (req.body.title||'').trim(),
-      text:    (req.body.text||'').trim(),
-      link:    (req.body.link||'').trim(),
-    };
+    try {
+      const Promo = require('../models/PromoConfig');   // تأكد من المسار النسبي الصحيح
 
-    await Promo.findOneAndUpdate(
-      { key:'contractors' },
-      { $set: payload, $setOnInsert: { key:'contractors' } },
-      { upsert:true }
-    );
+      // 1) لو رُفع ملف نستعمل Cloudinary، وإلا نسمح برابط نصّي بديل من input[name=img]
+      let img = (req.body.img || '').trim();
 
-    const fresh = await Promo.findOne({ key:'contractors' }).lean();
-    res.render('adminDashbord', {
-      user: req.session.user,
-      promo: fresh || {}
-    });
+      if (req.file?.buffer) {
+        // نرفع بتهيئة مناسبة للبنرات (resize/auto format/auto quality من util عندك)
+        const up = await uploadBufferToCloudinary(req.file.buffer, {
+          folder: 'promo',                            // مجلد منطقي على كلاوديناري
+          publicId: 'contractors_promo_' + Date.now() // اختياري: اسم عام
+        });
+        if (up?.secure_url) img = up.secure_url;
+      }
+
+      if (!img) {
+        return res.status(400).json({ ok: false, msg: 'الصورة مطلوبة (رفع ملف أو رابط)' });
+      }
+
+      // 2) حمولة الحقول (نفس المنطق السابق تمامًا)
+      const payload = {
+        enabled: req.body.enabled === 'on' || req.body.enabled === 'true',
+        img,
+        title: (req.body.title || '').trim(),
+        text:  (req.body.text  || '').trim(),
+        link:  (req.body.link  || '').trim(),
+        btn:   (req.body.btn   || '').trim() || 'التفاصيل'
+      };
+
+      // 3) نحفظ تحت المفتاح الثابت contractors
+      await Promo.findOneAndUpdate(
+        { key: 'contractors' },
+        { $set: payload, $setOnInsert: { key: 'contractors' } },
+        { upsert: true, new: true }
+      );
+
+      // 4) نعيد الريندر للداشبورد بنفس ما كنت تفعله
+      const fresh = await Promo.findOne({ key: 'contractors' }).lean();
+      return res.render('adminDashbord', {
+        user: req.session.user,
+        promo: fresh || {}
+      });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ ok: false, msg: 'Server error' });
+    }
   }
 );
+
 // دالة تضمن وجود وثيقة البانرات، وإلا تنشئها
 async function getOrInit(key = 'home-banners') {
   let doc = await PromoBanner.findOne({ key });
@@ -541,45 +562,46 @@ async function getOrInit(key = 'home-banners') {
 // GET: عرض البنرات JSON (لوحة الأدمن تحتاجه)
 router.get('/promo/banners', requireAdmin, async (req, res) => {
   try {
-    const doc = await getOrInit('home-banners');
-    res.json({ ok:true, data: doc });
+    const key = bannerKey(req);
+    const doc = await PromoBanner.findOne({ key }).lean();
+    res.json({ ok: true, data: doc || { key, enabled: false, items: [] } });
   } catch (e) {
     console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
   }
 });
 
+
 // POST: إضافة بانر جديد
 router.post('/promo/banners',
   requireAdmin,
-  upload.single('imgFile'),
+  uploadMem.single('imgFile'),
   async (req, res) => {
     try {
-      const { title='', text='', link='', btn='التفاصيل' } = req.body;
+      const key = bannerKey(req);
+      const { title = '', text = '', link = '', btn = 'التفاصيل' } = req.body;
 
-      // لو رفع ملف: خزّنه بـ sharp داخل مجلد promo
-      const uploadedPath = req.file
-        ? await saveSharpImageToUploads(req.file.buffer, 'promo')
-        : '';
-
-      const imgFromUrl = (req.body.img || '').trim();
-      const img = uploadedPath || imgFromUrl;
+      // لو فيه ملف: ارفعه إلى كلوديناري
+      const uploadedUrl = await uploadImgIfAny(req.file, { folder: 'promo', publicIdPrefix: 'banner' });
+      const imgFromUrl  = (req.body.img || '').trim();
+      const img         = uploadedUrl || imgFromUrl;
 
       if (!img) return res.status(400).json({ ok:false, msg:'الصورة مطلوبة (رفع ملف أو رابط)' });
 
       const doc = await PromoBanner.findOneAndUpdate(
-        { key: 'home-banners' },
+        { key },
         {
-          $setOnInsert: { key:'home-banners', enabled: true },
+          $setOnInsert: { key, enabled: true },
           $push: { items: { img, title, text, link, btn, order: Date.now() } }
         },
-        { new:true, upsert:true }
+        { new: true, upsert: true }
       );
-      res.json({ ok:true, data: doc });
+
+      res.json({ ok: true, data: doc });
     } catch (e) {
-      console.error(e);
-      res.status(500).json({ ok:false, msg:'Server error' });
+      console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
     }
-});
+  }
+);
 
 // PATCH: تفعيل/تعطيل البنرات
 router.patch('/promo/banners/enabled', requireAdmin, async (req, res) => {
@@ -625,32 +647,33 @@ router.get('/promo/banners/:key', requireAdmin, async (req, res) => {
 // POST: إضافة عنصر (Upload أو رابط) داخل key معيّن
 router.post('/promo/banners/:key',
   requireAdmin,
-  upload.single('imgFile'),
+  uploadMem.single('imgFile'),
   async (req, res) => {
     try {
-      const { title='', text='', link='', btn='التفاصيل' } = req.body;
+      const key = bannerKey(req);
+      const { title = '', text = '', link = '', btn = 'التفاصيل' } = req.body;
 
-      const uploadedPath = req.file
-        ? await saveSharpImageToUploads(req.file.buffer, 'promo')
-        : '';
-
-      const imgFromUrl = (req.body.img || '').trim();
-      const img = uploadedPath || imgFromUrl;
+      const uploadedUrl = await uploadImgIfAny(req.file, { folder: 'promo', publicIdPrefix: 'banner' });
+      const imgFromUrl  = (req.body.img || '').trim();
+      const img         = uploadedUrl || imgFromUrl;
       if (!img) return res.status(400).json({ ok:false, msg:'الصورة مطلوبة' });
 
       const doc = await PromoBanner.findOneAndUpdate(
-        { key: req.params.key },
+        { key },
         {
-          $setOnInsert: { key:req.params.key, enabled: true },
+          $setOnInsert: { key, enabled: true },
           $push: { items: { img, title, text, link, btn, order: Date.now() } }
         },
-        { new:true, upsert:true }
+        { new: true, upsert: true }
       );
-      res.json({ ok:true, data: doc });
+
+      res.json({ ok: true, data: doc });
     } catch (e) {
       console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
     }
-});
+  }
+);
+
 
 // PATCH: تفعيل/تعطيل وثيقة key
 router.patch('/promo/banners/:key/enabled', requireAdmin, async (req, res) => {
@@ -698,21 +721,19 @@ router.get('/hero/slides', requireAdmin, async (req,res)=>{
 // POST: إضافة شريحة هيرو — يدعم رفع صورة أو رابط احتياطي
 router.post('/hero/slides',
   requireAdmin,
-  upload.single('imgFile'),
-  async (req,res)=>{
-    try{
-      const title = (req.body.title||'').trim();
-      const lead  = (req.body.lead ||'').trim();
+  uploadMem.single('imgFile'),
+  async (req, res) => {
+    try {
+      const title = (req.body.title || '').trim();
+      const lead  = (req.body.lead  || '').trim();
 
-      const uploadedPath = req.file
-        ? await saveSharpImageToUploads(req.file.buffer, 'promo')
-        : '';
+      const uploadedUrl = await uploadImgIfAny(req.file, { folder: 'promo', publicIdPrefix: 'hero' });
+      const imgFromUrl  = (req.body.img || '').trim();
+      const img         = uploadedUrl || imgFromUrl;
 
-      const imgFromUrl = (req.body.img || '').trim();
-      const img = uploadedPath || imgFromUrl;
       if (!img) return res.status(400).json({ ok:false, msg:'الصورة مطلوبة' });
 
-      const max = await HeroSlide.findOne().sort({ order:-1 }).lean();
+      const max = await HeroSlide.findOne().sort({ order: -1 }).lean();
       const row = await HeroSlide.create({
         img, title, lead,
         order: (max?.order ?? -1) + 1,
@@ -720,12 +741,11 @@ router.post('/hero/slides',
       });
 
       res.json({ ok:true, data: row });
-    }catch(e){
-      console.error(e);
-      res.status(500).json({ ok:false, msg:'Server error' });
+    } catch (e) {
+      console.error(e); res.status(500).json({ ok:false, msg:'Server error' });
     }
-});
-
+  }
+);
 /** PATCH: تعديل شريحة */
 router.patch('/hero/slides/:id', requireAdmin, async (req,res)=>{
   try{
@@ -784,7 +804,7 @@ router.get('/quick-links', async (req, res) => {
 // POST: حفظ صور "تصفّح الأقسام الشائعة" بالـ upload
 router.post('/quick-links',
   requireAdmin,
-  upload.fields([
+  uploadMem.fields([
     { name: 'saleImgFile',        maxCount: 1 },
     { name: 'rentImgFile',        maxCount: 1 },
     { name: 'contractorsImgFile', maxCount: 1 }
@@ -794,36 +814,33 @@ router.post('/quick-links',
       let doc = await HomeQuickLinks.findOne({ key: 'default' });
       if (!doc) doc = new HomeQuickLinks({ key: 'default' });
 
-      // إن وُجدت ملفات، خزّنها بالشّارب
       const f = req.files || {};
 
-      let salePath = doc.saleImg || '';
-      if (f.saleImgFile?.[0]?.buffer) {
-        salePath = await saveSharpImageToUploads(f.saleImgFile[0].buffer, 'promo');
-      }
+      // لكل حقل: لو فيه ملف جديد ارفعه، وإلا أبقِ القديم
+      const saleUrl = f.saleImgFile?.[0]
+        ? await uploadImgIfAny(f.saleImgFile[0], { folder: 'promo', publicIdPrefix: 'ql_sale' })
+        : (doc.saleImg || '');
 
-      let rentPath = doc.rentImg || '';
-      if (f.rentImgFile?.[0]?.buffer) {
-        rentPath = await saveSharpImageToUploads(f.rentImgFile[0].buffer, 'promo');
-      }
+      const rentUrl = f.rentImgFile?.[0]
+        ? await uploadImgIfAny(f.rentImgFile[0], { folder: 'promo', publicIdPrefix: 'ql_rent' })
+        : (doc.rentImg || '');
 
-      let contPath = doc.contractorsImg || '';
-      if (f.contractorsImgFile?.[0]?.buffer) {
-        contPath = await saveSharpImageToUploads(f.contractorsImgFile[0].buffer, 'promo');
-      }
+      const contUrl = f.contractorsImgFile?.[0]
+        ? await uploadImgIfAny(f.contractorsImgFile[0], { folder: 'promo', publicIdPrefix: 'ql_cont' })
+        : (doc.contractorsImg || '');
 
       doc.enabled        = !!req.body.enabled;
-      doc.saleImg        = salePath;
-      doc.rentImg        = rentPath;
-      doc.contractorsImg = contPath;
+      doc.saleImg        = saleUrl;
+      doc.rentImg        = rentUrl;
+      doc.contractorsImg = contUrl;
 
       await doc.save();
-      res.redirect('/admin?type=success&msg=تم%20الحفظ');
+      return res.redirect('/admin?type=success&msg=تم%20الحفظ');
     } catch (e) {
-      console.error(e);
-      res.status(500).send('Server error');
+      console.error(e); res.status(500).send('Server error');
     }
-});
+  }
+);
 
 // جلب كل الأقسام (للداشبورد)
 router.get('/home/showcase', async (req,res) => {
@@ -833,10 +850,11 @@ router.get('/home/showcase', async (req,res) => {
 
 // إنشاء/تحديث سكشن (upsert)
 // إضافة عنصر (كارت) عبر الرفع لسكشن من سلايدر الصفحة الرئيسية
+// إضافة عنصر (كارت) إلى سِكشن من عرض الصفحة الرئيسية (rentTop | saleTop | bestContractors)
 router.post(
   '/home/showcase/:key/item',
   requireAdmin,
-  upload.single('imgFile'),
+  uploadMem.single('imgFile'),
   async (req, res) => {
     try {
       const { key } = req.params; // rentTop | saleTop | bestContractors
@@ -844,26 +862,38 @@ router.post(
       const desc  = (req.body.desc  || '').trim();
       const link  = (req.body.link  || '').trim();
 
-      const img = req.file ? `/uploads/promo/${req.file.filename}` : '';
-      if (!img) return res.status(400).send('الرجاء اختيار صورة');
+      // نسمح إمّا برفع ملف، أو تمرير رابط جاهز من الحقل النصّي "img"
+      let img = (req.body.img || '').trim();
 
-      // ملاحظة: أزلنا items من $setOnInsert لتفادي التعارض مع $push
+      if (req.file?.buffer) {
+        // ارفع إلى Cloudinary داخل فولدر واضح حسب السِكشن
+        const up = await uploadBufferToCloudinary(req.file.buffer, {
+          folder: `showcase/${key}`,            // مثال: showcase/bestContractors
+          // publicId اختياري
+        });
+        if (up?.secure_url) img = up.secure_url;
+      }
+
+      if (!img) return res.status(400).send('الرجاء اختيار صورة أو إدخال رابط صورة');
+
+      // بدون تغيير في منطق التخزين: items[].img يظل URL (صار Cloudinary بدل /uploads)
       const doc = await HomeShowcase.findOneAndUpdate(
         { key },
         {
-          $setOnInsert: { key, title: '', enabled: true }, // ← بدون items هنا
+          $setOnInsert: { key, title: '', enabled: true },
           $push: { items: { img, title, desc, link, order: Date.now() } }
         },
         { new: true, upsert: true }
       );
 
-      return res.redirect('/admin');
+      return res.redirect('/admin?type=success&msg=تم%20الإضافة');
     } catch (e) {
       console.error(e);
       return res.status(500).send('Server error');
     }
   }
 );
+
 
 // حذف عنصر داخل سكشن بالاندكس (اختياري)
 router.delete('/home/showcase/:key/item/:idx', async (req,res)=>{
@@ -897,38 +927,35 @@ router.get('/promo/bottom', requireAdmin, async (req, res) => {
 
 router.post('/promo/bottom',
   requireAdmin,
-  upload.single('imgFile'),
+  uploadMem.single('imgFile'),
   async (req, res) => {
     try {
       const k = bottomKey(req);
 
-      const uploadedPath = req.file
-        ? await saveSharpImageToUploads(req.file.buffer, 'promo')
-        : '';
-
-      const img = uploadedPath || (req.body.img || '').trim();
+      const uploadedUrl = await uploadImgIfAny(req.file, { folder: 'promo', publicIdPrefix: `bottom_${k}` });
+      const img         = uploadedUrl || (req.body.img || '').trim();
 
       const payload = {
         enabled: req.body.enabled === 'on' || req.body.enabled === 'true',
         img,
-        title: (req.body.title||'').trim(),
-        text:  (req.body.text ||'').trim(),
-        link:  (req.body.link ||'').trim(),
-        btn:   (req.body.btn  ||'').trim() || 'التفاصيل',
+        title: (req.body.title || '').trim(),
+        text:  (req.body.text  || '').trim(),
+        link:  (req.body.link  || '').trim(),
+        btn:   (req.body.btn   || '').trim() || 'التفاصيل',
       };
 
       await PromoConfig.findOneAndUpdate(
         { key: `promo-bottom:${k}` },
         { $set: payload, $setOnInsert: { key: `promo-bottom:${k}` } },
-        { upsert:true }
+        { upsert: true }
       );
 
       return res.redirect('/admin?type=success&msg=تم%20الحفظ');
     } catch (e) {
-      console.error(e);
-      return res.status(500).send('Server error');
+      console.error(e); return res.status(500).send('Server error');
     }
-});
+  }
+);
 
 // DELETE: مسح/تعطيل البنر السفلي لصفحة معيّنة (sale | rent | contractors)
 // الاستعمال: DELETE /admin/promo/bottom?key=sale  أو rent/contractors

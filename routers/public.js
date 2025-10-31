@@ -331,7 +331,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
     // 4) الرندر (لا تغييرات على القالب)
     res.render('contractors', {
       contractors,
-      bannersDoc,promoBottom
+      bannersDoc,promoBottom,
     });
   } catch (err) {
     next(err);
@@ -339,27 +339,56 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
 });
 
 // صفحة مقاول فردية
+// routes/public.js
 router.get('/contractor/:id', async (req, res, next) => {
   try {
     const id = req.params.id;
-    const contractor = await Contractor.findById(id).lean();
-    if (!contractor) {
+
+    // 1) أجلب المقاول مع خطة المستخدم
+    const contractorRaw = await Contractor.findById(id)
+      .populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
+      .lean();
+
+    if (!contractorRaw) {
       return res.status(404).render('contractorssingle', { contractor: null, topRated: [] });
     }
-     const topRated = await Contractor.find({
+
+    // 2) طبّع واحتسب الخطة الفعّالة
+    const normalizeTier = (s='') => {
+      s = String(s).trim().toLowerCase();
+      if (s === 'vip') return 'VIP';
+      if (s === 'premium') return 'Premium';
+      return 'Basic';
+    };
+    const effectiveTier = normalizeTier(
+      contractorRaw?.user?.subscriptionTier || contractorRaw.subscriptionTier || 'Basic'
+    );
+
+    // 3) أسقِطها على الحقل الذي يقرأه القالب
+    const contractor = { ...contractorRaw, subscriptionTier: effectiveTier };
+
+    // 4) نفس الشيء لقائمة "أفضل المقاولين" كي تظهر الشارات صحيحة
+    const topRatedRaw = await Contractor.find({
       status: 'approved',
       _id: { $ne: id }
     })
-    .sort({ ratingAvg: -1, ratingCount: -1, createdAt: -1 })
-    .limit(3)
-    .select('name companyName services region city avatar subscriptionTier ratingAvg ratingCount')
-    .lean();
+      .populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
+      .sort({ ratingAvg: -1, ratingCount: -1, createdAt: -1 })
+      .limit(3)
+      .select('name companyName services region city avatar subscriptionTier ratingAvg ratingCount user')
+      .lean();
 
-    res.render('contractorssingle', { contractor ,topRated,});
+    const topRated = topRatedRaw.map(c => ({
+      ...c,
+      subscriptionTier: normalizeTier(c?.user?.subscriptionTier || c.subscriptionTier || 'Basic')
+    }));
+
+    return res.render('contractorssingle', { contractor, topRated });
   } catch (err) {
     next(err);
   }
 });
+
 
 // تقييم المقاول: جلب المتوسط والعدد
 router.get('/contractor/:id/ratings', async (req, res, next) => {

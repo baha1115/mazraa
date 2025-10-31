@@ -76,6 +76,47 @@
     @media (max-width:900px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.thumbs{grid-template-columns:repeat(3,1fr)}#map{height:300px}}
     :focus-visible{outline:none;box-shadow:var(--ring);border-radius:10px}
     #map { cursor: crosshair; }
+/* === Mobile upgrades (Owner Dashboard) === */
+.mobile-tabs{
+  position: fixed; right:0; left:0; bottom:0; z-index:60;
+  display:flex; gap:.25rem; justify-content:space-around;
+  padding:.5rem; background:#fff; border-top:1px solid #e5e7eb;
+  box-shadow:0 -8px 18px rgba(0,0,0,.06);
+}
+.mobile-tabs__btn{
+  flex:1; padding:.55rem .5rem; border-radius:12px;
+  border:1px solid #e5e7eb; background:#fff; font-weight:800;
+}
+.mobile-tabs__btn.is-active{
+  color:#fff; border-color:transparent;
+  background:linear-gradient(135deg,var(--g600),var(--g700));
+  box-shadow:0 8px 18px rgba(4,120,87,.18);
+}
+
+/* شريط إجراءات ثابت أسفل الموبايل */
+.fixed-actions{
+  position: fixed; left:0; right:0;
+  bottom: calc(56px + env(safe-area-inset-bottom,0px));
+  background:#fff; padding:.6rem .9rem; z-index:55;
+  border-top:1px solid #e5e7eb; box-shadow:0 -8px 18px rgba(0,0,0,.07);
+}
+
+@media (max-width: 900px){
+  body{ padding-bottom: calc(64px + env(safe-area-inset-bottom,0px)); } /* مساحة تحت الشريط السفلي */
+  .sidebar{ display:none; }                    /* أخفِ القائمة الجانبية */
+  .panel{ padding:.9rem .85rem 1.1rem; }
+  .cards{ grid-template-columns:1fr; gap:.7rem; } /* بطاقات الأرض عمود واحد */
+  .land{ grid-template-columns:1fr; }
+  .land__media{ width:100%; height:160px; }   /* صورة الغلاف بعرض كامل */
+  #map{ height:280px; }                        /* خريطة أصغر على الموبايل */
+  .toasts{ bottom:86px; left:12px; }          /* ارفع التوست فوق الشريط السفلي */
+}
+@media (max-width: 640px){
+  .thumbs{ grid-template-columns:repeat(2,1fr); } /* مصغّرات 2 أعمدة */
+}
+@media (min-width: 901px){
+  .mobile-tabs{ display:none; }                /* الشريط السفلي للديسكتوب غير لازم */
+}
 
   </style>
 </head>
@@ -258,6 +299,11 @@
 
   <!-- Toasts -->
   <div id="toasts" class="toasts"></div>
+<nav class="mobile-tabs" aria-label="التنقّل السريع">
+  <button class="mobile-tabs__btn is-active" data-view="lands">أراضيّي</button>
+  <button class="mobile-tabs__btn" data-view="new">إضافة</button>
+  <button class="mobile-tabs__btn" data-view="subscribe">ترقية</button>
+</nav>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
@@ -283,20 +329,42 @@
 
       // تنقل بين المشاهد
       const views={ lands:qs('#view-lands'), new:qs('#view-new'), subscribe:qs('#view-subscribe'), settings:qs('#view-settings') };
-      qsa('.menu__item').forEach(btn=>{
-        btn.addEventListener('click',async  ()=>{
-          qsa('.menu__item').forEach(b=>b.classList.remove('is-active'));
-          btn.classList.add('is-active');
-          const t=btn.dataset.view;
-          Object.entries(views).forEach(([k,v])=> v.classList.toggle('is-visible', k===t));
-          if (t==='new') {
-      _quotaReady = false;                    // أعد الضبط عند كل دخول للتبويب
-      await refreshQuota();                   // انتظر تحميل الحصّة
-      setTimeout(()=> map?.invalidateSize(), 100);
-    }
-          if (t==='subscribe') prefillSubscribe();
-        });
-      });
+      function activateView(name){
+  // أظهر لوحة واحدة فقط
+  Object.entries(views).forEach(([k,v])=> v?.classList.toggle('is-visible', k===name));
+
+  // فعّل الزرّ المقابل في الجانبي والسفلي
+  document.querySelectorAll('.menu__item').forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+  document.querySelectorAll('.mobile-tabs__btn').forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+
+  // منطق خاص بالتبويبات
+  if (name==='new') {
+    window._quotaReady = false;
+    refreshQuota?.();
+    setTimeout(()=> map?.invalidateSize?.(), 100);
+  }
+  if (name==='subscribe') prefillSubscribe?.();
+}
+
+    // أربط القائمة الجانبية
+document.querySelectorAll('.menu__item').forEach(btn=>{
+  btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+});
+// أربط القائمة السفلية للموبايل
+document.querySelectorAll('.mobile-tabs__btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+});
+// تفعيل افتراضي
+activateView('lands');
+// شريط إجراءات النموذج ثابت على الموبايل
+const actionsBar = document.querySelector('#landForm .actions.field--full');
+function toggleActionsBar(){
+  if (!actionsBar) return;
+  if (window.matchMedia('(max-width:900px)').matches) actionsBar.classList.add('fixed-actions');
+  else actionsBar.classList.remove('fixed-actions');
+}
+toggleActionsBar();
+window.addEventListener('resize', toggleActionsBar);
 
       // بيانات
       const LS_KEY='owner_leaflet_uploads_v2_subscribe';
@@ -368,7 +436,8 @@ const wa = l.ownerInfo?.whatsapp ? ` • واتساب: <a href="https://wa.me/${
       const card = document.createElement('article');
 card.className = 'land';
 card.innerHTML = `
-  <div class="land__media"><img src="${cover}" alt=""></div>
+  <div class="land__media"><img src="${cover}" alt="" loading="lazy" decoding="async">
+</div>
   <div>
     <h3 style="margin:.1rem 0">${esc(l.title||'—')}</h3>
     <div class="muted">
@@ -645,7 +714,8 @@ function dataUrlBytes(src){
         pendingPhotos.forEach((src, i)=>{
           const t = document.createElement('div');
           t.className='thumb';
-          t.innerHTML = `<img src="${src}" alt=""><button type="button" data-i="${i}">حذف</button>`;
+          t.innerHTML = `<img src="${src}" alt="" loading="lazy" decoding="async"><button ...>حذف</button>`;
+
           thumbs.appendChild(t);
         });
       }

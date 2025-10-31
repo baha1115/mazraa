@@ -22,7 +22,7 @@ function planLimit(plan) {
    الـ frontend يُرسل:
    - ownerFirst/ownerLast/ownerWhatsapp
    - title, kind(sale|rent), area, city, size, price
-   - photos[] (DataURL أو URL)
+   - photos[] (DataURL أو URL أو ملفات)
    - description أو desc
    - videoUrl (اختياري)
    - location {lat,lng,address} (اختياري)
@@ -41,7 +41,7 @@ const landSchema = Joi.object({
 
   photos: Joi.array().items(Joi.string()).default([]),
 
-   poolDesc: Joi.string().allow(''),
+  poolDesc: Joi.string().allow(''),
   amenitiesDesc: Joi.string().allow(''),
   buildingDesc: Joi.string().allow(''),
 
@@ -56,87 +56,72 @@ const landSchema = Joi.object({
     address: Joi.string().allow(''),
   }).allow(null),
 });
-// === أعلى ownerRouter.js ===
-const multer = require('multer');
-const sharp = require('sharp');
-const path = require('path');
-const fsp = require('fs/promises');
 
-// نرفع في الذاكرة
+/* ========= Cloudinary Upload Helpers ========= */
+// نرفع بالذاكرة
+const multer = require('multer');
 const uploadMem = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 6 * 1024 * 1024 }, // 6MB لكل صورة (عدّلها لو أردت)
+  limits: { fileSize: 6 * 1024 * 1024 }, // 6MB لكل صورة (يمكن تعديلها لاحقاً)
 });
 
-// حفظ صورة واحدة بالـsharp في uploads/farms
-async function saveSharpImage(buffer, subdir = 'farms', baseName = Date.now().toString()) {
-  const outDir = path.join(__dirname, '..', 'uploads', subdir);
-  await fsp.mkdir(outDir, { recursive: true });
-  const outName = `${baseName}.jpg`;
-  const outFull = path.join(outDir, outName);
+const { uploadBufferToCloudinary } = require('../utils/cloudinary');
 
-  await sharp(buffer)
-    .resize({ width: 1600, withoutEnlargement: true })
-    .jpeg({ quality: 80, mozjpeg: true })
-    .toFile(outFull);
-
-  return `/uploads/${subdir}/${outName}`;
+// حوّل dataURL إلى Buffer
+function dataURLtoBuffer(src){
+  const i = src.indexOf(',');
+  const b64 = i >= 0 ? src.slice(i+1) : src;
+  return Buffer.from(b64, 'base64');
 }
 
-// لو استقبلنا DataURL (base64) نحولها إلى Buffer ونحفظها
-async function saveDataUrl(dataUrl, subdir = 'farms') {
-  const m = /^data:image\/\w+;base64,/.test(dataUrl);
-  if (!m) return null;
-  const b64 = dataUrl.split(',')[1];
-  const buffer = Buffer.from(b64, 'base64');
-  return saveSharpImage(buffer, subdir);
-}
-
-// مُوحِّد للإدخالات: يعيد مصفوفة مسارات صور مضغوطة من req.files أو من body.photos
-async function buildPhotosArray(req, subdir = 'farms') {
+/**
+ * يبني مصفوفة صور برفع أي ملفات/داتا-URL إلى Cloudinary
+ * ويحتفظ بأي روابط http(s) موجودة كما هي.
+ * - يدعم:
+ *   - ملفات multipart (input name="photos")
+ *   - body.photos: Array<string> يمكن أن تحتوي DataURL أو URL
+ */
+async function buildPhotosArrayCloud(req, { folder='farms' } = {}){
   const out = [];
 
-  // 1) ملفات multipart: photos[] (إن وُجدت)
+  // 1) ملفات multipart (photos[] أو req.files.photos)
   const files = Array.isArray(req.files) ? req.files : (req.files?.photos || []);
-  for (const f of files) {
-    if (f?.buffer) {
-      const p = await saveSharpImage(f.buffer, subdir);
-      out.push(p);
+  for (const f of files){
+    if (f?.buffer){
+      const r = await uploadBufferToCloudinary(f.buffer, { folder });
+      if (r?.secure_url) out.push(r.secure_url);
     }
   }
 
-  // 2) JSON/نص: body.photos = [url|dataURL,...]
-  //    - لو كانت dataURL نضغطها
-  //    - لو كانت رابط http(s) نتركه كما هو
+  // 2) body.photos = [url|dataURL]
   let bodyPhotos = req.body?.photos;
-  if (typeof bodyPhotos === 'string') {
-    try { bodyPhotos = JSON.parse(bodyPhotos); } catch { /* تجاهل */ }
+  if (typeof bodyPhotos === 'string'){
+    try { bodyPhotos = JSON.parse(bodyPhotos); } catch {}
   }
-  if (Array.isArray(bodyPhotos)) {
-    for (const item of bodyPhotos) {
-      if (typeof item === 'string' && item.startsWith('data:image/')) {
-        const p = await saveDataUrl(item, subdir);
-        if (p) out.push(p);
-      } else if (typeof item === 'string' && /^https?:\/\//.test(item)) {
-        out.push(item);
-      } else if (typeof item === 'string' && item.startsWith('/uploads/')) {
-        // صورة قديمة محفوظة في السيرفر (إبقاء)
+  if (Array.isArray(bodyPhotos)){
+    for (const item of bodyPhotos){
+      if (typeof item === 'string' && item.startsWith('data:image/')){
+        const buf = dataURLtoBuffer(item);
+        const r = await uploadBufferToCloudinary(buf, { folder });
+        if (r?.secure_url) out.push(r.secure_url);
+      } else if (typeof item === 'string' && /^https?:\/\//.test(item)){
+        // رابط خارجي/Cloudinary جاهز — أبقه كما هو
         out.push(item);
       }
+      // لم نعد ندعم /uploads/... (انتقلت الصور إلى Cloudinary)،
+      // لكن لو واجهت قيماً قديمة يمكنك إبقاءها بإضافة شرط startsWith('/uploads/')
     }
   }
 
-  // إزالة التكرارات
+  // إزالة التكرار
   return Array.from(new Set(out));
 }
 
 /* ========= Routes ========= */
 
-// POST /owner/lands — إنشاء أرض جديدة مع فحص الحصة حسب الخطة
-// POST /owner/lands — إنشاء أرض جديدة مع فحص الحصة + ضغط الصور
+// POST /owner/lands — إنشاء أرض + رفع الصور إلى Cloudinary
 router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (req, res) => {
   try {
-    // الفاليديشن كما هو عندك
     const { value, error } = landSchema.validate(req.body || {}, { abortEarly:false });
     if (error) {
       return res.status(400).json({ ok:false, msg:'Validation error', details:error.details });
@@ -146,21 +131,21 @@ router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (r
     const user = await User.findById(userId).lean();
     const plan = (user?.subscriptionTier || 'Basic');
 
-    // نفس منطق الحصة الحالي لديك
-    const used = await Farm.countDocuments({ owner: userId });
-    const limit = (plan === 'VIP') ? Infinity : (plan === 'Premium' ? 2 : 1);
-    if (used >= limit) {
-      const limitTxt = (limit === Infinity) ? 'غير محدود' : String(limit);
+    // الحصة كما هي
+    const used  = await Farm.countDocuments({ owner: userId });
+    const limit = planLimit(plan);
+    if (limit !== Infinity && used >= limit) {
+      const limitTxt = String(limit);
       return res.status(403).json({
         ok:false,
         msg: `لقد بلغت الحد المسموح به للنشر حسب خطتك (${plan}). المسموح: ${limitTxt} — الحالي: ${used}.`
       });
     }
 
-    // هنا النوطة المهمة: تكوين مصفوفة الصور الموحّدة
-    const photos = await buildPhotosArray(req, 'farms');
+    // صور Cloudinary
+    const photos = await buildPhotosArrayCloud(req, { folder: 'farms' });
 
-    // باقي الحقول كما عندك بالضبط:
+    // الحقول الأخرى كما هي
     const ownerInfo = {
       first: (value.ownerFirst || '').trim(),
       last:  (value.ownerLast  || '').trim(),
@@ -187,7 +172,7 @@ router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (r
       city: (value.city || '').trim(),
       size: Number(value.size) || 0,
       price: Number(value.price) || 0,
-      photos, // ← الصور المضغوطة/الموحدة هنا
+      photos, // روابط Cloudinary
       poolDesc: (value.poolDesc || '').toString().trim(),
       amenitiesDesc: (value.amenitiesDesc || '').toString().trim(),
       buildingDesc: (value.buildingDesc || '').toString().trim(),
@@ -207,7 +192,7 @@ router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (r
   }
 });
 
-// GET /owner/lands — جلب أراضي المستخدم (للواجهة: قائمة "أراضيي")
+// GET /owner/lands — جلب أراضي المستخدم
 router.get('/owner/lands', requireAuth, async (req, res) => {
   try {
     const rows = await Farm.find({ owner: req.session.user._id })
@@ -237,7 +222,7 @@ router.get('/owner/lands/quota', requireAuth, async (req, res) => {
   try {
     const userId = req.session.user._id;
     const user = await User.findById(userId).lean();
-   const plan = (user?.subscriptionTier || 'Basic');
+    const plan = (user?.subscriptionTier || 'Basic');
     const limit = planLimit(plan);
     const used = await Farm.countDocuments({ owner: userId });
     const left = (limit === Infinity) ? Infinity : Math.max(0, limit - used);
@@ -247,15 +232,14 @@ router.get('/owner/lands/quota', requireAuth, async (req, res) => {
     return res.status(500).json({ ok:false, msg:'Server error' });
   }
 });
-// PATCH /owner/lands/:id  — تعديل أرض موجودة للمستخدم الحالي
-// PATCH /owner/lands/:id — تعديل أرض موجودة للمستخدم الحالي
-// PATCH /owner/lands/:id — تعديل أرض + دعم صور جديدة مضغوطة
+
+// PATCH /owner/lands/:id — تعديل أرض + دعم رفع صور جديدة إلى Cloudinary
 router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), async (req,res)=>{
   try{
     const b = req.body || {};
 
-    // ابنِ قائمة الصور الموحّدة (تُبقي القديمة وتضيف الجديدة)
-    const photos = await buildPhotosArray(req, 'farms');
+    // إبقِ الروابط الموجودة + أضف أي ملفات/داتا-URL جديدة (كلاوديناري)
+    const photos = await buildPhotosArrayCloud(req, { folder: 'farms' });
 
     const update = {
       title: (b.title||'').trim(),
@@ -264,7 +248,7 @@ router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), asy
       city : (b.city||'').trim(),
       size : Number(b.size)||0,
       price: Number(b.price)||0,
-      photos, // ← هنا
+      photos, // روابط Cloudinary
       poolDesc: (b.poolDesc || '').toString(),
       amenitiesDesc: (b.amenitiesDesc || '').toString(),
       buildingDesc: (b.buildingDesc || '').toString(),
@@ -304,12 +288,12 @@ router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), asy
   }
 });
 
-// GET /owner/lands/:id — يعيد إعلان المالك الحالي بصيغة JSON للتعديل
+// GET /owner/lands/:id — إعلان المالك الحالي للتعديل
 router.get('/owner/lands/:id', requireAuth, async (req, res) => {
   try{
     const doc = await Farm.findOne({
       _id: req.params.id,
-      owner: req.session.user._id, // ← هنا أيضًا
+      owner: req.session.user._id,
     }).lean();
 
     if (!doc) return res.status(404).json({ ok:false, msg:'غير موجود' });
@@ -320,6 +304,4 @@ router.get('/owner/lands/:id', requireAuth, async (req, res) => {
   }
 });
 
-
 module.exports = router;
-

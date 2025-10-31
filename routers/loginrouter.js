@@ -11,28 +11,63 @@ const SubscriptionConfig = require('../models/SubscriptionConfig');
 // === رفع صور المقاولين بالذاكرة + sharp ===
 const path = require('path');
 const fs = require('fs/promises');
+// ـــــــــ Cloudinary ـــــــــ
 const multer = require('multer');
-const sharp = require('sharp');
-
 const uploadMem = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB للصورة الواحدة
+  limits: { fileSize: 8 * 1024 * 1024 } // 8MB للصورة الواحدة
 });
 
-async function saveSharpImageToUploads(fileBuffer, subdir, baseName = Date.now().toString()) {
-  const uploadsDir = path.join(__dirname, '..', 'uploads', subdir);
-  await fs.mkdir(uploadsDir, { recursive: true });
+const { uploadBufferToCloudinary } = require('../utils/cloudinary');
 
-  const outName = `${baseName}.jpg`;
-  const outFull = path.join(uploadsDir, outName);
-
-  await sharp(fileBuffer)
-    .resize({ width: 1600, withoutEnlargement: true })
-    .jpeg({ quality: 80, mozjpeg: true })
-    .toFile(outFull);
-
-  return `/uploads/${subdir}/${outName}`;
+// دعم تحويل DataURL إلى Buffer
+function dataURLtoBuffer(src){
+  const i = src.indexOf(',');
+  const b64 = i >= 0 ? src.slice(i+1) : src;
+  return Buffer.from(b64, 'base64');
 }
+
+/**
+ * يرفع كل الصور (ملفات multipart و/أو DataURL من body) إلى Cloudinary
+ * ويُرجع مصفوفة URLs (secure_url). يبقي الروابط http(s) كما هي،
+ * ويقبل أيضاً مسارات legacy من /uploads/ (للخلفية).
+ */
+async function buildContractorPhotosArrayCloud(req, { folder='contractors' } = {}){
+  const out = [];
+
+  // 1) ملفات مرفوعة عبر multipart: photos[]
+  const files = (req.files && req.files.photos) ? req.files.photos : [];
+  for (const f of files){
+    if (f?.buffer){
+      const r = await uploadBufferToCloudinary(f.buffer, { folder });
+      if (r?.secure_url) out.push(r.secure_url);
+    }
+  }
+
+  // 2) body.photos (قد تصل JSON string أو CSV أو Array)
+  let bodyPhotos = req.body?.photos;
+  if (typeof bodyPhotos === 'string'){
+    try { bodyPhotos = JSON.parse(bodyPhotos); }
+    catch { bodyPhotos = bodyPhotos.split(',').map(s=>s.trim()).filter(Boolean); }
+  }
+  if (Array.isArray(bodyPhotos)){
+    for (const item of bodyPhotos){
+      if (typeof item === 'string' && item.startsWith('data:image/')){
+        const buf = dataURLtoBuffer(item);
+        const r = await uploadBufferToCloudinary(buf, { folder });
+        if (r?.secure_url) out.push(r.secure_url);
+      } else if (typeof item === 'string' && /^https?:\/\//.test(item)){
+        out.push(item);              // رابط خارجي جاهز
+      } else if (typeof item === 'string' && item.startsWith('/uploads/')){
+        out.push(item);              // إبقاء صور قديمة في السيرفر إن وُجدت
+      }
+    }
+  }
+
+  // إزالة التكرارات
+  return Array.from(new Set(out));
+}
+
 
 /**
  * يبني مصفوفة الصور النهائية للمقاول:
@@ -40,34 +75,7 @@ async function saveSharpImageToUploads(fileBuffer, subdir, baseName = Date.now()
  * - يضيف أي صور رُفعت (req.files.photos) بعد ضغطها بـ sharp
  * - يزيل التكرار
  */
-async function buildContractorPhotosArray(req) {
-  // 1) روابط جاهزة من الـ body
-  let urls = [];
-  if (Array.isArray(req.body.photos)) {
-    urls = req.body.photos.map(s => String(s).trim()).filter(Boolean);
-  } else if (typeof req.body.photos === 'string' && req.body.photos.trim()) {
-    // دعم إرسال photos كسلسلة JSON مثل ["a","b"] أو كسلسلة مفصولة بفواصل
-    try {
-      const parsed = JSON.parse(req.body.photos);
-      if (Array.isArray(parsed)) {
-        urls = parsed.map(s => String(s).trim()).filter(Boolean);
-      }
-    } catch {
-      urls = String(req.body.photos).split(',').map(s => s.trim()).filter(Boolean);
-    }
-  }
 
-  // 2) صور مرفوعة: خزّنها في /uploads/contractors
-  const uploaded = [];
-  const upFiles = (req.files && req.files.photos) ? req.files.photos : [];
-  for (const f of upFiles) {
-    const p = await saveSharpImageToUploads(f.buffer, 'contractors');
-    uploaded.push(p);
-  }
-
-  // 3) دمج بدون تكرار
-  return Array.from(new Set([ ...urls, ...uploaded ]));
-}
 
 async function contractorPlanLimit(plan){
   const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
@@ -464,78 +472,11 @@ router.get(['/dashboard/admin'], requireAuth, requireAdmin, (req, res) => {
 // إنشاء أرض (تذهب Pending)
 // إنشاء أرض من لوحة المالك + تضمين فيديو URL اختياري
 // routers/ownerRouter.js  (أو loginrouter.js حسب تنظيمك)
-router.post('/owner/lands', requireAuth, async (req, res) => {
-  try {
-    const b = req.body || {};
-    const lat = Number(b?.location?.lat);
-    const lng = Number(b?.location?.lng);
-    const address = (b?.location?.address || '').toString().trim();
-    // ⚠️ اجعل owner مرجع المستخدم، و ownerInfo للعرض فقط
-    const doc = await Farm.create({
-      owner: req.session.user._id,                 // ObjectId
-      ownerInfo: {
-        first: (b.ownerFirst || '').trim(),
-        last:  (b.ownerLast  || '').trim(),
-        whatsapp: (b.ownerWhatsapp || '').trim(),
-      },
-
-      title: (b.title || '').trim(),
-      kind : (b.kind === 'rent' ? 'rent' : 'sale'),
-      area : (b.area || '').trim(),
-      city : (b.city || '').trim(),
-      size : Number(b.size)  || 0,
-      price: Number(b.price) || 0,
-
-      photos: Array.isArray(b.photos) ? b.photos : [],
-      poolDesc:      (b.poolDesc      || '').toString().trim(),
-      amenitiesDesc: (b.amenitiesDesc || '').toString().trim(),
-      buildingDesc:  (b.buildingDesc  || '').toString().trim(),
-      description: (b.desc || b.description || '').toString().trim(),         // لاحظ: نخزن في description
-
-      // 👇 مهم: lat/lng أرقام حقيقية
-    location: (Number.isFinite(lat) && Number.isFinite(lng))
-        ? { lat, lng, address }
-        : undefined,
-
-      videoUrl: (b.videoUrl || '').trim(),         // حقل جذري (ليس داخل location)
-
-      status: 'pending',
-      approvedAt: null,
-      reviewNote: '',
-      createdBy: req.session.user._id
-    });
-
-    return res.json({ ok:true, msg:'تم إرسال إعلانك للمراجعة', id: doc._id });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ ok:false, msg:'حصل خطأ أثناء الإرسال' });
-  }
-});
 
 // جلب أراضي المستخدم
-router.get('/owner/lands', requireAuth, requireRole('landowner'), async (req, res) => {
-  try{
-    const rows = await Farm.find({ owner: req.session.user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-    return res.json({ ok:true, data: rows });
-  }catch(err){
-    console.error(err);
-    return res.status(500).json({ ok:false, msg:'Server error' });
-  }
-});
+
 
 // ========== حذف أرض يملكها المستخدم ==========
-router.delete('/owner/lands/:id', requireAuth, requireRole('landowner'), async (req, res) => {
-  try{
-    const r = await Farm.findOneAndDelete({ _id: req.params.id, owner: req.session.user._id });
-    if (!r) return res.status(404).json({ ok:false, msg:'Not found' });
-    return res.json({ ok:true, msg:'Deleted' });
-  }catch(err){
-    console.error(err);
-    return res.status(500).json({ ok:false, msg:'Server error' });
-  }
-});
 
 // ========= Logout =========
 router.post('/logout', (req, res) => {
@@ -577,6 +518,7 @@ router.get('/dashboard/owner', requireAuthPage, requireRole('landowner'), (req,r
 // أبقِ هذه النسخة فقط (التي تنشئ في ContractorRequest)
 // إنشاء/إرسال ملف مقاول للمراجعة مع التحقق من الحصة
 // إنشاء/إرسال ملف مقاول للمراجعة — يدعم رفع avatar + photos مع sharp
+// إنشاء/إرسال ملف مقاول للمراجعة — يدعم avatar + photos عبر Cloudinary
 router.post(
   '/contractor/profile',
   requireAuthApi,
@@ -589,23 +531,20 @@ router.post(
       const {
         name='', email='', phone='', region='', bio='',
         companyName='', services=[], city='', description='',
-        // لو أرسلت روابط جاهزة مع الفورم:
         videoUrl = ''
       } = req.body || {};
 
       const userId = req.session.user._id;
 
-      // جلب الخطة لحساب الحصة
+      // الخطة لحساب الحصة (من نفس منطقك الحالي)
       const user = await User.findById(userId).lean();
       const plan = (user?.subscriptionTier || user?.plan || 'Basic');
 
-      // حدّ المقاولين (مقروء من SubscriptionConfig في مكان آخر كما عندك)
       const used = await ContractorRequest.countDocuments({
         user: userId,
         status: { $in: ['pending','approved'] }
       });
 
-      // استعمل نفس دالتك الحالية للحدّ (contractorPlanLimit(plan)) إن كانت معرفة أعلى الملف
       const limit = await contractorPlanLimit(plan);
       if (limit !== Infinity && used >= limit) {
         return res.status(403).json({
@@ -614,16 +553,20 @@ router.post(
         });
       }
 
-      // 1) avatar (ملف مرفوع أو رابط نصّي احتياطي)
+      // 1) avatar: أولوية للملف ثم للرابط النصّي
       let avatar = '';
       if (req.files?.avatar?.[0]?.buffer) {
-        avatar = await saveSharpImageToUploads(req.files.avatar[0].buffer, 'contractors', 'avatar_'+Date.now());
+        const up = await uploadBufferToCloudinary(
+          req.files.avatar[0].buffer,
+          { folder:'contractors', publicId: 'avatar_'+Date.now() }
+        );
+        avatar = up?.secure_url || '';
       } else if (req.body.avatar) {
         avatar = String(req.body.avatar).trim();
       }
 
-      // 2) photos (دمج روابط + ملفات مضغوطة)
-      const photos = await buildContractorPhotosArray(req);
+      // 2) photos: من الملفات + body (DataURL/URLs) إلى Cloudinary
+      const photos = await buildContractorPhotosArrayCloud(req, { folder:'contractors' });
 
       const doc = await ContractorRequest.create({
         user: userId,
@@ -679,6 +622,7 @@ router.delete('/contractor/requests/:id', requireAuthApi, async (req,res)=>{
 });
 // === API المقاول: تعديل طلب (يعيده إلى pending للمراجعة) ===
 // تعديل طلب مقاول — يدعم رفع avatar + photos مع sharp ويعيده pending للمراجعة
+// تعديل طلب مقاول — يدعم avatar + photos عبر Cloudinary ويعيد الحالة إلى pending
 router.patch(
   '/contractor/requests/:id',
   requireAuthApi,
@@ -691,21 +635,24 @@ router.patch(
       const {
         name, email, phone, region, bio,
         companyName, services, city, description,
-        // يمكن أيضاً إرسال روابط avatar/photos في الـ body بجانب الملفات
         videoUrl
       } = req.body || {};
 
       const update = {};
 
-      // avatar: الأولوية للملف، ثم الرابط النصّي، وإلا لا نغيّر القيمة
+      // avatar: ملف ثم رابط نصي
       if (req.files?.avatar?.[0]?.buffer) {
-        update.avatar = await saveSharpImageToUploads(req.files.avatar[0].buffer, 'contractors', 'avatar_'+Date.now());
+        const up = await uploadBufferToCloudinary(
+          req.files.avatar[0].buffer,
+          { folder:'contractors', publicId: 'avatar_'+Date.now() }
+        );
+        update.avatar = up?.secure_url || '';
       } else if (req.body.avatar != null) {
         update.avatar = String(req.body.avatar).trim();
       }
 
-      // photos: ابنِ المصفوفة من الروابط + الملفات الجديدة
-      const photos = await buildContractorPhotosArray(req);
+      // photos: ابنِ مصفوفة من الملفات + body (DataURL/URLs)
+      const photos = await buildContractorPhotosArrayCloud(req, { folder:'contractors' });
       if (photos.length || req.body.photos != null || (req.files?.photos?.length || 0) > 0) {
         update.photos = photos;
       }
@@ -725,7 +672,7 @@ router.patch(
       }
       if (videoUrl != null)    update.videoUrl = String(videoUrl).trim();
 
-      // أي تعديل → يُعاد للمراجعة
+      // أي تعديل → pending
       update.status     = 'pending';
       update.reviewNote = '';
       update.approvedAt = null;
