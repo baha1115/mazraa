@@ -38,6 +38,7 @@ const landSchema = Joi.object({
   city: Joi.string().allow(''),
   size: Joi.number().min(0).required(),
   price: Joi.number().min(0).required(),
+currency: Joi.string().valid('USD','SYP').default('USD'),
 
   photos: Joi.array().items(Joi.string()).default([]),
 
@@ -172,6 +173,7 @@ router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (r
       city: (value.city || '').trim(),
       size: Number(value.size) || 0,
       price: Number(value.price) || 0,
+     currency: (value.currency === 'SYP' ? 'SYP' : 'USD'),
       photos, // روابط Cloudinary
       poolDesc: (value.poolDesc || '').toString().trim(),
       amenitiesDesc: (value.amenitiesDesc || '').toString().trim(),
@@ -248,6 +250,7 @@ router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), asy
       city : (b.city||'').trim(),
       size : Number(b.size)||0,
       price: Number(b.price)||0,
+      currency: (b.currency === 'SYP' ? 'SYP' : 'USD'),
       photos, // روابط Cloudinary
       poolDesc: (b.poolDesc || '').toString(),
       amenitiesDesc: (b.amenitiesDesc || '').toString(),

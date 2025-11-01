@@ -200,7 +200,12 @@
         <div class="farm-body">
           <h3 class="farm-title"><%= titleTxt %></h3>
           <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
-          <p class="farm-price"><%= num(farm.price) ? (num(farm.price).toLocaleString('en') + '$ / شهريًا') : '—' %></p>
+         <p class="farm-price">
+  <%= num(farm.price)
+      ? ((farm.currency === 'SYP' ? 'ل.س' : '$') + ' ' + num(farm.price).toLocaleString('en') + ' / شهريًا')
+      : '—' %>
+</p>
+
 
           <!-- 👇 عدد المشاهدات -->
           <div class="meta-views">👁️ <%= vw.toLocaleString('en') %></div>
@@ -250,6 +255,7 @@ if (toggleBtn && moreFilters) {
 const $  = (s,ctx=document)=>ctx.querySelector(s);
 const $$ = (s,ctx=document)=>Array.from(ctx.querySelectorAll(s));
 const fmtEN = n => Number(n||0).toLocaleString('en');
+const moneySym = c => c === 'SYP' ? 'ل.س' : '$';
 
 /* ======= عناصر الصفحة ======= */
 const form          = $('#rent-filters');
@@ -292,7 +298,11 @@ function rentSlide(f){
           <div class="farm-body">
             <h3 class="farm-title">${htmlEscape(f.title || '—')}</h3>
             <p class="farm-location">${htmlEscape(loc)}</p>
-            <p class="farm-price">${Number(f.price || 0) ? (fmtEN(f.price) + '$ / شهريًا') : '—'}</p>
+            <p class="farm-price">${
+  Number(f.price || 0)
+    ? (moneySym(f.currency) + ' ' + fmtEN(f.price) + ' / شهريًا')
+    : '—'
+}</p>
             <div class="meta-views">👁️ ${fmtEN(vws)}</div>
             <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
           </div>
@@ -318,8 +328,12 @@ function vipSlide(f){
         <div class="vip-hero-body">
           <h3 class="vip-hero-title">${htmlEscape(f.title || '—')}</h3>
           <div class="vip-hero-meta">
-            ${htmlEscape(loc)}<br> • <br>${fmtEN(f.size)} م² <br>• $${fmtEN(f.price)} <br><span class="meta-views" style="color:white;">• 👁️ ${fmtEN(vws)}</span>
-          </div>
+  ${htmlEscape(loc)} <br>
+  • ${fmtEN(f.size)} م² <br>
+  • ${moneySym(f.currency)}${fmtEN(f.price)} / شهريًا <br>
+  <span class="meta-views" style="color:white;">• 👁️ ${fmtEN(vws)}</span>
+</div>
+
           <a class="vip-hero-cta" href="${link}">التفاصيل</a>
         </div>
       </article>

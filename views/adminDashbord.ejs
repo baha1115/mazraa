@@ -711,6 +711,26 @@
     <div id="btm-current">
       <p class="muted">لا توجد بيانات بعد.</p>
     </div>
+    <section class="card" style="margin-top:1rem">
+  <h3 style="margin-bottom:.5rem">إعدادات الفوتر</h3>
+  <form id="footerForm" class="grid" style="grid-template-columns:1fr 1fr; gap:.7rem">
+    <input class="input" name="email"    placeholder="البريد (مثال: support@example.com)">
+    <input class="input" name="phone"    placeholder="الهاتف (مثال: +963 900 000 000)">
+    <input class="input" name="whatsapp" placeholder="واتساب (رقم دولي بدون مسافات)">
+    <input class="input" name="address"  placeholder="العنوان (اختياري)">
+
+    <input class="input" name="facebook"  placeholder="رابط فيسبوك">
+    <input class="input" name="twitter"   placeholder="رابط تويتر/X">
+    <input class="input" name="youtube"   placeholder="رابط يوتيوب">
+    <input class="input" name="instagram" placeholder="رابط إنستغرام">
+    <input class="input" name="tiktok"    placeholder="رابط تيكتوك">
+
+    <div style="grid-column:1/-1; display:flex; gap:.6rem; justify-content:flex-end">
+      <button type="submit" class="btn btn-primary">حفظ</button>
+    </div>
+  </form>
+</section>
+
   </section>
 
   <script>
@@ -837,6 +857,7 @@
   
   const toastBox = qs('#toasts');
   const fmt = new Intl.NumberFormat('en');
+  function moneySym(c){ return c === 'SYP' ? 'ل.س' : '$'; }
   function toast(msg, kind='ok', ms=2200){
     const t = document.createElement('div');
     t.className = 'toast ' + (kind==='ok' ? 'toast--ok' : 'toast--warn');
@@ -918,7 +939,9 @@
 
   function farmDetailsHTML(f){
     const kindText  = f.kind === 'rent' ? 'إيجار' : 'بيع';
-    const priceText = f.kind === 'rent' ? ('$'+fmt.format(f.price)+'/شهر') : ('$'+fmt.format(f.price));
+ const priceText = f.kind === 'rent'
+  ? (moneySym(f.currency) + fmt.format(f.price) + '/شهر')
+  : (moneySym(f.currency) + fmt.format(f.price));
     const locLine   = f.location ? `${(f.location.address||'')} ${(f.location.lat!=null&&f.location.lng!=null)?`(${f.location.lat}, ${f.location.lng})`:''}` : '—';
 
     const imgs = Array.isArray(f.photos) && f.photos.length
@@ -1009,7 +1032,11 @@ ${(f.amenitiesDesc||'').trim() ? `
           <h3 class="title" style="margin:.1rem 0">${esc(l.title)}</h3>
           <div class="meta">
             ${l.kind==='sale'?'بيع':'إيجار'} • ${esc(l.area)} — ${esc(l.city||'')}${loc}
-            • ${l.kind==='rent'?'$'+fmt.format(l.price)+'/شهر':'$'+fmt.format(l.price)} • ${fmt.format(l.size)} م²
+            • ${
+    l.kind==='rent'
+      ? (moneySym(l.currency) + fmt.format(l.price) + '/شهر')
+      : (moneySym(l.currency) + fmt.format(l.price))
+  } • ${fmt.format(l.size)} م²
             <span class="pill p--pending">بانتظار المراجعة</span>
           </div>
 
@@ -2004,6 +2031,44 @@ if (!form || !itemsB || !addBtn || !viewB) return;
     // تفعيل افتراضي
     activateView('farms');
   })();
+</script>
+<script>
+(() => {
+  const fForm = document.getElementById('footerForm');
+  if (!fForm) return;
+
+  // حمّل القيم الحالية
+  (async function loadFooter(){
+    try{
+      const res  = await fetch('/admin/site/footer', { headers: { 'accept':'application/json' }});
+      const json = await res.json();
+      const d = json?.data || {};
+      for (const [k,v] of Object.entries(d)) {
+        const el = fForm.querySelector(`[name="${k}"]`);
+        if (el) el.value = v || '';
+      }
+    }catch(e){ console.error(e); }
+  })();
+
+  // احفظ القيم
+   fForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(fForm);
+    const payload = Object.fromEntries(fd.entries());
+
+    const res = await fetch('/admin/site/footer', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    const j = await res.json().catch(()=>({}));
+    if (j?.ok) (window.showToast? showToast('تم الحفظ','ok') : alert('تم الحفظ'));
+    else       (window.showToast? showToast('تعذر الحفظ','warn') : alert('تعذر الحفظ'));
+  });
+})();
 </script>
 
 </body>

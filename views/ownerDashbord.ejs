@@ -151,9 +151,12 @@
           <!-- معلومات المالك -->
           <label class="field"><span class="label">اسم المالك</span><input maxlength="50" name="ownerFirst" class="input" placeholder="الاسم"/></label>
           <label class="field"><span class="label">اللقب</span><input maxlength="50" name="ownerLast" class="input" placeholder="اللقب"/></label>
-          <label class="field"><span class="label">رقم واتساب</span><input name="ownerWhatsapp" class="input" placeholder="+9665... أو +9639..." /></label>
+          <label class="field">
+  <span class="label">رقم واتساب</span>
+  <input name="ownerWhatsapp" class="input" placeholder="+9665... أو +9639..." />
+  <small id="ownerWhatsappHint" class="muted"></small>
+</label>
 
-          <!-- معلومات الأرض -->
           <label class="field"><span class="label">عنوان الإعلان</span><input name="title" class="input" required placeholder="مثال: مزرعة زيتون"/></label>
           <label class="field"><span class="label">النوع</span>
             <select name="kind" class="input"><option value="sale">بيع</option><option value="rent">إيجار</option></select>
@@ -181,6 +184,13 @@
 </label>
           <label class="field"><span class="label">المساحة (م²)</span><input name="size" type="number" class="input" min="0" required/></label>
           <label class="field"><span class="label">السعر</span><input name="price" type="number" class="input" min="0" required/></label>
+         <label class="field">
+  <span class="label">العملة</span>
+  <select name="currency" class="input">
+    <option value="USD">$ دولار</option>
+    <option value="SYP">ل.س ليرة سورية</option>
+  </select>
+</label>
 
           <!-- رفع الصور بالسحب والإفلات -->
           <div class="field field--full">
@@ -268,11 +278,13 @@
             </label>
           </div>
 
-          <label class="field">
-            <span class="label">رقم واتساب للتواصل</span>
-            <input class="input" name="ownerWhatsapp" placeholder="+9665... أو +9639..." required>
-            <small class="muted">سنضمّن هذا الرقم في الرسالة لسهولة الردّ عليك.</small>
-          </label>
+         <label class="field">
+  <span class="label">رقم واتساب للتواصل</span>
+  <input class="input" name="ownerWhatsapp" placeholder="+9665... أو +9639..." required>
+  <small class="muted">سنضمّن هذا الرقم في الرسالة لسهولة الردّ عليك.</small>
+  <small id="subWhatsappHint" class="muted"></small>
+</label>
+
 
 
           <label class="field">
@@ -443,7 +455,12 @@ card.innerHTML = `
     <div class="muted">
       ${kindText} • ${esc(l.area||'')} — ${esc(l.city||'')}
       ${loc}${owner}${wa}
-      • ${l.kind==='rent' ? '$'+fmt(l.price)+'/شهر' : '$'+fmt(l.price)}
+      • ${(() => {
+     const cur = l.currency || 'USD';
+     const sym = (cur === 'SYP') ? 'ل.س' : '$';
+     return l.kind==='rent' ? (sym + fmt(l.price) + '/شهر') : (sym + fmt(l.price));
+   })()}
+
       • ${fmt(l.size)} م²
     </div>
     <div style="margin-top:.35rem">${statusBadge}</div>
@@ -492,6 +509,7 @@ list.addEventListener('click', async (e)=>{
       form.querySelector('[name="city"]').value          = l.city || '';
       form.querySelector('[name="size"]').value          = Number(l.size || 0);
       form.querySelector('[name="price"]').value         = Number(l.price || 0);
+      form.querySelector('[name="currency"]').value = (l.currency || 'USD');
       form.querySelector('[name="desc"]').value          = l.description || '';
       form.querySelector('[name="videoUrl"]').value      = l.videoUrl || '';
       form.querySelector('[name="poolDesc"]').value      = l.poolDesc || '';
@@ -760,8 +778,47 @@ if (!isEdit) {
     return; // ← ← ← إيقاف الإرسال نهائيًا
   }
 }
+/* === الهاتف (واتساب): تطبيع تلقائي إلى +963 وإظهار ملاحظة === */
+function normalizeSyPhone(raw){
+  const s = String(raw||'').trim();
+  if (s.startsWith('+963')) return '+963' + s.slice(4).replace(/\D/g,'');
+  if (s.startsWith('00963')) return '+963' + s.slice(5).replace(/\D/g,'');
+  const digits = s.replace(/\D/g,'').replace(/^0+/, '');
+  return digits ? ('+963' + digits) : '+963';
+}
+
+function setupAutoSyPrefix(inputSelector, hintSelector){
+  const input = document.querySelector(inputSelector);
+  const hint  = hintSelector ? document.querySelector(hintSelector) : null;
+  if (!input) return;
+
+  function applyPrefix(showMsg = true){
+    const before = input.value;
+    const after  = normalizeSyPhone(before);
+    if (after !== before){
+      input.value = after;
+      if (showMsg && hint) hint.textContent = 'أُضيف تلقائيًا رمز الدولة +963';
+    }else{
+      if (showMsg && hint) hint.textContent = before ? 'رمز الدولة +963 موجود' : '';
+    }
+  }
+
+  input.addEventListener('input', ()=>{
+    if (!input.value.trim()){ if (hint) hint.textContent = ''; return; }
+    if (!input.value.trim().startsWith('+963')) applyPrefix(true);
+  });
+  input.addEventListener('blur', ()=> applyPrefix(true));
+
+  // تهيئة أولية
+  if (input.value && !input.value.startsWith('+963')) applyPrefix(false);
+}
+
+// فعِّلها لكلا الحقلين:
+setupAutoSyPrefix('#view-new input[name="ownerWhatsapp"]',       '#ownerWhatsappHint');
+setupAutoSyPrefix('#view-subscribe input[name="ownerWhatsapp"]', '#subWhatsappHint');
+
   // فحص الواتساب
-  const wa = (fd.get('ownerWhatsapp')||'').toString().trim().replace(/\s+/g,'');
+  const wa     = normalizeSyPhone(fd.get('ownerWhatsapp'));
   if (wa && !/^\+?\d{6,15}$/.test(wa)){ toast('رقم واتساب غير صحيح','warn'); return; }
 
   const lat = parseFloat(fd.get('lat'));
@@ -770,13 +827,14 @@ if (!isEdit) {
   const payload = {
     ownerFirst:    (fd.get('ownerFirst')    || '').toString().trim(),
     ownerLast:     (fd.get('ownerLast')     || '').toString().trim(),
-    ownerWhatsapp: (fd.get('ownerWhatsapp') || '').toString().trim(),
+  ownerWhatsapp: normalizeSyPhone(fd.get('ownerWhatsapp')),
     title: (fd.get('title')||'').toString().trim(),
     kind: fd.get('kind') || 'sale',
     area: (fd.get('area')||'').toString().trim(),
     city: (fd.get('city')||'').toString().trim(),
     size: parseInt(fd.get('size')||0,10),
     price: parseInt(fd.get('price')||0,10),
+    currency: (fd.get('currency') || 'USD'),
     photos: [...pendingPhotos],
       poolDesc:      (fd.get('poolDesc')      || '').toString().trim(),
   amenitiesDesc: (fd.get('amenitiesDesc') || '').toString().trim(),

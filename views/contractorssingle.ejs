@@ -13,6 +13,127 @@
   /* لتحسين مظهر الشرائح داخل سويبر أفضل التقييم */
   .toprated-swiper .swiper-slide { height: auto; }
   .toprated-swiper .contractor-card { height: 100%; display: block; }
+  :root{
+  --r:16px;
+  --shadow: 0 10px 24px rgba(0,0,0,.06);
+  --muted:#64748b;
+}
+
+/* ===== Hero (الجزء العلوي) ===== */
+.contractor-hero{
+  background: linear-gradient(180deg,#f8fafc,transparent 60%);
+  padding: 1.25rem 0 .5rem;
+}
+.contractor-hero__inner{
+  display:grid; grid-template-columns: auto 1fr; gap: 1rem; align-items:center;
+}
+.avatar--lg img{
+  width:112px; height:112px; object-fit:cover; border-radius: 50%;
+  box-shadow: var(--shadow);
+}
+.hero-copy .name{ font-size:1.6rem; margin:.2rem 0; }
+.hero-copy .specialization, .hero-copy .region{ color:var(--muted); margin:.15rem 0; }
+
+/* أزرار الهيرو – منسّقة بدل الـposition:absolute */
+.hero-actions{ display:flex; gap:.5rem; position: static; margin-top:.6rem; }
+
+/* موبايل: عمود واحد ومحاذاة وسط */
+@media (max-width:640px){
+  .contractor-hero__inner{ grid-template-columns: 1fr; text-align:center; }
+  .hero-actions{ justify-content:center; }
+  .stats{ align-items:center !important; }
+}
+
+/* ===== عناوين الأقسام ===== */
+.section-title{ font-size:1.25rem; margin-bottom:.75rem; }
+
+/* ===== كروت عامة ===== */
+.card{
+  background:#fff; border:1px solid #e5e7eb; border-radius: var(--r); box-shadow: var(--shadow);
+}
+
+/* ===== إطار وسائط (فيديو/صور) ===== */
+.media-frame{
+  aspect-ratio: 16/9; background:#000;
+  border:1px solid #e5e7eb; border-radius:var(--r); overflow:hidden;
+}
+
+/* ===== المعرض (Swiper) ===== */
+.gallery-swiper{ border-radius: var(--r); overflow:hidden; box-shadow: var(--shadow); }
+.gallery-swiper img{ width:100%; height:280px; object-fit:cover; }
+@media (max-width:640px){ .gallery-swiper img{ height:220px; } }
+
+/* ===== نص النبذة والوصف داخل كروت أنيقة ===== */
+#about .prose, #description .prose{
+  background:#fff; border:1px solid #e5e7eb; border-radius: var(--r);
+  padding:1rem 1.2rem; box-shadow: var(--shadow);
+}
+/* ديسكتوب: توزيع العنوان/المحتوى */
+@media (min-width:1024px){
+  #about .container, #description .container{
+    display:grid; grid-template-columns: 1fr 2fr; gap: 1rem; align-items:start;
+  }
+}
+
+/* ===== شارة الاشتراك ===== */
+.tier{
+  display:inline-flex; gap:.35rem; align-items:center;
+  padding:.15rem .6rem; border-radius:999px; font-weight:700; font-size:.9rem;
+  background:#fef3c7; color:#92400e; border:1px solid #fde68a;
+}
+.tier::before{ content:'★'; font-size:1rem; line-height:1; }
+
+/* ===== كارت "أفضل المقاولين" ===== */
+.toprated-swiper .contractor-card{
+  border:1px solid #e5e7eb; border-radius: var(--r); box-shadow: var(--shadow);
+}
+/* ===== تحسين تخطيط النبذة والوصف على الديسكتوب ===== */
+@media (min-width: 1024px){
+  /* عمود ثابت للعناوين + عمود مرن للمحتوى */
+  #about .container,
+  #description .container{
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  /* عنوان أنيق بمحاذاة أعلى */
+  #about .section-title,
+  #description .section-title{
+    margin: .35rem 0 0;
+    white-space: nowrap;
+  }
+
+  /* خلي النص بدون كارد ثقيل على الديسكتوب، مع خط جانبي لطيف */
+  #about .prose,
+  #description .prose{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    max-width: 72ch;          /* عرض قراءة مريح */
+    border-inline-start: 4px solid #e2e8f0;  /* خط جانبي رقيق */
+    padding-inline-start: 1rem;
+  }
+
+  /* تحسين الطباعة */
+  #about .prose p,
+  #description .prose p{
+    line-height: 1.9;
+    font-size: 1.05rem;
+    color: #0f172a;            /* Slate-900 */
+  }
+}
+
+/* على الشاشات الصغيرة نحافظ على “الكارد” لأنّه أجمل هناك */
+@media (max-width: 1023.98px){
+  #about .prose, #description .prose{
+    background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+    padding:1rem 1.2rem; box-shadow: 0 10px 24px rgba(0,0,0,.06);
+  }
+}
+
 </style>
 
   <%- include('partials/navbar', { active: 'contractors' }) %>
@@ -50,7 +171,7 @@ const tier     = ({ vip:'VIP', premium:'Premium', basic:'Basic' }[String(rawTier
           <ul class="stats" role="list" style="width:100%;display:flex;justify-content:center;align-items:flex-start;flex-direction:column;margin-bottom:-1rem;">
             <li><strong>الاشتراك:</strong> <span class="tier"><%= tier %></span></li>
           </ul>
-          <div class="hero-actions" style="position:absolute;right:2rem;top:12rem;">
+          <div class="hero-actions">
             <a class="btn btn-primary" href="#request">طلب خدمة</a>
             <% if (contractor.phone) { %>
               <a class="btn btn-outline" href="tel:<%= contractor.phone.replace(/\s+/g,'') %>">اتصل: <%= contractor.phone %></a>
@@ -117,6 +238,74 @@ const tier     = ({ vip:'VIP', premium:'Premium', basic:'Basic' }[String(rawTier
       </div>
     </div>
   </section>
+<%
+// دوال مساعدة: تأمين HTML + تحويل الأسطر إلى <br>
+// (استخدمنا function عادية لتجنّب أي لخبطة أقواس)
+function esc(s) {
+  return String(s || '').replace(/[&<>"]/g, function (m) {
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[m];
+  });
+}
+function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
+%>
+
+<!-- ===== قسم الفيديو التعريفي ===== -->
+<% if (contractor.videoUrl) {
+     const v  = String(contractor.videoUrl || '').trim();
+     const yt = v.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{11})/);
+     const vm = v.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+%>
+<section id="intro-video" class="section intro-video" aria-labelledby="vid-title">
+  <div class="container">
+    <h2 id="vid-title" style="margin-bottom:.6rem;">فيديو تعريفي</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9">
+      <% if (yt) { %>
+        <iframe src="https://www.youtube.com/embed/<%= yt[1] %>" title="YouTube video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen style="width:100%;height:100%;border:0"></iframe>
+      <% } else if (vm) { %>
+        <iframe src="https://player.vimeo.com/video/<%= vm[1] %>" title="Vimeo video"
+                allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+                style="width:100%;height:100%;border:0"></iframe>
+      <% } else if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(v)) { %>
+        <video controls style="width:100%;height:100%;object-fit:cover">
+          <source src="<%= v %>">
+        </video>
+      <% } else { %>
+        <a class="btn btn-outline" href="<%= v %>" target="_blank" rel="noopener">فتح الفيديو</a>
+      <% } %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- ===== قسم النبذة ===== -->
+<section id="about" class="section about" aria-labelledby="about-title">
+  <div class="container">
+    <h2 id="about-title" style="margin-bottom:.6rem;">نبذة</h2>
+    <% if (contractor.bio) { %>
+      <article class="prose" style="max-width:65ch">
+        <p><%- nl2brSafe(contractor.bio) %></p>
+      </article>
+    <% } else { %>
+      <p class="muted">لا توجد نبذة بعد.</p>
+    <% } %>
+  </div>
+</section>
+
+<!-- ===== قسم الوصف التفصيلي ===== -->
+<section id="description" class="section description" aria-labelledby="desc-title">
+  <div class="container">
+    <h2 id="desc-title" style="margin-bottom:.6rem;">الوصف التفصيلي</h2>
+    <% if (contractor.description) { %>
+      <article class="prose" style="max-width:70ch">
+        <p><%- nl2brSafe(contractor.description) %></p>
+      </article>
+    <% } else { %>
+      <p class="muted">لا يوجد وصف بعد.</p>
+    <% } %>
+  </div>
+</section>
 
   <!-- الخدمات -->
   <section id="services" class="section services" aria-labelledby="services-title">

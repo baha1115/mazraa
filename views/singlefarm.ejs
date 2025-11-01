@@ -156,7 +156,11 @@ const hasOwnerFarms = ownerList.length > 0;
         <h1 class="farm-name"><%= farm.title %></h1>
         <p class="farm-location"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
         <ul class="farm-summary" role="list">
-          <li><strong>السعر:</strong> <%= Number(farm.price||0).toLocaleString('en') %>$ / شهريًا</li>
+          <li>
+  <strong>السعر:</strong>
+  <%= (farm.currency === 'SYP' ? 'ل.س' : '$') %><%= Number(farm.price||0).toLocaleString('en') %> / شهريًا
+</li>
+
           <li><strong>المساحة:</strong> <%= Number(farm.size||0).toLocaleString('en') %> م²</li>
           <li>
             <strong>الحالة:</strong>
@@ -285,9 +289,12 @@ const hasOwnerFarms = ownerList.length > 0;
               <div class="vip-hero-body">
                 <h3 class="vip-hero-title"><%= f.title || '—' %></h3>
                 <div class="vip-hero-meta">
-                  <%= loc %> • <%= Number(f.size||0).toLocaleString('en') %> م² • $<%= Number(f.price||0).toLocaleString('en') %>
-                  <span class="meta-views">• 👁️ <%= vws.toLocaleString('en') %></span>
-                </div>
+  <% const sym = (f.currency === 'SYP' ? 'ل.س' : '$'); %>
+  <%= loc %> • <%= Number(f.size||0).toLocaleString('en') %> م² •
+  <%= sym %><%= Number(f.price||0).toLocaleString('en') %><%= (String(f.kind||'').toLowerCase()==='rent' ? ' / شهريًا' : '') %>
+  <span class="meta-views">• 👁️ <%= Number(vws||0).toLocaleString('en') %></span>
+</div>
+
                 <a class="vip-hero-cta" href="<%= link %>">التفاصيل</a>
               </div>
             </article>
@@ -305,7 +312,7 @@ const hasOwnerFarms = ownerList.length > 0;
 
 
 <%- include('partials/top-rent',  { items: (topRent || []) }) %>
-<%- include('partials/promo', { promoContractors }) %>
+
  <%- include('partials/footer') %>
 
   <script type="module">

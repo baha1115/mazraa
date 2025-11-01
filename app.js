@@ -13,6 +13,7 @@ const { randomUUID } = require('crypto');
 const compression = require('compression');
 const ContractorRequest = require('./models/contractorRequestModel');
 const SubscriptionConfig = require('./models/SubscriptionConfig');
+const FooterSettings = require('./models/FooterSettings');
 // Utils / Mailer
 const { verifyTransporter } = require('./utils/mailer2');
 verifyTransporter();
@@ -224,7 +225,15 @@ api.get('/farms/rent', async (req, res) => {
     return res.status(500).json({ ok: false, msg: 'Server error' });
   }
 });
-
+app.use(async (req, res, next) => {
+  try {
+    const doc = await FooterSettings.findOne({ key: 'default' }).lean();
+    res.locals.footer = doc || {};
+  } catch (_) {
+    res.locals.footer = {};
+  }
+  next();
+});
 // اربط الـAPI قبل الجلسات
 app.use('/api', api);
 

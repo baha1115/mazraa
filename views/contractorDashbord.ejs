@@ -199,6 +199,7 @@
           <label class="field">
             <span class="label">الهاتف</span>
             <input type="tel" name="phone" class="input" placeholder="+963XXXXXXXXX" value="<%= safeProfile.phone || '' %>" />
+            <small id="phoneHint" class="muted"></small>
           </label>
 
     <label class="field">
@@ -459,6 +460,43 @@
   const thumbs    = qs('#thumbs');
 
    const MAX_TOTAL_BYTES = 5 * 1024 * 1024;
+// === الهاتف: إضافة +963 تلقائيًا وإظهار ملاحظة ===
+function normalizeSyPhone(raw){
+  const s = String(raw||'').trim();
+  if (s.startsWith('+963')) return '+963' + s.slice(4).replace(/\D/g,'');
+  if (s.startsWith('00963')) return '+963' + s.slice(5).replace(/\D/g,'');
+  const digits = s.replace(/\D/g,'').replace(/^0+/, '');
+  return digits ? ('+963' + digits) : '+963';
+}
+
+(function setupSyPhone(){
+  const phoneInput = document.querySelector('#formProfile input[name="phone"]');
+  const phoneHint  = document.getElementById('phoneHint');
+  if (!phoneInput) return;
+
+  function applyPrefix(showMsg = true){
+    const before = phoneInput.value;
+    const after  = normalizeSyPhone(before);
+    if (after !== before) {
+      phoneInput.value = after;
+      if (showMsg && phoneHint) phoneHint.textContent = 'أُضيف تلقائيًا رمز الدولة +963';
+    } else {
+      if (showMsg && phoneHint) phoneHint.textContent = before ? 'رمز الدولة +963 موجود' : '';
+    }
+  }
+
+  // عند الكتابة: أضف +963 بمجرد البدء
+  phoneInput.addEventListener('input', () => {
+    if (!phoneInput.value.trim()) { if (phoneHint) phoneHint.textContent = ''; return; }
+    if (!phoneInput.value.trim().startsWith('+963')) applyPrefix(true);
+  });
+
+  // عند الخروج من الحقل
+  phoneInput.addEventListener('blur', () => applyPrefix(true));
+
+  // تهيئة أولية لو القيمة محفوظة بدون المقدّمة
+  if (phoneInput.value && !phoneInput.value.startsWith('+963')) applyPrefix(false);
+})();
 
   // تقدير حجم DataURL بالبايتات
   function dataUrlBytes(src){
@@ -609,7 +647,7 @@
   const payload = {
     name:        (fd0.get('name')||'').toString().trim(),
     email:       (fd0.get('email')||'').toString().trim(),
-    phone:       (fd0.get('phone')||'').toString().trim(),
+    phone:       normalizeSyPhone(fd0.get('phone')),
     region:      (fd0.get('region')||'').toString().trim(),
     bio:         (fd0.get('bio')||'').toString().trim(),
     companyName,                                    // ← هنا

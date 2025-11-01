@@ -32,7 +32,10 @@
                   <div class="top-rent-body">
                     <h4 class="top-rent-title"><%= f.title %></h4>
                     <p class="top-rent-loc"><%= f.city ? ((f.area||'') + ' — ' + f.city) : (f.area||'—') %></p>
-                    <p class="top-rent-price">$<%= Number(f.price||0).toLocaleString('en') %> / شهريًا</p>
+                    <p class="top-rent-price">
+  <%= (f.currency === 'SYP' ? 'ل.س' : '$') %><%= Number(f.price||0).toLocaleString('en') %> / شهريًا
+</p>
+
                     <div class="top-rent-meta">👁️ <%= Number(f.views||0).toLocaleString('en') %></div>
                     <span class="top-rent-link" role="button" tabindex="0">التفاصيل</span>
                   </div>

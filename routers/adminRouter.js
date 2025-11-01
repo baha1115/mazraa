@@ -14,10 +14,12 @@ const { checkQuota } = require('../utils/quota');
 const HeroSlide = require('../models/HeroSlide');
 const HomeShowcase = require('../models/homeShowcase');
 const SubscriptionConfig = require('../models/SubscriptionConfig');
+const FooterSettings = require('../models/FooterSettings');
 
 // استخدم مايلرين منفصلين مع أسماء مستعارة واضحة
 const { sendMail: sendFarmMail } = require('../utils/mailer');   // SMTP للأراضي
 const { sendMail: sendContractorMail } = require('../utils/mailer2'); // SMTP للمقاولين
+
 // === إضافة في أعلى adminRouter.js ===
 // يضبط المزارع المسموح بها حسب مستوى الاشتراك ويعلّق الباقي
 async function applyContractorPlanLimitsForUser(userId, tier) {
@@ -1008,6 +1010,48 @@ router.post('/sub-plans', requireAdmin, async (req, res) => {
     );
     res.json({ ok:true, data:doc });
   } catch (e) { console.error(e); res.status(500).json({ ok:false }); }
+});
+// GET: قراءة إعدادات الفوتر
+router.get('/site/footer', requireAdmin, async (req, res) => {
+  try {
+    const doc = await FooterSettings.findOne({ key: 'default' }).lean();
+    return res.json({ ok: true, data: doc || {} });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
+
+// POST: حفظ إعدادات الفوتر
+router.post('/site/footer', requireAdmin,uploadMem.none(), async (req, res) => {
+  try {
+     const clean = v => String(v || '').trim();
+      const payload = {
+        email:    clean(req.body.email),
+        phone:    clean(req.body.phone),
+        whatsapp: clean(req.body.whatsapp),
+        address:  clean(req.body.address),
+        facebook: clean(req.body.facebook),
+        twitter:  clean(req.body.twitter),
+        youtube:  clean(req.body.youtube),
+        instagram:clean(req.body.instagram),
+        tiktok:   clean(req.body.tiktok),
+      };
+
+    await FooterSettings.findOneAndUpdate(
+      { key: 'default' },
+      { $set: payload, $setOnInsert: { key: 'default' } },
+      { upsert: true, new: true }
+    );
+
+    // حافظ على نفس سلوك مسارات الأدمن الأخرى: رد JSON أو Redirect مع رسالة
+    const wantsJSON = /json/i.test(req.headers.accept || '');
+    if (wantsJSON) return res.json({ ok:true, msg:'تم الحفظ' });
+    return res.redirect('/admin/dashboard?type=success&msg=تم%20حفظ%20الفوتر');
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok:false, msg:'Server error' });
+  }
 });
 
 module.exports = router;

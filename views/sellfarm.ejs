@@ -67,6 +67,14 @@
   function esc(x){ return String(x ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
   function num(n){ const v = Number(n); return Number.isFinite(v) ? v : 0; }
 %>
+<%
+  function priceHtml(f){
+    const c = (f.currency || 'USD');
+    const sym = (c === 'SYP') ? 'ل.س' : '$';
+    const p = Number(f.price||0);
+    return p ? (sym + p.toLocaleString('en')) : '—';
+  }
+%>
 
 <%- include('partials/navbar', { isAuth: _isAuth, user: _user, currentPath: _currentPath }) %>
 
@@ -205,7 +213,7 @@
                 <div class="farm-body">
                   <h3 class="farm-title"><%= titleTxt %></h3>
                   <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
-                  <p class="farm-price"><%= num(farm.price) ? ('$' + num(farm.price).toLocaleString('en')) : '—' %></p>
+                  <p class="farm-price"><%= priceHtml(farm) %></p>
                   <span class="meta-views" style="color: #0f172a;">👁️ <%= Number(farm.views||0).toLocaleString('en') %></span>
                   <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
                 </div>
@@ -307,7 +315,12 @@ function saleSlide(f){
           <div class="farm-body">
             <h3 class="farm-title">${htmlEscape(f.title || '—')}</h3>
             <p class="farm-location">${htmlEscape(loc)}</p>
-            <p class="farm-price">${Number(f.price || 0) ? ('$' + fmtEN(f.price)) : '—'}</p>
+            <p class="farm-price">${
+  Number(f.price || 0)
+    ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
+    : '—'
+}</p>
+
             <span class="meta-views" style="color: #0f172a;">👁️ ${fmtEN(views)}</span>
             <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
           </div>
@@ -324,6 +337,13 @@ function vipSlide(f){
   const link  = `/farm/${f._id}`;
   const vws   = Number(f.views || 0);
 
+  // رمز العملة + نص السعر النهائي
+  const sym       = (f.currency === 'SYP' ? 'ل.س' : '$');
+  const priceNum  = Number(f.price || 0);
+  const priceText = priceNum
+    ? (f.kind === 'rent' ? `${sym}${fmtEN(priceNum)}/شهر` : `${sym}${fmtEN(priceNum)}`)
+    : '—';
+
   return `
     <div class="swiper-slide">
       <article class="vip-hero-slide">
@@ -334,7 +354,10 @@ function vipSlide(f){
         <div class="vip-hero-body">
           <h3 class="vip-hero-title">${htmlEscape(f.title || '—')}</h3>
           <div class="vip-hero-meta">
-            ${htmlEscape(loc)} <br>• ${fmtEN(f.size)} م² <br>• $${fmtEN(f.price)} <br>• 👁️ ${fmtEN(vws)}
+            ${htmlEscape(loc)} <br>
+            • ${fmtEN(f.size)} م² <br>
+            • ${priceText} <br>
+            • 👁️ ${fmtEN(vws)}
           </div>
           <a class="vip-hero-cta" href="${link}">التفاصيل</a>
         </div>

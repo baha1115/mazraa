@@ -46,7 +46,10 @@
                   <div class="farm-body">
                     <h4 class="farm-title"><%= f.title || '—' %></h4>
                     <p class="farm-location"><%= loc %></p>
-                    <p class="farm-price"><%= price ? ('$' + price.toLocaleString('en')) : '—' %></p>
+                    <p class="farm-price">
+  <%= price ? ((f.currency === 'SYP' ? 'ل.س' : '$') + price.toLocaleString('en')) : '—' %>
+</p>
+
                     <div class="card-meta">👁️ <%= views.toLocaleString('en') %></div>
                     <!-- زر التفاصيل داخل نفس الرابط (span حتى لا نضع رابطاً داخل رابط) -->
                     <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>

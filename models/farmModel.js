@@ -8,7 +8,8 @@ const OwnerInfoSchema = new mongoose.Schema({
 const FarmSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // أو اتركه كما عندك
    ownerInfo: OwnerInfoSchema,
-
+currency: { type: String, enum: ['USD','SYP'], default: 'USD' }
+,
   title: { type: String, required: true },
   kind: { type: String, enum: ['sale','rent'], default: 'sale' },
   area: String,
