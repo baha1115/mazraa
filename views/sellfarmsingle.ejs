@@ -106,11 +106,7 @@ const hasOwnerFarms = ownerList.length > 0;
   <!-- ===== الهيدر البسيط (عدّل الروابط حسب مشروعك) ===== -->
 <%- include('partials/navbar') %>
   <!-- زر واتساب دائم -->
-  <a class="fab-whatsapp"
-     href="https://wa.me/<%= ((farm && farm.ownerInfo && farm.ownerInfo.whatsapp) ? farm.ownerInfo.whatsapp : '21600000000').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + (farm? farm.title : '—')) %>"
-     target="_blank" rel="noopener" aria-label="الدردشة عبر واتساب">
-    <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
-  </a>
+ <%- include('partials/whatsapp') %>
 
   <!-- مسار التصفح -->
   <nav class="breadcrumb" aria-label="Breadcrumb">

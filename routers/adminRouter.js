@@ -1053,5 +1053,53 @@ router.post('/site/footer', requireAdmin,uploadMem.none(), async (req, res) => {
     return res.status(500).json({ ok:false, msg:'Server error' });
   }
 });
+// قائمة المستخدمين (المسجّلون فقط افتراضيًا)
+// قائمة المستخدمين (أدوار محددة فقط)
+// GET /admin/users
+router.get('/users', requireAdmin, async (req, res) => {
+  try {
+    const { q = '', role = 'all', limit = 200, page = 1, verified } = req.query;
+
+    // الأدوار المسموح عرضها
+    const allowed = ['contractor', 'owner', 'landowner', 'admin'];
+    const filter = {};
+
+    // فلترة الدور
+    if (role && role !== 'all') {
+      filter.role = (role === 'owner') ? { $in: ['owner', 'landowner'] } : role;
+    } else {
+      filter.role = { $in: allowed };
+    }
+
+    // تفعيل البريد (اختياري عبر ?verified=1)
+    if (String(verified) === '1') filter.emailVerified = true;
+
+    // بحث نصي
+    if (q && q.trim()) {
+      const esc = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp(esc(q.trim()), 'i');
+      filter.$or = [{ name: rx }, { email: rx }, { phone: rx }];
+    }
+
+    const lim  = Math.max(1, Math.min(1000, parseInt(limit)));
+    const pg   = Math.max(1, parseInt(page));
+    const skip = (pg - 1) * lim;
+
+    const [items, total] = await Promise.all([
+      User.find(filter)
+        .select('name email phone role subscriptionTier subscriptionExpiresAt createdAt')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(lim)
+        .lean(),
+      User.countDocuments(filter)
+    ]);
+
+    res.json({ ok: true, data: items, total, page: pg, limit: lim });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: 'users_list_failed' });
+  }
+});
 
 module.exports = router;

@@ -56,15 +56,20 @@
 
     /* وقاية من قواعد عامة قد تؤثر على الصور */
 .contractor-card img{margin-top:0!important;border-radius:0}
+/* ليأخذ ارتفاع البطاقة تلقائيًا مثل السويبر العام */
+.vip-swiper .swiper-slide{ height:auto; }
+
+/* نفس لون الأسهم كالسويبر العام */
+.vip-swiper .swiper-button-prev,
+.vip-swiper .swiper-button-next{ color:#2563eb; }
+
   </style>
 </head>
 <body>
 
   <%- include('partials/navbar', { isAuth: (typeof isAuth!=='undefined'?isAuth:false), user: (typeof user!=='undefined'?user:null), active: 'contractors' }) %>
 
-  <a class="fab-whatsapp" href="https://wa.me/21600000000?text=%D8%A3%D8%AD%D8%AA%D8%A7%D8%AC%20%D9%85%D9%82%D8%A7%D9%88%D9%84" target="_blank" rel="noopener" aria-label="الدردشة عبر واتساب">
-    <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
-  </a>
+ <%- include('partials/whatsapp') %>
 <%- include('partials/promo-swiper', { bannersDoc }) %>
   
   <!-- فلاتر بسيطة -->
@@ -128,7 +133,7 @@
     <div class="container">
       <header class="section-header">
         <h2 id="vip-title">المقاولون المتاحون</h2>
-        <p class="muted">يظهر مشتركو VIP و Premium أولاً.</p>
+        
       </header>
 
       <div class="swiper vip-swiper" dir="rtl" aria-label="مقاولون VIP">
@@ -159,7 +164,10 @@
             %>
               <div class="swiper-slide">
                 <article class="contractor-card">
-                  <span class="tier-badge"><%= tier %></span>
+                  <% if (String(tier||'Basic').toLowerCase() !== 'basic') { %>
+  <span class="tier-badge"><%= tier %></span>
+<% } %>
+
                   <div class="card-row">
                     <div class="avatar"><img src="<%= img %>" alt="صورة <%= c.name || 'مقاول' %>" loading="lazy" onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'"></div>
                     <div class="info-stack">
@@ -204,52 +212,43 @@
     const vipSection = $('#vip-contractors');
     const vipWrap    = $('#vipContractorsWrapper');
 
-    function contractorSlide(c){
-      const img   = assetPath((Array.isArray(c.photos)&&c.photos[0]) || c.avatar || '/Public/assets/contractors/default.jpg');
-      const name  = htmlEscape(c.name || '—');
-      const spec  = htmlEscape(Array.isArray(c.services) ? c.services.join('، ') : (c.services||'—'));
-      const reg   = htmlEscape(c.region || '—');
-      const tier = (c.userTier || c.subscriptionTier || 'Basic');
-      const rating= Number(c.ratingAvg||0).toFixed(2);
-      const rcnt  = Number(c.ratingCount||0);
-      return `
-        <div class="swiper-slide">
-          <article class="contractor-card">
-            <span class="tier-badge">${tier}</span>
-            <div class="card-row">
-              <div class="avatar"><img src="${img}" alt="صورة ${name}" loading="lazy" onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'"></div>
-              <div class="info-stack">
-                <h3 class="name">${name}</h3>
-                <p class="specialization">${spec}</p>
-                <p class="region">${reg}</p>
-              </div>
-            </div>
-            <div class="rating"><small>(${rcnt})</small><span>${rating}</span><span>⭐</span></div>
-            <a class="card-cta" href="/contractor/${c._id}">صفحة المقاول</a>
-          </article>
-        </div>`;
-    }
+ function contractorSlide(c){
+  const img   = assetPath((Array.isArray(c.photos)&&c.photos[0]) || c.avatar || '/Public/assets/contractors/default.jpg');
+  const name  = htmlEscape(c.name || '—');
+  const spec  = htmlEscape(Array.isArray(c.services) ? c.services.join('، ') : (c.services||'—'));
+  const reg   = htmlEscape(c.region || '—');
+
+  // ← طبّع الخطة ثم قرّر إظهار الشارة
+  const tierRaw = (c.userTier || c.subscriptionTier || 'Basic');
+  const tier    = String(tierRaw);
+  const showBadge = tier.toLowerCase() !== 'basic';
+  const badgeHTML = showBadge ? `<span class="tier-badge">${tier}</span>` : '';
+
+  const rating= Number(c.ratingAvg||0).toFixed(2);
+  const rcnt  = Number(c.ratingCount||0);
+
+  return `
+    <div class="swiper-slide">
+      <article class="contractor-card">
+        ${badgeHTML}
+        <div class="card-row">
+          <div class="avatar"><img src="${img}" alt="صورة ${name}" loading="lazy" onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'"></div>
+          <div class="info-stack">
+            <h3 class="name">${name}</h3>
+            <p class="specialization">${spec}</p>
+            <p class="region">${reg}</p>
+          </div>
+        </div>
+        <div class="rating"><small>(${rcnt})</small><span>${rating}</span><span>⭐</span></div>
+        <a class="card-cta" href="/contractor/${c._id}">صفحة المقاول</a>
+      </article>
+    </div>`;
+}
+
 
     function vipSlide(c){
-      const img  = assetPath((Array.isArray(c.photos)&&c.photos[0]) || c.avatar || '/Public/assets/contractors/default.jpg');
-      const name = htmlEscape(c.name || 'VIP');
-      const spec = htmlEscape(Array.isArray(c.services) ? c.services.join('، ') : (c.services||'')); 
-      const reg  = htmlEscape(c.region || '');
-      const rating= Number(c.ratingAvg||0).toFixed(2);
-      const rcnt  = Number(c.ratingCount||0);
-      return `
-        <div class="swiper-slide">
-          <article class="vip-hero-slide">
-            <span class="vip-badge">VIP</span>
-            <img class="vip-hero-img" src="${img}" alt="${name}" loading="lazy" onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'">
-            <div class="vip-hero-overlay"></div>
-            <div class="vip-hero-body">
-              <h3 class="vip-hero-title">${name}</h3>
-              <div class="vip-hero-meta">${spec}${(spec&&reg)?' — ':''}${reg} • ⭐ ${rating} (${rcnt})</div>
-              <a class="vip-hero-cta" href="/contractor/${c._id}">عرض المقاول</a>
-            </div>
-          </article>
-        </div>`;
+    return contractorSlide(c);
+
     }
 
     async function fetchJSON(url){
@@ -275,13 +274,23 @@
       });
     }
     function initVipSwiper(){
-      destroySwiper(vipSwiper);
-      vipSwiper = new Swiper('.vip-swiper', {
-        loop:true, centeredSlides:true, slidesPerView:1.02, spaceBetween:18, watchOverflow:true,
-        pagination:{ el:'.vip-swiper .swiper-pagination', clickable:true },
-        navigation:{ nextEl:'.vip-swiper .swiper-button-next', prevEl:'.vip-swiper .swiper-button-prev' }
-      });
+  destroySwiper(vipSwiper);
+  vipSwiper = new Swiper('.vip-swiper', {
+    slidesPerView: 1.05,
+    spaceBetween: 12,
+    watchOverflow: true,
+    pagination: { el: '.vip-swiper .swiper-pagination', clickable: true },
+    navigation: { nextEl: '.vip-swiper .swiper-button-next', prevEl: '.vip-swiper .swiper-button-prev' },
+    // نفس منطق السويبر العام: يُظهر أكثر من بطاقة على الشاشات الكبيرة
+    breakpoints: {
+      480:  { slidesPerView: 1.1 },
+      640:  { slidesPerView: 1.8 },
+      1024: { slidesPerView: 2.6 }, // ≥ لابتوب: تقريبًا بطاقتان ونصف
+      1280: { slidesPerView: 3.2 }  // ≥ دِسكتوب: ~3 بطاقات
     }
+  });
+}
+
 
     function renderList(list){
       listWrap.innerHTML = (list&&list.length) ? list.map(contractorSlide).join('') : `<div class="empty muted">لا توجد نتائج مطابقة.</div>`;

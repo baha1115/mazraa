@@ -56,6 +56,8 @@
   /* تأثير لطيف عند الفتح (اختياري) */
   .advanced-fields.fade-in{ animation: fadeIn .18s ease-in; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .vip-swiper .swiper-slide{ height:auto; }
+
   </style>
 </head>
 <body>
@@ -78,11 +80,7 @@
 
 <%- include('partials/navbar', { isAuth: _isAuth, user: _user, currentPath: _currentPath }) %>
 
-<a class="fab-whatsapp"
-   href="https://wa.me/21600000000?text=%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%85%D8%B2%D8%B1%D8%B9%D8%A9%20%D9%84%D9%84%D8%A8%D9%8A%D8%B9"
-   target="_blank" rel="noopener" aria-label="تواصل واتساب">
-  <span class="fab-whatsapp__icon" aria-hidden="true">واتساب</span>
-</a>
+<%- include('partials/whatsapp') %>
 <%- include('partials/promo-swiper', { bannersDoc }) %>
 
 <!-- الفلاتر -->
@@ -195,13 +193,11 @@
        onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'"/>
 
   <% const tierSSR = (farm?.owner?.subscriptionTier || farm?.ownerTier || 'Basic'); %>
-  <% if (tierSSR === 'VIP') { %>
-    <span class="badge badge--vip">VIP</span>
-  <% } else if (tierSSR === 'Premium') { %>
-    <span class="badge badge--premium">Premium</span>
-  <% } else { %>
-    <span class="badge badge--basic">Basic</span>
-  <% } %>
+<% if (tierSSR === 'VIP') { %>
+  <span class="badge badge--vip">VIP</span>
+<% } else if (tierSSR === 'Premium') { %>
+  <span class="badge badge--premium">Premium</span>
+<% } %>
 
   <% if (farm.videoUrl) { %>
     <span class="badge badge--video">🎥 فيديو</span>
@@ -213,7 +209,11 @@
                 <div class="farm-body">
                   <h3 class="farm-title"><%= titleTxt %></h3>
                   <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
-                  <p class="farm-price"><%= priceHtml(farm) %></p>
+                  <p class="farm-price">${
+  Number(f.price || 0)
+    ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
+    : '—'
+}</p>
                   <span class="meta-views" style="color: #0f172a;">👁️ <%= Number(farm.views||0).toLocaleString('en') %></span>
                   <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
                 </div>
@@ -293,13 +293,18 @@ function saleSlide(f){
   const cover = assetPath(raw);
   const link  = `/farm/${f._id}`;
   const loc   = f.city ? `${f.area || ''} — ${f.city}` : (f.area || '—');
-  const tier  = ((f.owner && f.owner.subscriptionTier) || f.ownerTier || 'Basic');
-  const views = Number(f.views || 0);
 
+  // طبّع الخطة للتأكد من حساسية حالة الأحرف
+  const tierRaw = ((f.owner && f.owner.subscriptionTier) || f.ownerTier || 'Basic');
+  const tierKey = String(tierRaw).trim().toLowerCase();
+
+  // أظهر البادج فقط إن كانت Premium أو VIP
   const tierBadge =
-    tier === 'VIP'     ? '<span class="badge badge--vip">VIP</span>' :
-    tier === 'Premium' ? '<span class="badge badge--premium">Premium</span>' :
-                         '<span class="badge badge--basic">Basic</span>';
+    tierKey === 'vip'     ? '<span class="badge badge--vip">VIP</span>' :
+    tierKey === 'premium' ? '<span class="badge badge--premium">Premium</span>' :
+                            '';
+
+  const views = Number(f.views || 0);
 
   return `
     <div class="swiper-slide">
@@ -310,17 +315,15 @@ function saleSlide(f){
                  onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
             ${tierBadge}
             ${f.videoUrl ? `<span class="badge badge--video">🎥 فيديو</span>` : ``}
-            
           </figure>
           <div class="farm-body">
             <h3 class="farm-title">${htmlEscape(f.title || '—')}</h3>
             <p class="farm-location">${htmlEscape(loc)}</p>
             <p class="farm-price">${
-  Number(f.price || 0)
-    ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
-    : '—'
-}</p>
-
+              Number(f.price || 0)
+                ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
+                : '—'
+            }</p>
             <span class="meta-views" style="color: #0f172a;">👁️ ${fmtEN(views)}</span>
             <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
           </div>
@@ -330,40 +333,11 @@ function saleSlide(f){
 }
 
 
+// VIP يستخدم نفس بطاقة البيع العامة (تحافظ على 'ل.س' عند SYP)
 function vipSlide(f){
-  const raw   = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
-  const cover = assetPath(raw);
-  const loc   = f.city ? `${f.area || ''} — ${f.city}` : (f.area || '—');
-  const link  = `/farm/${f._id}`;
-  const vws   = Number(f.views || 0);
-
-  // رمز العملة + نص السعر النهائي
-  const sym       = (f.currency === 'SYP' ? 'ل.س' : '$');
-  const priceNum  = Number(f.price || 0);
-  const priceText = priceNum
-    ? (f.kind === 'rent' ? `${sym}${fmtEN(priceNum)}/شهر` : `${sym}${fmtEN(priceNum)}`)
-    : '—';
-
-  return `
-    <div class="swiper-slide">
-      <article class="vip-hero-slide">
-        <span class="vip-badge">VIP</span>
-        <img class="vip-hero-img" src="${cover}" alt="${htmlEscape(f.title || 'VIP')}"
-             loading="lazy" onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
-        <div class="vip-hero-overlay"></div>
-        <div class="vip-hero-body">
-          <h3 class="vip-hero-title">${htmlEscape(f.title || '—')}</h3>
-          <div class="vip-hero-meta">
-            ${htmlEscape(loc)} <br>
-            • ${fmtEN(f.size)} م² <br>
-            • ${priceText} <br>
-            • 👁️ ${fmtEN(vws)}
-          </div>
-          <a class="vip-hero-cta" href="${link}">التفاصيل</a>
-        </div>
-      </article>
-    </div>`;
+  return saleSlide(f);
 }
+
 
 /* ======= جلب API ======= */
 async function fetchJSON(url){
@@ -406,10 +380,8 @@ function initSaleSwiper(){
 function initVipSwiper(){
   destroySwiper(vipSwiper);
   vipSwiper = new Swiper('.vip-swiper', {
-    loop: true,
-    centeredSlides: true,
-    slidesPerView: 1.02,
-    spaceBetween: 18,
+    slidesPerView: 1.05,
+    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.vip-swiper .swiper-pagination', clickable: true },
     navigation: {
@@ -417,11 +389,14 @@ function initVipSwiper(){
       prevEl: '.vip-swiper .swiper-button-prev'
     },
     breakpoints: {
-      640:  { slidesPerView: 1.05, spaceBetween: 20 },
-      1024: { slidesPerView: 1.08, spaceBetween: 22 }
+      480:  { slidesPerView: 1.2,  spaceBetween: 14 },
+      640:  { slidesPerView: 2.2,  spaceBetween: 16 },
+      1024: { slidesPerView: 3.2,  spaceBetween: 18 },
+      1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
   });
 }
+
 
 function renderSale(list){
   if (!saleWrapper) return;
