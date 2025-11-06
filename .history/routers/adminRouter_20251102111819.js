@@ -163,9 +163,7 @@ router.patch('/farms/:id/approve', requireAdmin, async (req, res) => {
       await enforceExpiry(ownerId);
 
       // تحقّق من الكوته
-      // قبل: const { ok, used, limit, tier } = await checkQuota(ownerId, 'farm');
-const { ok, used, limit, tier } = await checkQuota(ownerId, 'farm', null, { mode: 'approve' });
-;
+      const { ok, used, limit, tier } = await checkQuota(ownerId, 'farm');
       if (!ok) {
         // ارفض الطلب بدل الموافقة
         await Farm.findByIdAndUpdate(farm._id, {
