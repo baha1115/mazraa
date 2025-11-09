@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title><%= farm ? (farm.title + ' — تفاصيل الإيجار') : 'المزرعة غير موجودة' %></title>
+  <meta name="description" content="تفاصيل مزرعة للإيجار: الصور، الفيديو، الوصف، الموقع، السعر والحالة."/>
+  <link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+  <style>
+    
+  /* Lightbox */
+  .lb-overlay{
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.88);
+    display: none;            /* يظهر عند فتحه */
+    align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .lb-overlay.is-open{ display:flex; }
+  .lb-img{
+    max-width: 92vw; max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    object-fit: contain;
+    background: #111;
+  }
+  .lb-close, .lb-prev, .lb-next{
+    position: absolute;
+    top: 16px;
+    width: 42px; height: 42px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(255,255,255,.14);
+    color: #fff; font-size: 22px; line-height: 42px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: background .2s ease;
+  }
+  .lb-close:hover, .lb-prev:hover, .lb-next:hover{ background: rgba(255,255,255,.24); }
+  .lb-close{ inset-inline-end: 16px; }
+  .lb-prev, .lb-next{
+    top: 50%; transform: translateY(-50%);
+  }
+  .lb-prev{ inset-inline-start: 18px; }
+  .lb-next{ inset-inline-end: 18px; }
+  @media (max-width:640px){
+    .lb-close, .lb-prev, .lb-next{ width: 38px; height: 38px; font-size: 20px; }
+  }
+
+
+    .status.is-available{color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;padding:.1rem .45rem;border-radius:999px}
+    .status.is-rented{color:#991b1b;background:#fef2f2;border:1px solid #fecaca;padding:.1rem .45rem;border-radius:999px}
+    .badge--tier{display:inline-block;padding:.2rem .5rem;border-radius:999px;border:1px solid #ddd;background:#fafafa;font-size:.85rem}
+    .vip{background:#111;color:#fff;border-color:#111}
+    .premium{background:#f59e0b;color:#fff;border-color:#f59e0b}
+    #map { height: 380px; border-radius: 12px; overflow: hidden; }
+
+.vip-hero-slide{
+  position: relative;
+  height: 50vh;           /* عدّل إن أردت */
+  min-height: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+/* الصورة يجب أن تملأ السلايد */
+.vip-hero-img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* مهم جداً */
+  display: block;
+}
+
+/* التراكب فوق الصورة */
+.vip-hero-overlay{
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.1));
+}
+
+/* نص السلايد */
+.vip-hero-body{
+  position: absolute;
+  inset-inline: 1.2rem;
+  inset-block-end: 1.1rem;
+  color: #fff;
+  display: grid; gap: .35rem;
+  text-align: start;
+}
+.vip-hero-cta{
+  background-color: #e5e7eb;
+  color: #111;
+  padding: 0.5rem;
+  width: 150px;
+  text-align: center;
+  border-radius: 5px;
+}
+  </style>
+  <!-- Leaflet (اختياري للخريطة الحية) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+<%
+function assetPath(u){
+  u = (u||'').toString().trim();
+  // 1) اترك الـdata: URI كما هو
+  if (/^data:/i.test(u)) return u;
+
+  // 2) إن كان URL كامل
+  if (/^https?:\/\//i.test(u)) return u;
+
+  // 3) تصحيح المسارات المحلية
+  u = u.replace(/\\/g,'/');                 // backslashes → slashes
+  u = u.replace(/^\/?Public\//, '/public/') // Public → public
+       .replace(/\/assests\//gi, '/assets/');
+
+  // 4) مسارات مقبولة كما هي
+  if (u.startsWith('/uploads/')) return u;
+  if (u.startsWith('/public/'))  return u;
+  if (u.startsWith('/assets/'))  return '/public' + u;
+
+  // 5) أي شيء يبدأ بـ/ نضيف له /public
+  if (u.startsWith('/')) return '/public' + u;
+
+  // 6) وإلا نعتبره ملفاً محلياً داخل uploads أو public حسب تنظيمك
+  return '/uploads/' + u; // أو '/public/' + u إذا كانت أصولك هناك
+}
+// حوّل sameOwnerFarms إلى قائمة آمنة للاستخدام
+const ownerList     = Array.isArray(sameOwnerFarms) ? sameOwnerFarms : [];
+const hasOwnerFarms = ownerList.length > 0;
+%>
+
+
+
+
+
+ <%- include('partials/navbar') %>
+ <%- include('partials/whatsapp') %>
+  <% if (!farm) { %>
+    <section class="section">
+      <div class="container">
+        <h1>المزرعة غير موجودة</h1>
+        <p class="muted">عذرًا، لم نعثر على المزرعة المطلوبة.</p>
+        <a class="btn btn-outline" href="/rent">العودة إلى المزارع للإيجار</a>
+      </div>
+    </section>
+  <% } else { %>
+
+  <!-- ملخص -->
+  <header class="farm-hero">
+    <div class="container farm-hero__inner">
+      <div class="farm-hero__copy">
+        <h1 class="farm-name"><%= farm.title %></h1>
+        <p class="farm-location"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
+        <ul class="farm-summary" role="list">
+          <li>
+  <strong>السعر:</strong>
+  <%= (farm.currency === 'SYP' ? 'ل.س' : '$') %><%= Number(farm.price||0).toLocaleString('en') %> / شهريًا
+</li>
+
+          <li><strong>المساحة:</strong> <%= Number(farm.size||0).toLocaleString('en') %> م²</li>
+          <li>
+            <strong>الحالة:</strong>
+            <% const rented = String(farm.status||'available').toLowerCase()==='rented'; %>
+            <span class="status <%= rented ? 'is-rented' : 'is-available' %>"><%= rented ? 'غير متاحة' : 'متاحة' %></span>
+          </li>
+     <li><strong>المشاهدات:</strong> <%= Number((typeof viewsCount!=='undefined' ? viewsCount : (farm?.views||0)) ).toLocaleString('en') %></li>
+
+        </ul>
+        <div class="farm-actions">
+          
+          <a class="btn btn-outline"
+             href="https://wa.me/<%= (farm.ownerInfo && farm.ownerInfo.whatsapp) ? farm.ownerInfo.whatsapp.replace(/\D/g,'') : '21600000000' %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + (farm.title||'')) %>"
+             target="_blank" rel="noopener" style="background-color: #065f46;color: #fafafa;" >تواصل عبر واتساب</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- معرض الصور -->
+  <section id="gallery" class="section gallery" aria-labelledby="gallery-title">
+    <div class="container">
+      <h2 id="gallery-title" style="margin-bottom:1rem">الصور:</h2>
+      <div class="swiper gallery-swiper" aria-label="صور المزرعة">
+        <div class="swiper-wrapper">
+          <% const photos = (Array.isArray(farm.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg']; %>
+          <% photos.forEach(function(src){ %>
+            <div class="swiper-slide">
+              <img src="<%= src %>" alt="<%= farm.title %>" loading="lazy"/>
+            </div>
+          <% }) %>
+        </div>
+        <div class="swiper-button-prev" aria-label="السابق"></div>
+        <div class="swiper-button-next" aria-label="التالي"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- فيديو (اختياري) -->
+  <% const videoUrl = (farm.videoUrl||'').trim(); %>
+  <% if (videoUrl) { %>
+  <section id="videoSection" class="section video" aria-labelledby="video-title">
+    <div class="container">
+      <h2 id="video-title"  style="margin-bottom:1rem">فيديو تفصيلي:</h2>
+      <div class="video-frame" id="videoFrame"></div>
+    </div>
+  </section>
+  <% } %>
+<!-- تفاصيل سريعة (قبل الوصف العام) -->
+<section class="section" aria-labelledby="quick-desc-title">
+  <div class="container">
+    <h2 id="quick-desc-title" style="margin-bottom:.75rem">تفاصيل سريعة</h2>
+
+    <% if ((farm.poolDesc||'').trim()) { %>
+      <article class="card" style="margin-bottom:.6rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;">
+        <h3 style="margin:.1rem 0 .4rem;">وصف المسبح</h3>
+        <p><%= farm.poolDesc %></p>
+      </article>
+    <% } %>
+
+    <% if ((farm.amenitiesDesc||'').trim()) { %>
+      <article class="card" style="margin-bottom:.6rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;">
+        <h3 style="margin:.1rem 0 .4rem;">وصف المرافق</h3>
+        <p><%= farm.amenitiesDesc %></p>
+      </article>
+    <% } %>
+
+    <% if ((farm.buildingDesc||'').trim()) { %>
+      <article class="card" style=" margin-bottom:.6rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;">
+        <h3 style="margin:.1rem 0 .4rem;">وصف البناء</h3>
+        <p><%= farm.buildingDesc %></p>
+      </article>
+    <% } %>
+  </div>
+</section>
+
+  <!-- الوصف -->
+  <section id="description" class="section description" aria-labelledby="desc-title">
+    <div class="container">
+      <h2 id="desc-title" style="margin-bottom:1rem;border-bottom:1px solid black;">الوصف الكامل:</h2>
+      <article class="prose">
+        <p><%= (farm.description||'لا يوجد وصف مفصّل.') %></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- الخريطة -->
+  <section class="section map" aria-labelledby="map-title">
+    <div class="container">
+      <h2 id="map-title"  style="margin-bottom:1rem">الموقع على الخريطة:</h2>
+      <div id="map" data-lat="<%= farm.location?.lat ?? '' %>" data-lng="<%= farm.location?.lng ?? '' %>"></div>
+    </div>
+  </section>
+
+ 
+
+  <% } %>
+<% if (hasOwnerFarms) { %>
+<section class="section" aria-labelledby="owner-farms-title">
+  <div class="container">
+    <header class="section-header" style="margin-bottom:.75rem">
+      <h2 id="owner-farms-title">مزارع أخرى لنفس المالك</h2>
+      <p class="muted">قد تهمّك هذه المزارع من نفس المالك.</p>
+    </header>
+
+    <div class="swiper vip-swiper" dir="rtl">
+      <div class="swiper-wrapper">
+        <% ownerList.forEach(function(f){
+             const raw   = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
+             const cover = assetPath(raw);
+             const loc   = f.city ? ((f.area||'') + ' — ' + f.city) : (f.area||'—');
+             const link  = (String(f.kind||'').toLowerCase()==='rent') ? ('/rent/farm/' + f._id) : ('/farm/' + f._id);
+             const vws   = Number(f.views||0);
+        %>
+          <div class="swiper-slide">
+            <article class="vip-hero-slide">
+              <img
+  class="vip-hero-img"
+  src="<%= assetPath(raw) %>"
+  alt="<%= f.title || 'مزرعة' %>"
+  loading="lazy"
+  onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+
+              <div class="vip-hero-overlay"></div>
+              <div class="vip-hero-body">
+                <h3 class="vip-hero-title"><%= f.title || '—' %></h3>
+                <div class="vip-hero-meta">
+  <% const sym = (f.currency === 'SYP' ? 'ل.س' : '$'); %>
+  <%= loc %> • <%= Number(f.size||0).toLocaleString('en') %> م² •
+  <%= sym %><%= Number(f.price||0).toLocaleString('en') %><%= (String(f.kind||'').toLowerCase()==='rent' ? ' / شهريًا' : '') %>
+  <span class="meta-views">• 👁️ <%= Number(vws||0).toLocaleString('en') %></span>
+</div>
+
+                <a class="vip-hero-cta" href="<%= link %>">التفاصيل</a>
+              </div>
+            </article>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+
+<%- include('partials/top-rent',  { items: (topRent || []) }) %>
+
+ <%- include('partials/footer') %>
+
+  <script type="module">
+    import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
+    new Swiper('.gallery-swiper', {
+      loop: true,
+      slidesPerView: 1,
+      spaceBetween: 12,
+      pagination: { el: '.swiper-pagination', clickable: true },
+      navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+    });
+  </script>
+<script type="module">
+  import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs';
+  new Swiper('.vip-swiper', {
+    loop: true,
+    centeredSlides: true,
+    slidesPerView: 1.02,
+    spaceBetween: 18,
+    watchOverflow: true,
+    pagination: { el: '.swiper-pagination', clickable: true },
+    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    breakpoints: { 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
+  });
+</script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // فيديو
+    (function(){
+      const frame = document.getElementById('videoFrame');
+      const url = "<%= (farm && farm.videoUrl ? farm.videoUrl.trim() : '') %>";
+      if (!frame || !url) return;
+      function esc(s){return (s||'').toString().replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+      try{
+        const u = new URL(url);
+        if (u.hostname.includes('youtu.be')) {
+          const id = u.pathname.slice(1);
+          frame.innerHTML = '<iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube" frameborder="0" allowfullscreen></iframe>';
+          return;
+        }
+        if (u.hostname.includes('youtube.com')) {
+          const id = u.searchParams.get('v');
+          if (id){
+            frame.innerHTML = '<iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube" frameborder="0" allowfullscreen></iframe>';
+            return;
+          }
+        }
+      }catch(_){}
+      if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(url)) {
+        frame.innerHTML = '<video controls style="width:100%;border-radius:12px"><source src="'+esc(url)+'"></video>';
+      } else {
+        frame.innerHTML = '<a class="btn btn-outline" href="'+esc(url)+'" target="_blank" rel="noopener">فتح الفيديو</a>';
+      }
+    })();
+
+    // خريطة
+    (function(){
+      const el = document.getElementById('map');
+      if (!el) return;
+      const lat = parseFloat(el.dataset.lat);
+      const lng = parseFloat(el.dataset.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      const map = L.map('map', { center:[lat,lng], zoom:14 });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+      L.marker([lat,lng]).addTo(map);
+    })();
+  </script>
+</body>
+</html>

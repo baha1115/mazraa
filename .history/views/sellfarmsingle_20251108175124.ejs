@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title><%= farm ? (farm.title + ' — التفاصيل') : 'المزرعة غير موجودة' %></title>
+  <meta name="description" content="تفاصيل المزرعة: الصور، الفيديو، الوصف، الموقع، السعر والحالة."/>
+
+  <!-- ملفاتك العامة -->
+  <link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css"/>
+
+  <!-- مكتبات الواجهة -->
+  <% const _hasOwner = Array.isArray(sameOwnerFarms) && sameOwnerFarms.length > 0; %>
+<% if (_hasOwner) { %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+<% } %>
+
+
+  <style>
+    /* ====== Design Tokens ====== */
+    :root{
+      --bg:#f7fafc; --card:#fff; --ink:#0f172a; --muted:#64748b;
+      --accent:#10b981; --danger:#ef4444; --ring:#0f172a22;
+      --r:16px; --shadow:0 14px 36px rgba(2,6,23,.10); --container:1160px;
+    }
+    html,body{ background:var(--bg); color:var(--ink); }
+    .container{ width:min(100%,var(--container)); margin-inline:auto; padding-inline:16px; }
+    .section{ padding:1.25rem 0; }
+    .card{ background:var(--card); border:1px solid #e2e8f0; border-radius:var(--r); box-shadow:var(--shadow); }
+    .grid{ display:grid; gap:16px; }
+    .muted{ color:var(--muted); }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.65rem 1rem; border-radius:12px; font-weight:700; text-decoration:none; cursor:pointer; }
+    .btn-primary{ background:var(--accent); color:#fff; border:none; }
+    .btn-outline{ background:#fff; color:#0f172a; border:1px solid #0f172a; }
+    .btn-ghost{ background:#fff; color:var(--ink); border:1px solid #e2e8f0; }
+
+    /* ====== HERO جديد خفيف ====== */
+    .hero{ position:relative; border-radius:20px; overflow:hidden; min-height:300px; margin-block:10px; background:#e2e8f0; }
+    .hero__bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.9); }
+    .hero__veil{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.50) 80%); }
+    .hero__body{ position:absolute; inset-inline:1rem; inset-block-end:1rem; color:#fff; display:grid; gap:.45rem; }
+    .hero__title{ margin:0; font-size:clamp(20px,3vw,32px); font-weight:900; letter-spacing:-.2px; }
+    .hero__meta{ margin:0; opacity:.95; }
+    .price-chip{ position:absolute; top:12px; inset-inline-end:12px; z-index:2; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; border-radius:999px; padding:.25rem .65rem; font-weight:800; }
+    .badge{ display:inline-block; padding:.22rem .6rem; border-radius:999px; font-size:.8rem; color:#fff; background:#0f172a; box-shadow:0 2px 8px rgba(0,0,0,.25); }
+    .badge--vip{ background:#0f172a; } .badge--premium{ background:#8b5cf6; } .badge--ok{ background:#065f46; } .badge--no{ background:#991b1b; } .badge--video{ background:var(--danger); }
+    .hero__badges{ display:flex; gap:.4rem; flex-wrap:wrap; }
+    .hero__actions{ margin-top:.7rem; display:flex; gap:.5rem; flex-wrap:wrap; }
+    .hero__cta{ background:#fff; color:#111; }
+
+    /* ====== تخطيط المحتوى ====== */
+    .main-grid{ grid-template-columns:1fr; }
+    @media (min-width:1024px){ .main-grid{ grid-template-columns:2fr 1fr; align-items:start; } .aside-sticky{ position:sticky; top:16px; } }
+
+    /* ====== معرض الصور (رئيسي + مصغّرات) ====== */
+    .gallery .swiper-slide img{ width:100%; height:420px; object-fit:cover; border-radius:12px; }
+    .gallery-thumbs .swiper-slide{ opacity:.7; cursor:pointer; }
+    .gallery-thumbs .swiper-slide-thumb-active{ opacity:1; }
+    .gallery-thumbs img{ width:100%; height:84px; object-fit:cover; border-radius:10px; }
+    @media (max-width:480px){ .gallery .swiper-slide img{ height:260px; } .gallery-thumbs img{ height:70px; } }
+
+    /* ====== بطاقات مواصفات بأيقونات ====== */
+    .infogrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .info-item{ display:flex; gap:.6rem; align-items:flex-start; border:1px solid #e2e8f0; border-radius:12px; padding:.8rem; background:#fff; }
+    .info-ico{ width:28px; height:28px; display:inline-grid; place-items:center; border:1px solid #e2e8f0; border-radius:8px; }
+    .info-ico svg{ width:18px; height:18px; }
+    .info-t h3{ margin:.05rem 0 .25rem; font-size:1rem; }
+    .info-t p{ margin:0; color:var(--muted); }
+
+    /* ====== أقسام قابلة للطي ====== */
+    .fold{ border:1px solid #e2e8f0; border-radius:12px; background:#fff; }
+    .fold > summary{ list-style:none; cursor:pointer; padding:1rem; font-weight:800; display:flex; align-items:center; justify-content:space-between; }
+    .fold > summary::marker{ content:''; }
+    .fold > summary span{ color:var(--muted); font-weight:600; }
+    .fold[open] > summary span{ transform:rotate(180deg); }
+    .fold__body{ padding:0 1rem 1rem; }
+
+    /* ====== الخريطة ====== */
+    #leafletMap{ width:100%; height:380px; border-radius:12px; }
+    .map-placeholder img{ max-width:100%; height:auto; border-radius:12px; }
+    .map-placeholder img.static-map{ display:none; }
+
+    /* ====== سويبر مزارع المالك ====== */
+    .vip-hero-slide{ position:relative; min-height:360px; border-radius:16px; overflow:hidden; background:#eef2f7; }
+    .vip-hero-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.85); }
+    .vip-hero-overlay{ position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.15) 40%, rgba(0,0,0,0) 70%); }
+    .vip-hero-body{ position:absolute; inset-inline:1.2rem; inset-block-end:1.1rem; color:#fff; display:grid; gap:.35rem; }
+    .vip-hero-title{ margin:.1rem 0; font-size:clamp(18px,3vw,28px); }
+    .vip-hero-cta{ display:inline-block; padding:.5rem .9rem; border-radius:10px; background:#fff; color:#0f172a; text-decoration:none; width:150px; text-align:center; }
+
+    /* ====== شريط إجراءات سفلي للموبايل ====== */
+    .mobile-cta{ position:fixed; inset-inline:0; bottom:0; z-index:70; background:#fff; padding:.5rem env(safe-area-inset-right) calc(.5rem + env(safe-area-inset-bottom)) env(safe-area-inset-left); box-shadow:0 -10px 26px rgba(2,6,23,.10); border-top:1px solid #e2e8f0; display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; }
+    .mobile-cta .btn{ height:44px; border-radius:12px; }
+    .btn-wa{ background:#10b981; color:#fff; border:none; }
+    .btn-call{ background:#0f172a; color:#fff; border:none; }
+    .btn-mail{ background:#fff; color:#0f172a; border:1px solid #0f172a; }
+    @media (min-width:1024px){ .mobile-cta{ display:none; } }
+    @media (max-width:1023.98px){ body{ padding-bottom:84px; } } /* مساحة لشريط الأسفل */
+    .prose{ line-height:1.85; }
+    /* ===== Fix: نسبة أبعاد ثابتة للصور في السويبر ===== */
+
+/* اجعل كل سلايد حاوية بنسبة أبعاد */
+.gallery .swiper-slide{
+  position: relative;
+  aspect-ratio: 16 / 9;      /* على الديسكتوب */
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* على الموبايل نجعل النسبة أكثر طولاً (اختياري) */
+@media (max-width:640px){
+  .gallery .swiper-slide{ aspect-ratio: 4 / 3; }  /* يمكنك 1/1 حسب صورك */
+}
+
+/* الصورة تملأ السلايد بدون أي تمدد */
+.gallery .swiper-slide img{
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;            /* تمنع التمدد وتقصّ من الأطراف */
+  object-position: center;      /* قصّ من المنتصف */
+}
+
+/* مصغّرات السويبر */
+.gallery-thumbs .swiper-slide{
+  aspect-ratio: 16 / 10;
+  overflow: hidden; border-radius: 10px;
+}
+.gallery-thumbs .swiper-slide img{
+  width: 100%; height: 100%; object-fit: cover;
+}
+/* ============ GALLERY HARD-FIX ============ */
+/* 1) ثبّت ارتفاع الحاوية بنِسبة أبعاد + حد أقصى للارتفاع */
+.gallery .gallery-main,
+.gallery .gallery-swiper{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;     /* غيّرها 4/3 أو 1/1 لو أردت */
+  max-height: 72vh;         /* يمنع “التمدد إلى مالانهاية” */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 2) اجعل كل السلايدات تمتلئ الحاوية */
+.gallery .gallery-main .swiper-wrapper,
+.gallery .gallery-main .swiper-slide,
+.gallery .gallery-swiper .swiper-wrapper,
+.gallery .gallery-swiper .swiper-slide{
+  height: 100% !important;
+}
+
+/* 3) الصورة تملأ السلايد بدون أي تمدد */
+.gallery .gallery-main .swiper-slide img,
+.gallery .gallery-swiper .swiper-slide img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;   /* قصّ أنيق من الأطراف */
+  object-position: center !important;
+  display: block;
+}
+
+/* 4) مصغّرات مرتّبة */
+.gallery .gallery-thumbs .swiper-slide{
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.gallery .gallery-thumbs .swiper-slide img{
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+/* 5) دعم المتصفحات القديمة التي لا تدعم aspect-ratio */
+@supports not (aspect-ratio: 1 / 1){
+  .gallery .gallery-main,
+  .gallery .gallery-swiper{ height: auto; }
+  .gallery .gallery-main::before,
+  .gallery .gallery-swiper::before{
+    content:""; display:block; padding-top:56.25%; /* 16:9 */
+  }
+}
+/* ===== Gallery Grid (No Swiper) ===== */
+.gallery-grid{
+  display:grid; gap:8px;
+  grid-template-columns:repeat(12,1fr);
+}
+.gallery-grid .g-item{
+  position:relative; border-radius:12px; overflow:hidden; background:#f1f5f9;
+}
+.gallery-grid .g-item img{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover; object-position:center; display:block;
+}
+
+/* أول صورة كبيرة بنِسبة 16:9، والبقية بطاقات 4:3 */
+.gallery-grid .g-item.is-hero{ grid-column:span 8; aspect-ratio:16/9; }
+.gallery-grid .g-item.is-rect{ grid-column:span 4; aspect-ratio:4/3; }
+
+/* تكيّف الشاشات */
+@media (max-width:1024px){
+  .gallery-grid{ grid-template-columns:repeat(6,1fr); }
+  .gallery-grid .g-item.is-hero{ grid-column:span 6; }
+  .gallery-grid .g-item.is-rect{ grid-column:span 3; }
+}
+@media (max-width:640px){
+  .gallery-grid{ grid-template-columns:repeat(2,1fr); }
+  .gallery-grid .g-item{ grid-column:span 1; aspect-ratio:4/3; }
+}
+/* إخفاء سكشن "التواصل السريع" على الموبايل */
+@media (max-width: 1023.98px){
+  .aside-sticky{ display: none !important; }
+}
+/* ===== Features/Amenities (chips) ===== */
+.features{ background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 14px 36px rgba(2,6,23,.08); }
+.features__block{ margin-top:.5rem; }
+.features__h{ margin:.15rem 0 .45rem; font-size:1.05rem; font-weight:800; color:#0f172a; }
+
+.features .chips{
+  display:flex; flex-wrap:wrap; gap:.45rem;
+}
+.features .chip{
+  display:inline-flex; align-items:center; gap:.35rem;
+  padding:.3rem .6rem; border:1px solid #e2e8f0;
+  background:#f8fafc; color:#0f172a; border-radius:999px; font-size:.92rem;
+}
+.features .chip svg{ width:16px; height:16px; }
+
+  </style>
+</head>
+<body>
+<%
+  /* ====== Helpers + Safe Locals ====== */
+  function assetPath(u){
+  u = (u||'').toString().trim();
+  if (!u) return '/public/assets/farm-default.jpg';
+  if (/^data:/i.test(u) || /^https?:\/\//i.test(u)) {
+    // لو Cloudinary https يمكنك لاحقًا إضافة: f_auto,q_auto,w=1600 عبر URL params
+    return u;
+  }
+  u = u.replace(/\\/g,'/').replace(/^\/?Public\//,'/public/').replace(/\/assests\//gi,'/assets/');
+  if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
+  if (u.startsWith('/assets/')) return '/public'+u;
+  if (u.startsWith('/')) return '/public'+u;
+  return '/uploads/'+u;
+}
+  const _isAuth      = (typeof isAuth !== 'undefined') ? isAuth : false;
+  const _user        = (typeof user   !== 'undefined') ? user   : null;
+  const _currentPath = (typeof currentPath !== 'undefined') ? currentPath : '';
+  const _banners     = (typeof bannersDoc !== 'undefined') ? bannersDoc : null;
+
+  const photos = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg'];
+  const cover  = assetPath(photos[0]);
+  const ownerList = Array.isArray(sameOwnerFarms) ? sameOwnerFarms : [];
+  const hasOwnerFarms = ownerList.length > 0;
+
+  const sym  = (farm?.currency === 'SYP') ? 'ل.س' : '$';
+  const pStr = Number(farm?.price||0) ? (sym + ' ' + Number(farm.price).toLocaleString('en')) : '—';
+%>
+
+<!-- جزء الرأس والزر الثابت (تمرير آمن) -->
+<%- include('partials/navbar', { isAuth:_isAuth, user:_user, currentPath:_currentPath }) %>
+<%- include('partials/whatsapp') %>
+<% if (_banners) { %><%- include('partials/promo-swiper', { bannersDoc:_banners }) %><% } %>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <div class="container">
+    <ol>
+      <li><a href="/">الرئيسية</a></li>
+      <li><a href="/sale">للبيع</a></li>
+      <li aria-current="page"><%= farm?.title || '—' %></li>
+    </ol>
+  </div>
+</nav>
+
+<% if (!farm) { %>
+  <section class="section"><div class="container"><h1>المزرعة غير موجودة</h1><p class="muted">عذرًا، لم نعثر على المزرعة المطلوبة.</p><a class="btn btn-outline" href="/sale">العودة إلى القائمة</a></div></section>
+<% } else { %>
+
+<!-- ====== HERO ====== -->
+<section class="section">
+  <div class="container">
+    <header class="hero card">
+      <img class="hero__bg" src="<%= cover %>" alt="<%= farm.title %>" loading="eager" onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+      <div class="hero__veil"></div>
+      <div class="price-chip"><%= pStr %><%= (String(farm.kind).toLowerCase()==='rent' ? '/شهر' : '') %></div>
+      <div class="hero__body">
+        <div class="hero__badges">
+          <% const rented = (farm.status||'available').toLowerCase()==='rented'; %>
+          <span class="badge <%= rented?'badge--no':'badge--ok' %>"><%= rented?'مؤجّرة':'متاحة' %></span>
+          
+        </div>
+        <h1 class="hero__title"><%= farm.title %></h1>
+        <p class="hero__meta"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
+        <div class="hero__actions">
+          <a class="btn btn-primary" href="#gallery">تصفّح الصور</a>
+          <a class="btn hero__cta" href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>" target="_blank" rel="noopener">واتساب</a>
+        </div>
+      </div>
+    </header>
+  </div>
+</section>
+
+<!-- ====== Main ====== -->
+<section class="section">
+  <div class="container grid main-grid">
+    <!-- يسار: المعرض + تفاصيل + وصف + خريطة -->
+    <div class="grid" style="gap:18px">
+
+      <!-- Gallery with thumbs -->
+     <!-- ===== Gallery (Grid, no Swiper) ===== -->
+<section id="gallery" class="card" aria-labelledby="gallery-title" style="padding:1rem">
+  <h2 id="gallery-title" style="margin:0 0 .75rem">المعرض</h2>
+
+  <div class="gallery-grid" id="galleryMain">
+    <% const __photos = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg']; %>
+    <% __photos.forEach(function(src, i){ %>
+      <a class="g-item <%= i===0 ? 'is-hero' : 'is-rect' %>" href="<%= assetPath(src) %>" data-index="<%= i %>">
+        <img src="<%= assetPath(src) %>" alt="<%= farm.title %> - صورة <%= i+1 %>" loading="lazy" onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+      </a>
+    <% }) %>
+  </div>
+</section>
+
+      <!-- Quick info (icons) -->
+      <section class="card" aria-labelledby="quick-title" style="padding:1rem">
+        <h2 id="quick-title" style="margin:0 0 .75rem">تفاصيل سريعة</h2>
+
+        <div class="infogrid">
+          <article class="info-item">
+            <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4zM4 9h16M9 4v16" stroke="currentColor" stroke-width="1.4"/></svg></span>
+            <div class="info-t"><h3>المساحة</h3><p><strong><%= Number(farm.size||0).toLocaleString('en') %></strong> م²</p></div>
+          </article>
+
+          <!-- السعر -->
+<article class="info-item">
+  <span class="info-ico" aria-hidden="true">
+    <!-- أيقونة عملة -->
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.5"/></svg>
+  </span>
+  <div class="info-t">
+    <h3>السعر</h3>
+    <%
+      const __sym  = (farm?.currency === 'SYP') ? 'ل.س' : '$';
+      const __p    = Number(farm?.price||0);
+      const __txt  = __p ? (__sym + ' ' + __p.toLocaleString('en')) : '—';
+      const __rent = (String(farm?.kind||'').toLowerCase()==='rent');
+    %>
+    <p><strong><%= __txt %></strong><%= __rent ? '/شهر' : '' %></p>
+  </div>
+</article>
+
+
+          <article class="info-item">
+            <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-7 7-11a7 7 0 10-14 0c0 4 7 11 7 11z" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="10" r="2.7" fill="currentColor"/></svg></span>
+            <div class="info-t"><h3>الموقع</h3><p><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p></div>
+          </article>
+
+          <article class="info-item">
+            <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>
+            <div class="info-t"><h3>المشاهدات</h3><p>👁️ <%= Number((typeof viewsCount!=='undefined'?viewsCount:farm.views)||0).toLocaleString('en') %></p></div>
+          </article>
+        </div>
+      </section>
+<%
+  // ===== تحضير النصوص وتقسيمها إلى عناصر (إن أمكن) =====
+  const __amenRaw  = (farm?.amenitiesDesc || '').trim();
+  const __poolRaw  = (farm?.poolDesc      || '').trim();
+  const __buildRaw = (farm?.buildingDesc  || '').trim();
+
+  function splitList(s){
+    return String(s || '')
+      .split(/[\n,،;؛•\-]+/g)         // سطر جديد، فاصلة عربية/إنجليزية، نقطة وسطية…
+      .map(t => t.trim())
+      .filter(Boolean)
+      .slice(0, 50);
+  }
+  const __amenList  = __amenRaw  ? Array.from(new Set(splitList(__amenRaw)))  : [];
+  const __poolList  = __poolRaw  ? Array.from(new Set(splitList(__poolRaw)))  : [];
+%>
+
+<% if (__amenRaw || __poolRaw || __buildRaw) { %>
+<section id="features" class="card features" aria-labelledby="features-title" style="padding:1rem">
+  <h2 id="features-title" style="margin:0 0 .6rem">المرافق والمزايا</h2>
+
+  <% if (__amenRaw) { %>
+    <div class="features__block">
+      <h3 class="features__h">المرافق</h3>
+      <% if (__amenList.length) { %>
+        <div class="chips">
+          <% __amenList.forEach(function(it){ %>
+            <span class="chip">
+              <!-- أيقونة تحقق -->
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7l-9 9-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <%= it %>
+            </span>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="prose"><%= __amenRaw %></div>
+      <% } %>
+    </div>
+  <% } %>
+
+  <% if (__poolRaw) { %>
+    <div class="features__block">
+      <h3 class="features__h">المسبح</h3>
+      <% if (__poolList.length) { %>
+        <div class="chips">
+          <% __poolList.forEach(function(it){ %>
+            <span class="chip">
+              <!-- أيقونة موج -->
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 15c3 0 3-2 6-2s3 2 6 2 3-2 6-2" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              </svg>
+              <%= it %>
+            </span>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="prose"><%= __poolRaw %></div>
+      <% } %>
+    </div>
+  <% } %>
+
+  <% if (__buildRaw) { %>
+    <div class="features__block">
+      <h3 class="features__h">البناء</h3>
+      <div class="prose"><%= __buildRaw %></div>
+    </div>
+  <% } %>
+</section>
+<% } %>
+
+
+      <!-- فيديو (اختياري) -->
+      <% const __videoUrl = (farm.videoUrl||'').trim(); if (__videoUrl) { %>
+      <section class="card" aria-labelledby="video-title" style="padding:1rem">
+        <h2 id="video-title" style="margin:0 0 .6rem">فيديو تفصيلي</h2>
+        <div class="video-frame" id="videoFrame"></div>
+      </section>
+      <% } %>
+
+      <!-- وصف -->
+      <section id="description" class="card" aria-labelledby="desc-title" style="padding:1rem">
+        <h2 id="desc-title" style="margin:0 0 .6rem">الوصف الكامل</h2>
+        <article class="prose"><p><%= (farm.description||'لا يوجد وصف مفصّل.') %></p></article>
+      </section>
+
+      <!-- خريطة -->
+      <section id="map" class="card" aria-labelledby="map-title" style="padding:1rem">
+        <h2 id="map-title" style="margin:0 0 .6rem">الموقع على الخريطة</h2>
+        <div class="map-placeholder" id="mapPlaceholder"
+             data-lat="<%= farm?.location?.lat || '' %>"
+             data-lng="<%= farm?.location?.lng || '' %>"
+             data-address="<%= (farm?.location?.address || '').replace(/"/g,'&quot;') %>">
+          <img class="static-map" src="/public/assets/location.jpg" alt="خريطة تقريبية" loading="lazy">
+        </div>
+        <div id="leafletMap" aria-label="خريطة OpenStreetMap"></div>
+      </section>
+
+    </div>
+
+    <!-- يمين: كرت تواصل Sticky -->
+    <aside class="aside-sticky">
+      <section class="card" style="padding:1rem">
+        <h3 style="margin:.2rem 0 .6rem">التواصل السريع</h3>
+        <div class="grid" style="grid-template-columns:1fr; gap:.6rem">
+          <div class="info-item">
+            <span class="info-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 12h16M4 19h16" stroke="currentColor" stroke-width="1.6"/></svg></span>
+            <div class="info-t"><h3>السعر</h3><p style="font-weight:900"><%= pStr %></p></div>
+          </div>
+          <% const _wa=((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,''); const _ph=(farm?.ownerInfo?.phone||'').replace(/\s+/g,''); const _em=farm?.ownerInfo?.email||''; %>
+          <% if (_wa) { %><a class="btn btn-primary" href="<%= 'https://wa.me/'+_wa+'?text='+encodeURIComponent('أنا مهتم بمزرعة: '+farm.title) %>" target="_blank" rel="noopener">واتساب</a><% } %>
+          <% if (_ph) { %><a class="btn btn-outline" href="tel:<%= _ph %>">اتصال هاتفي</a><% } %>
+          <% if (_em) { %><a class="btn btn-ghost" href="mailto:<%= _em %>">إرسال بريد</a><% } %>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</section>
+
+<!-- مزارع أخرى لنفس المالك -->
+<% if (hasOwnerFarms) { %>
+<section class="section" aria-labelledby="owner-farms-title">
+  <div class="container">
+    <header class="section-header" style="margin-bottom:.75rem">
+      <h2 id="owner-farms-title">مزارع أخرى لنفس المالك</h2>
+      <p class="muted">قد تهمّك هذه المزارع من نفس المالك.</p>
+    </header>
+
+    <div class="swiper vip-swiper" dir="rtl">
+      <div class="swiper-wrapper">
+        <% ownerList.forEach(function(f){
+             const raw = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
+             const link = (String(f.kind||'').toLowerCase()==='rent') ? ('/rent/farm/'+f._id) : ('/farm/'+f._id);
+             const loc  = f.city ? ((f.area||'') + ' — ' + f.city) : (f.area||'—');
+        %>
+        <div class="swiper-slide">
+          <article class="vip-hero-slide card" style="border:none">
+            <img class="vip-hero-img" src="<%= assetPath(raw) %>" alt="<%= f.title||'مزرعة' %>" loading="lazy" onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+            <div class="vip-hero-overlay"></div>
+            <div class="vip-hero-body">
+              <h3 class="vip-hero-title"><%= f.title || '—' %></h3>
+              <div class="muted">
+                <% const sym2=(f.currency==='SYP'?'ل.س':'$'); %>
+                <%= loc %> • <%= Number(f.size||0).toLocaleString('en') %> م² •
+                <%= sym2 %><%= Number(f.price||0).toLocaleString('en') %><%= (String(f.kind).toLowerCase()==='rent' ? '/شهر' : '') %>
+              </div>
+              <a class="vip-hero-cta" href="<%= link %>">التفاصيل</a>
+            </div>
+          </article>
+        </div>
+        <% }) %>
+      </div>
+      <div class="swiper-button-prev" aria-label="السابق"></div>
+      <div class="swiper-button-next" aria-label="التالي"></div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (typeof topSale !== 'undefined') { %>
+  <%- include('partials/top-sale', { items: topSale }) %>
+<% } %>
+<% } /* end if farm */ %>
+
+<%- include('partials/footer') %>
+
+<!-- Scripts -->
+<% if (_hasOwner) { %>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      if (document.querySelector('.vip-swiper')) {
+        new Swiper('.vip-swiper', {
+          loop:true, centeredSlides:true, slidesPerView:1.02, spaceBetween:18, watchOverflow:true,
+          pagination:{ el:'.vip-swiper .swiper-pagination', clickable:true },
+          navigation:{ nextEl:'.vip-swiper .swiper-button-next', prevEl:'.vip-swiper .swiper-button-prev' },
+          breakpoints:{ 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
+        });
+      }
+    });
+  </script>
+<% } %>
+
+<script>
+
+/* حقن الفيديو (يوتيوب/ملف) */
+(function(){
+  const el = document.getElementById('videoFrame'); if (!el) return;
+  const url = <%- JSON.stringify((farm && farm.videoUrl) ? farm.videoUrl : '') %>; if (!url) return;
+  function esc(s){return (s||'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  try{
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')){ const id=u.pathname.slice(1); el.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube" frameborder="0" allowfullscreen></iframe>'; return; }
+    if (u.hostname.includes('youtube.com')){ const id=u.searchParams.get('v'); if (id){ el.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'" title="YouTube" frameborder="0" allowfullscreen></iframe>'; return; } }
+  }catch(_){}
+  if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(url)){ el.innerHTML='<video controls style="width:100%;border-radius:12px"><source src="'+esc(url)+'"></video>'; }
+  else { el.innerHTML='<a class="btn btn-outline" href="'+esc(url)+'" target="_blank" rel="noopener">فتح الفيديو</a>'; }
+})();
+
+/* الخريطة */
+(function () {
+  function ready(fn){ document.readyState!=='loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
+  ready(function(){
+    var holder = document.getElementById('mapPlaceholder');
+    var mapEl = document.getElementById('leafletMap');
+    if (!holder || !mapEl || typeof L === 'undefined') return;
+    var lat = parseFloat(holder.dataset.lat), lng = parseFloat(holder.dataset.lng), addr = holder.dataset.address || '';
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    var map = L.map(mapEl, { center:[lat,lng], zoom:14 });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'&copy; OpenStreetMap' }).addTo(map);
+    var marker = L.marker([lat,lng]).addTo(map); if (addr) marker.bindPopup(addr);
+    setTimeout(function(){ map.invalidateSize(); }, 200);
+  });
+})();
+</script>
+<script>
+(function(){
+  var mapSection = document.getElementById('map');
+  if (!mapSection) return;
+  var loaded = false;
+  var io = new IntersectionObserver(function(entries){
+    if (loaded) return;
+    if (entries.some(e => e.isIntersecting)) {
+      loaded = true; io.disconnect();
+      // CSS
+      var lcss = document.createElement('link');
+      lcss.rel = 'stylesheet';
+      lcss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(lcss);
+      // JS
+      var s = document.createElement('script');
+      s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      s.onload = function(){
+        try{
+          var holder = document.getElementById('mapPlaceholder');
+          var mapEl  = document.getElementById('leafletMap');
+          if (!holder || !mapEl || typeof L === 'undefined') return;
+          var lat = parseFloat(holder.dataset.lat), lng = parseFloat(holder.dataset.lng), addr = holder.dataset.address || '';
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          var map = L.map(mapEl, { center:[lat,lng], zoom:14 });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
+          var mrk = L.marker([lat,lng]).addTo(map);
+          if (addr) mrk.bindPopup(addr);
+          setTimeout(function(){ map.invalidateSize(); }, 200);
+        }catch(_){}
+      };
+      document.head.appendChild(s);
+    }
+  }, {rootMargin:'800px 0px'});
+  io.observe(mapSection);
+})();
+</script>
+
+<!-- شريط الإجراءات السفلي للموبايل -->
+<% const wa = ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,''); const ph=(farm?.ownerInfo?.phone||'').replace(/\s+/g,''); const em=farm?.ownerInfo?.email||''; %>
+<div class="mobile-cta" role="group" aria-label="خيارات التواصل">
+  <a class="btn btn-wa"   href="<%= wa ? ('https://wa.me/'+wa+'?text='+encodeURIComponent('أنا مهتم بمزرعة: '+farm.title)) : 'javascript:void(0)' %>" target="_blank" rel="noopener" <%= wa ? '' : 'aria-disabled="true"' %>>واتساب</a>
+  <a class="btn btn-call" href="<%= ph ? ('tel:'+ph) : 'javascript:void(0)' %>" <%= ph ? '' : 'aria-disabled="true"' %>>اتصال</a>
+  <a class="btn btn-mail" href="<%= em ? ('mailto:'+em) : 'javascript:void(0)' %>" <%= em ? '' : 'aria-disabled="true"' %>>الإيميل</a>
+</div>
+</body>
+</html>
