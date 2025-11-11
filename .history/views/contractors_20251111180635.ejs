@@ -296,37 +296,29 @@
     let listSwiper = null, vipSwiper = null;
 
     function destroySwiper(sw){ if (sw) try{ sw.destroy(true,true); }catch(_){ } }
-
-function initListSwiper(){
-  destroySwiper(listSwiper);
-  listSwiper = new Swiper('.contractor-swiper', {
-    watchOverflow: true,
-    pagination: { el: '.contractor-swiper .swiper-pagination', clickable: true },
-    navigation: { nextEl: '.contractor-swiper .swiper-button-next', prevEl: '.contractor-swiper .swiper-button-prev' },
-    breakpoints: {
-      /* هاتف: كرتان */
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },
-      480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      /* تابلت صغير */
-      640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
-      1024: { slidesPerView: 3.2,  spaceBetween: 18 },
-      1280: { slidesPerView: 4.0,  spaceBetween: 20 }
+    function initListSwiper(){
+      destroySwiper(listSwiper);
+      listSwiper = new Swiper('.contractor-swiper', {
+        slidesPerView: 1.05, spaceBetween: 12, watchOverflow: true,
+        pagination:{ el:'.contractor-swiper .swiper-pagination', clickable:true },
+        navigation:{ nextEl:'.contractor-swiper .swiper-button-next', prevEl:'.contractor-swiper .swiper-button-prev' },
+        breakpoints:{ 480:{slidesPerView:1.1}, 640:{slidesPerView:1.8}, 1024:{slidesPerView:2.6}, 1280:{slidesPerView:3.2} }
+      });
     }
-  });
-}
-   function initVipSwiper(){
+    function initVipSwiper(){
   destroySwiper(vipSwiper);
   vipSwiper = new Swiper('.vip-swiper', {
+    slidesPerView: 1.05,
+    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.vip-swiper .swiper-pagination', clickable: true },
     navigation: { nextEl: '.vip-swiper .swiper-button-next', prevEl: '.vip-swiper .swiper-button-prev' },
+    // نفس منطق السويبر العام: يُظهر أكثر من بطاقة على الشاشات الكبيرة
     breakpoints: {
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },  /* هاتف: كرتان */
-      480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      1024: { slidesPerView: 3.2,  spaceBetween: 18 },
-      1280: { slidesPerView: 4.0,  spaceBetween: 20 }
+      480:  { slidesPerView: 1.1 },
+      640:  { slidesPerView: 1.8 },
+      1024: { slidesPerView: 2.6 }, // ≥ لابتوب: تقريبًا بطاقتان ونصف
+      1280: { slidesPerView: 3.2 }  // ≥ دِسكتوب: ~3 بطاقات
     }
   });
 }

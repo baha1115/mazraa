@@ -432,6 +432,78 @@
 .lb .swiper-button-prev,.lb .swiper-button-next{ color:#fff; filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)); transform:scale(1.05); }
 .lb .swiper-pagination-bullet{ background:rgba(255,255,255,.85); }
 @media (max-width:640px){ .lb-swiper{ width:100vw; height:78vh; } }
+/* ===== Mobile polish pack (contractorssingle) ===== */
+@media (max-width:640px){
+  /* تباعد الأقسام العام */
+  .section { padding: .75rem 0 !important; }
+
+  /* العناوين */
+  h1, .hero-name { font-size: 1.15rem !important; margin:.25rem 0 !important; }
+  h2, .section-title { font-size: 1rem !important; margin-bottom:.5rem !important; }
+
+  /* أزرار عامة */
+  .btn { padding:.46rem .7rem !important; font-size:.9rem !important; border-radius:10px !important; }
+
+  /* الهيرو المُبسّط (صورة | معلومات | أزرار) – لدينا شبكة جاهزة بالملف، نكتفي بتصغير المقاسات */
+  .hero-grid{ grid-template-columns: 72px 1fr 120px !important; gap:.6rem !important; }
+  .hero-avatar{ width:72px !important; height:72px !important; }
+  .hero-meta{ font-size:.86rem !important; margin:.08rem 0 !important; }
+  .hero-rating{ gap:.35rem !important; }
+  .hero-rating .stars-inline{ font-size:1rem !important; }
+  .hero-rating small{ font-size:.82rem !important; }
+  .hero-actions{ gap:.45rem !important; }
+
+  /* شبكة معرض الأعمال */
+  .work-grid{
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .work-item{ aspect-ratio: 4 / 3 !important; border-radius:12px !important; }
+  .work-item img{ transform: none !important; }
+
+  /* الفيديو */
+  .intro-video .container > div{ border-radius:12px !important; }
+
+  /* نصوص النبذة/الوصف داخل كارد لطيف */
+  #about .prose, #description .prose{
+    padding:.8rem .9rem !important;
+    border-radius:12px !important;
+    box-shadow:0 8px 18px rgba(0,0,0,.06) !important;
+  }
+  #about .prose p, #description .prose p{ font-size:.95rem !important; line-height:1.7 !important; }
+
+  /* نموذج طلب الخدمة */
+  .form-grid{ grid-gap:10px !important; }
+  .label{ font-size:.9rem !important; }
+  .input{ padding:.55rem .6rem !important; font-size:.95rem !important; border-radius:10px !important; }
+  .field--actions .btn{ min-width: 44% !important; }
+
+  /* نجوم التقييم */
+  .stars{ font-size:1.6rem !important; }
+  #rateMsg{ font-size:.9rem !important; }
+
+  /* أفضل المقاولين تقييماً – البطاقة والسويبر */
+  .toprated-swiper .contractor-card{ border-radius:12px !important; }
+  .toprated-swiper .contractor-head{
+    grid-template-columns: 50px 1fr !important; gap:.55rem !important;
+    padding:.65rem .7rem .5rem !important;
+  }
+  .toprated-swiper .avatar{ width:50px !important; height:50px !important; }
+  .toprated-swiper .head-info .name{ font-size:.98rem !important; }
+  .toprated-swiper .specialization, .toprated-swiper .region, .toprated-swiper .muted{ font-size:.82rem !important; }
+  .toprated-swiper .contractor-body{ padding:.55rem .7rem .7rem !important; }
+  .toprated-swiper .contractor-body .btn{ font-size:.86rem !important; padding:.42rem .7rem !important; }
+  .toprated-swiper .swiper-button-next, .toprated-swiper .swiper-button-prev{ display:none !important; } /* نخفي الأسهم على الموبايل (السحب كافي) */
+
+  /* نقاط السويبر أصغر */
+  .swiper-pagination-bullet{ transform: scale(.9); }
+}
+
+/* ===== أنيميشن دخول ناعم (fade + slide) ===== */
+@keyframes fadeSlideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+.reveal{ opacity:0; transform:translateY(10px); transition:opacity .35s ease, transform .35s ease; }
+.reveal.in{ opacity:1; transform:none; animation:fadeSlideUp .45s ease both; }
+@media (prefers-reduced-motion:reduce){ .reveal, .reveal.in{ animation:none!important; transform:none!important; } }
 
 </style>
 

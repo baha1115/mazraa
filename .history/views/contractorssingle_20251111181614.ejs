@@ -326,112 +326,6 @@
   .hero-avatar{ width:112px; height:112px; }
   .hero-name{ font-size: 1.6rem; }
 }
-/* ===== Top-rated contractors · compact cards on phones ===== */
-@media (max-width:640px){
-  .toprated-swiper .swiper-slide{ height:auto; }
-
-  .toprated-swiper .contractor-card{
-    border-radius: 12px !important;
-    padding: 10px !important;
-    box-shadow: 0 2px 10px rgba(2,6,23,.05) !important;
-  }
-
-  .toprated-swiper .contractor-head{ display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; }
-  .toprated-swiper .avatar{ width: 52px !important; height: 52px !important; border-width: 2px !important; }
-  .toprated-swiper .avatar img{ width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-
-  .toprated-swiper .head-info .name{ font-size: .98rem !important; margin: 0 0 2px !important; }
-  .toprated-swiper .specialization,
-  .toprated-swiper .region{ font-size: .82rem !important; line-height: 1.25; margin: 0 !important; }
-
-  .toprated-swiper .muted{ font-size: .8rem !important; }
-  .toprated-swiper .badge--tier{
-    font-size: .7rem !important; padding: .16rem .45rem !important;
-    top: 8px !important; inset-inline-end: 8px !important;
-  }
-
-  .toprated-swiper .contractor-body .btn.btn-outline{
-    width: 100%; padding: .42rem .7rem !important; font-size: .86rem !important; border-radius: 10px !important;
-  }
-}
-/* === Top-rated contractor card · polished === */
-.toprated-swiper .contractor-card{
-  display:flex; flex-direction:column;
-  border:1px solid #e5e7eb; border-radius:14px;
-  background:#fff; box-shadow:0 6px 18px rgba(2,6,23,.06);
-  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  height:100%;
-}
-.toprated-swiper .contractor-card:hover{
-  transform: translateY(-2px);
-  box-shadow:0 14px 30px rgba(2,6,23,.1);
-  border-color:#e2e8f0;
-}
-
-.toprated-swiper .contractor-link{ display:flex; flex-direction:column; height:100%; }
-
-/* رأس الكرت */
-.toprated-swiper .contractor-head{
-  position:relative;
-  display:grid; grid-template-columns: 56px 1fr; gap:.75rem;
-  padding:.8rem .9rem .6rem;
-  align-items:center;
-}
-.toprated-swiper .avatar{ width:56px; height:56px; border-radius:50%; overflow:hidden; box-shadow:0 2px 10px rgba(2,6,23,.06); }
-.toprated-swiper .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
-.toprated-swiper .head-info .name{ font-size:1.02rem; font-weight:800; margin:0 0 .15rem; }
-.toprated-swiper .specialization,
-.toprated-swiper .region{ color:#64748b; font-size:.86rem; margin:0; line-height:1.25; }
-
-/* شارة المستوى */
-.toprated-swiper .badge--tier{
-  position:absolute; inset-inline-start:.9rem; top:.8rem;
-  background:#111827; color:#fff; border-radius:999px;
-  padding:.18rem .55rem; font-size:.72rem; font-weight:800; letter-spacing:.2px;
-  box-shadow:0 6px 14px rgba(0,0,0,.14);
-}
-
-/* سطر التقييم */
-.toprated-swiper .muted{ color:#475569; font-size:.86rem; margin:.35rem 0 0; }
-.toprated-swiper .muted strong{ font-weight:800; }
-
-/* جسم الكرت + زر */
-.toprated-swiper .contractor-body{
-  margin-top:auto; padding:.65rem .9rem .9rem;
-  border-top:1px solid #f1f5f9;
-}
-.toprated-swiper .contractor-body .btn.btn-outline{
-  width:100%; padding:.48rem .8rem; border-radius:10px; font-weight:800;
-}
-
-/* — الهاتف: أصغر + كرتين — */
-@media (max-width:640px){
-  .toprated-swiper .contractor-head{ grid-template-columns: 50px 1fr; gap:.6rem; padding:.7rem .75rem .5rem; }
-  .toprated-swiper .avatar{ width:50px; height:50px; }
-  .toprated-swiper .head-info .name{ font-size:.98rem; }
-  .toprated-swiper .specialization, .toprated-swiper .region, .toprated-swiper .muted{ font-size:.82rem; }
-  .toprated-swiper .badge--tier{ inset-inline-start:.75rem; top:.7rem;max-width: 50px; font-size:.68rem; padding:.14rem .45rem; }
-  .toprated-swiper .contractor-body{ padding:.55rem .75rem .75rem; }
-  .toprated-swiper .contractor-body .btn.btn-outline{ padding:.42rem .72rem; font-size:.86rem; }
-  /* أسهم الملاحة أصغر أو مخفية إذا ضايقت */
-  .toprated-swiper .swiper-button-next,
-  .toprated-swiper .swiper-button-prev{ transform:scale(.8); }
-}
-/* ===== Lightbox base ===== */
-.lb{ position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.92); display:grid; place-items:center; }
-.lb[hidden]{ display:none; }
-.lb-close{
-  position:absolute; top:12px; inset-inline-end:12px; width:40px; height:40px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.35); color:#fff; font-size:24px;
-  display:grid; place-items:center; cursor:pointer;
-}
-.lb-close:hover{ background:rgba(255,255,255,.1); }
-.lb-swiper{ width:min(100vw,1100px); height:min(100vh,88vh); }
-.lb-swiper .swiper-slide{ display:grid; place-items:center; background:transparent; }
-.lb-swiper img{ max-width:100%; max-height:100%; object-fit:contain; object-position:center; border-radius:10px; }
-.lb .swiper-button-prev,.lb .swiper-button-next{ color:#fff; filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)); transform:scale(1.05); }
-.lb .swiper-pagination-bullet{ background:rgba(255,255,255,.85); }
-@media (max-width:640px){ .lb-swiper{ width:100vw; height:78vh; } }
 
 </style>
 
@@ -670,28 +564,28 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
         %>
           <div class="swiper-slide">
             <article class="contractor-card">
-  <a class="contractor-link" href="/contractor/<%= c._id %>">
-    <header class="contractor-head">
-      <figure class="avatar"><img src="<%= avatar %>" alt="صورة <%= name %>" loading="lazy"></figure>
-      <div class="head-info">
-        <h3 class="name"><%= name %></h3>
-        <p class="specialization"><%= svc %></p>
-        <p class="region"><%= reg %></p>
-        <p class="muted">⭐ <strong dir="ltr"><%= avg %></strong> (<%= cnt %>)</p>
-      </div>
-      <% if (c.subscriptionTier==='VIP') { %>
-        <span class="badge badge--tier">VIP</span>
-      <% } else if (c.subscriptionTier==='Premium') { %>
-        <span class="badge badge--tier">مميز</span>
-      <% } %>
-    </header>
-
-    <div class="contractor-body">
-      <button class="btn btn-outline" type="button">عرض المقاول</button>
-    </div>
-  </a>
-</article>
-
+              <a class="contractor-link" href="/contractor/<%= c._id %>">
+                <header class="contractor-head">
+                  <figure class="avatar">
+                    <img src="<%= avatar %>" alt="صورة <%= name %>" loading="lazy" />
+                  </figure>
+                  <div class="head-info">
+                    <h3 class="name"><%= name %></h3>
+                    <p class="specialization"><%= svc %></p>
+                    <p class="region"><%= reg %></p>
+                    <p class="muted">⭐ <strong dir="ltr"><%= avg %></strong> (<%= cnt %>)</p>
+                  </div>
+                  <% if (c.subscriptionTier==='VIP') { %>
+                    <span class="badge badge--tier">VIP</span>
+                  <% } else if (c.subscriptionTier==='Premium') { %>
+                    <span class="badge badge--tier">مميز</span>
+                  <% } %>
+                </header>
+                <div class="contractor-body">
+                  <button class="btn btn-outline" type="button">عرض المقاول</button>
+                </div>
+              </a>
+            </article>
           </div>
         <% }) %>
       </div>
@@ -780,80 +674,6 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
   });
 })();
 </script>
-<!-- ===== Lightbox / Fullscreen Gallery ===== -->
-<div id="lb" class="lb" hidden aria-hidden="true">
-  <button class="lb-close" aria-label="إغلاق">×</button>
-  <div class="swiper lb-swiper">
-    <div class="swiper-wrapper" id="lbWrapper"></div>
-    <div class="swiper-button-prev" aria-label="السابق"></div>
-    <div class="swiper-button-next" aria-label="التالي"></div>
-    <div class="swiper-pagination"></div>
-  </div>
-</div>
-<script>
-(function(){
-  const grid = document.querySelector('.work-grid');
-  if(!grid) return;
-
-  const imgs = Array.from(grid.querySelectorAll('.work-item img'));
-  if(!imgs.length) return;
-
-  const sources = imgs.map(img => img.getAttribute('data-full') || img.src);
-
-  const lb = document.getElementById('lb');
-  const wrap = document.getElementById('lbWrapper');
-  const closeBtn = lb.querySelector('.lb-close');
-  let lbSwiper = null, built = false;
-
-  function ensureSwiper(cb){
-    if (window.Swiper) return cb();
-    const link = document.createElement('link'); link.rel='stylesheet';
-    link.href='https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css'; document.head.appendChild(link);
-    const s = document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js';
-    s.onload=cb; document.head.appendChild(s);
-  }
-  function buildSlides(){
-    if (built) return;
-    wrap.innerHTML = sources.map(src => `<div class="swiper-slide"><img src="${src}" alt=""></div>`).join('');
-    built = true;
-  }
-  function openLB(index){
-    ensureSwiper(function(){
-      buildSlides();
-      lb.hidden = false; lb.setAttribute('aria-hidden','false');
-      if (lbSwiper){ try{ lbSwiper.destroy(true,true); }catch(_){ } }
-      lbSwiper = new Swiper('.lb-swiper', {
-        initialSlide: index||0,
-        loop: (sources.length>1),
-        centeredSlides: true, slidesPerView: 1, spaceBetween: 10,
-        pagination: { el: '.lb-swiper .swiper-pagination', clickable: true },
-        navigation: { nextEl: '.lb-swiper .swiper-button-next', prevEl: '.lb-swiper .swiper-button-prev' },
-        keyboard: { enabled: true }
-      });
-      document.addEventListener('keydown', onKey);
-      lb.addEventListener('click', onBackdrop, { once:true });
-    });
-  }
-  function closeLB(){
-    if (lbSwiper){ try{ lbSwiper.destroy(true,true); }catch(_){ } lbSwiper=null; }
-    lb.hidden = true; lb.setAttribute('aria-hidden','true');
-    document.removeEventListener('keydown', onKey);
-  }
-  function onKey(e){ if(e.key==='Escape') closeLB(); }
-  function onBackdrop(e){
-    const inside = e.target.closest('.lb-swiper');
-    const isClose = e.target.closest('.lb-close');
-    if (!inside || isClose) closeLB();
-  }
-
-  imgs.forEach((img,i)=>{
-    img.style.cursor='zoom-in';
-    img.addEventListener('click', ()=> openLB(i));
-  });
-  closeBtn.addEventListener('click', closeLB);
-})();
-</script>
-
 <%- include('partials/mobile-nav', { 
   activeTab: 'contractors',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
