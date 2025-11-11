@@ -156,257 +156,6 @@
   }
   .g-item .g-more{ font-size: clamp(14px, 5vw, 18px) !important; }
 }
-/* ===== Gallery · ultra-compact on mobile ===== */
-@media (max-width:640px){
-  /* صغّر سكشن المعرض نفسه */
-  #gallery.card{
-    padding: .5rem !important;
-  }
-  #gallery h2{
-    margin: 0 0 .4rem !important;
-    font-size: .95rem !important;
-  }
-
-  /* شبكة أصغر: 5 أعمدة + فجوة أصغر */
-  .gallery-grid{
-    grid-template-columns: repeat(5, 1fr) !important;
-    gap: 3px !important;
-  }
-
-  /* أول صورة تغطي الصف كله لكن بنسبة أصغر، والبقية مربعات صغيرة */
-  .gallery-grid .g-item.is-hero{
-    grid-column: span 5 !important;
-    aspect-ratio: 4 / 3 !important;   /* أصغر من 16/9 */
-  }
-  .gallery-grid .g-item{
-    aspect-ratio: 1 / 1 !important;   /* مربّعات أصغر */
-  }
-
-  .gallery-grid .g-item img{
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    object-position: center !important;
-  }
-
-  /* شارة +عدد أصغر */
-  .g-item .g-more{
-    font-size: clamp(12px, 4.5vw, 16px) !important;
-  }
-}
-/* ===== Gallery · ultra-mini on phones ===== */
-@media (max-width:640px){
-  /* سكشن أخف */
-  #gallery.card{ padding:.45rem !important; }
-  #gallery h2{ margin:0 0 .35rem !important; font-size:.92rem !important; }
-
-  /* شبكة مصغّرة جدًا: 6 أعمدة + فجوة 2px */
-  .gallery-grid{
-    grid-template-columns: repeat(6, 1fr) !important;
-    gap: 2px !important;
-  }
-
-  /* أول صورة تغطي الصف بالكامل لكن بنسبة أصغر بكثير */
-  .gallery-grid .g-item.is-hero{
-    grid-column: span 6 !important;
-    aspect-ratio: 3 / 2 !important;   /* كانت أكبر، الآن أوطأ */
-  }
-
-  /* باقي الصور مربعات صغيرة جدًا */
-  .gallery-grid .g-item{
-    aspect-ratio: 1 / 1 !important;
-  }
-
-  .gallery-grid .g-item img{
-    width:100% !important; height:100% !important;
-    object-fit:cover !important; object-position:center !important;
-  }
-
-  /* شارة +عدد أصغر */
-  .g-item .g-more{ font-size: clamp(11px, 4vw, 15px) !important; }
-}
-/* ===== Owner farms · polished (two-up on phones) ===== */
-.owner-sale-swiper .swiper-slide{ height:auto; }
-
-.farm-card{
-  border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden;
-  box-shadow:0 2px 10px rgba(2,6,23,.05);
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-.farm-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(2,6,23,.08); border-color:#e2e8f0; }
-
-.farm-media{ position:relative; aspect-ratio:4/3; background:#f5f7f8; }
-.farm-card img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block; }
-
-.badge{
-  position:absolute; inset-inline-start:10px; top:10px; z-index:4;
-  display:inline-flex; align-items:center; gap:6px;
-  padding:.18rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800;
-  box-shadow:0 4px 14px rgba(0,0,0,.12);
-}
-.badge--premium{ background:#8b5cf6; color:#fff; }
-.badge--vip{ background:#0f172a; color:#fff; }
-.badge--video{ inset-inline-end:10px; inset-inline-start:auto; background:#ef4444; color:#fff; }
-
-.farm-body{ display:grid; row-gap:.45rem; padding:.7rem .75rem; }
-.farm-title{
-  margin:0; font-size:1rem; font-weight:900;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em;
-}
-.farm-location{ margin:0; color:#64748b; font-size:.9rem; }
-.farm-price{ margin:0; font-weight:900; letter-spacing:.2px; }
-.farm-body .meta-views{ margin-inline-start:auto; font-size:.85rem; color:#475569 !important; }
-.farm-body .btn.btn-outline{ width:100%; text-align:center; border:1px solid #0f172a; color:#0f172a; border-radius:10px; padding:.48rem .85rem; font-weight:700; }
-
-/* هاتف: كرتان + تصغير إضافي */
-@media (max-width:640px){
-  .owner-sale-swiper .farm-card img{ height:140px !important; } /* لو حاب 120px */
-  .farm-body{ padding:.6rem .6rem; row-gap:.4rem; }
-  .farm-title{ font-size:.95rem; min-height:2.4em; }
-  .farm-location{ font-size:.84rem; }
-  .farm-price{ font-size:.9rem; }
-  .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
-  .badge{ font-size:.68rem; padding:.15rem .5rem; }
-}
-/* ===== Lightbox base ===== */
-.lb{ position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.92); display:grid; place-items:center; }
-.lb[hidden]{ display:none; }
-.lb-close{
-  position:absolute; top:12px; inset-inline-end:12px; width:40px; height:40px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.35); color:#fff; font-size:24px;
-  display:grid; place-items:center; cursor:pointer;
-}
-.lb-close:hover{ background:rgba(255,255,255,.1); }
-.lb-swiper{ width:min(100vw,1100px); height:min(100vh,88vh); }
-.lb-swiper .swiper-slide{ display:grid; place-items:center; background:transparent; }
-.lb-swiper img{ max-width:100%; max-height:100%; object-fit:contain; object-position:center; border-radius:10px; }
-.lb .swiper-button-prev,.lb .swiper-button-next{ color:#fff; filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)); transform:scale(1.05); }
-.lb .swiper-pagination-bullet{ background:rgba(255,255,255,.85); }
-@media (max-width:640px){ .lb-swiper{ width:100vw; height:78vh; } }
-/* ==== Compact + Animate: Quick details & Features (phones) ==== */
-
-/* أنيميشن عام (يُفَعَّل عبر إضافة .in بالـJS) */
-@keyframes fadeSlideUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
-.reveal { opacity:0; transform: translateY(12px); transition: opacity .35s ease, transform .35s ease; }
-.reveal.in { opacity:1; transform: none; animation: fadeSlideUp .45s ease both; }
-
-/* لمحبّي تقليل الحركة */
-@media (prefers-reduced-motion: reduce){
-  .reveal, .reveal.in { animation: none !important; transform: none !important; }
-}
-
-/* ————— الهواتف: تصغير قوي ————— */
-@media (max-width: 640px){
-
-  /* سكشن التفاصيل السريعة */
-  #quick-title { font-size: 1rem !important; margin-bottom: .5rem !important; }
-  .infogrid{
-    grid-template-columns: repeat(2, minmax(0,1fr)) !important; /* عمودان */
-    gap: 8px !important;
-  }
-  .info-item{
-    padding: .55rem .6rem !important;
-    border-radius: 10px !important;
-  }
-  .info-ico{
-    width: 24px !important; height: 24px !important; border-radius: 6px !important;
-  }
-  .info-ico svg{ width: 16px !important; height: 16px !important; }
-  .info-t h3{ font-size: .92rem !important; margin: .05rem 0 .15rem !important; }
-  .info-t p{ font-size: .85rem !important; }
-
-  /* سكشن المزايا/المرافق */
-  #features { padding: .7rem !important; }
-  #features #features-title { font-size: 1rem !important; margin-bottom: .45rem !important; }
-  #features .features__h { font-size: .95rem !important; margin: .2rem 0 .35rem !important; }
-  #features .chips{
-    gap: .35rem !important;
-  }
-  #features .chip{
-    padding: .25rem .5rem !important;
-    font-size: .85rem !important;
-    border-radius: 999px !important;
-    transition: transform .18s ease, box-shadow .18s ease;
-    will-change: transform;
-  }
-  #features .chip svg{ width: 14px !important; height: 14px !important; }
-
-  /* تفاعل بسيط على اللمس/الضغط */
-  #features .chip:active{ transform: scale(.97); }
-}
-
-/* ——— لمسات جمالية خفيفة على كل الشاشات ——— */
-#features .chip:hover{ box-shadow: 0 6px 16px rgba(2,6,23,.09); transform: translateY(-1px); }
-.info-item:hover{ box-shadow: 0 6px 18px rgba(2,6,23,.08); border-color: #e2e8f0; }
-/* ==== HERO · Mobile facelift ==== */
-@media (max-width:640px){
-  .hero{
-    min-height: unset !important;
-    aspect-ratio: 16 / 9;              /* ارتفاع منطقي على الهاتف */
-    border-radius: 16px !important;
-    margin-block: .5rem !important;
-  }
-  .hero__bg{
-    transform: scale(1.02);
-    transition: transform .6s ease;
-    object-position: center;
-    filter: brightness(.92) saturate(1.05); /* ألوان أبهى قليلاً */
-  }
-  .hero:hover .hero__bg{ transform: scale(1.04); }
-
-  .hero__veil{
-    background: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.55) 85%);
-    backdrop-filter: blur(0.5px);
-  }
-
-  .hero__body{
-    inset-inline: .75rem !important;
-    inset-block-end: .75rem !important;
-    gap: .35rem !important;
-  }
-  .hero__title{
-    font-size: 1.05rem !important;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;             /* سطران فقط مع … */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .hero__meta{ font-size: .86rem; opacity: .95; }
-
-  .hero__actions{
-    margin-top: .45rem !important;
-    gap: .4rem !important;
-  }
-  .hero__actions .btn{
-    padding: .46rem .7rem !important;
-    border-radius: 10px !important;
-    font-size: .9rem !important;
-    box-shadow: 0 10px 26px rgba(0,0,0,.12);
-  }
-
-  /* شارات أعلى الصورة (الحالة + السعر) */
-  .hero__badges{
-    position: absolute; inset-inline-start: .6rem; top: .6rem; z-index: 5;
-    display: flex; gap: .35rem;
-  }
-  .h-badge{
-    display: inline-flex; align-items: center; gap: .35rem;
-    padding: .22rem .55rem; border-radius: 999px;
-    font-size: .78rem; font-weight: 800; letter-spacing: .2px;
-    background: rgba(17,24,39,.75); color: #fff;
-    border: 1px solid rgba(255,255,255,.12);
-    backdrop-filter: blur(2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,.18);
-    transform: translateY(-6px);
-    opacity: 0; animation: heroBadgeIn .45s .08s ease forwards;
-  }
-  .h-badge--price{ background: rgba(16,185,129,.9); } /* أخضر خفيف للسعر */
-
-  @keyframes heroBadgeIn{
-    to{ opacity:1; transform: none; }
-  }
-}
 
   </style>
 </head>
@@ -521,7 +270,44 @@ const pStr = Number(farm?.price||0) ? (sym + ' ' + Number(farm.price).toLocaleSt
 
       <!-- معرض (Grid بدون سويبر) -->
       <!-- ===== Gallery (Grid, no Swiper) ===== -->
+<section id="gallery" class="card" aria-labelledby="gallery-title" style="padding:1rem">
+  <h2 id="gallery-title" style="margin:0 0 .75rem">المعرض</h2>
 
+  <%
+    // صور المعرض + منطق إظهار "+عدد"
+    const __photosAll = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg'];
+    const __total     = __photosAll.length;
+    const __limit     = 4;                  // نعرض 4 فقط
+    const __photos    = __photosAll.slice(0, __limit);
+    const __more      = Math.max(0, __total - __limit);
+  %>
+
+  <div class="gallery-grid" id="galleryMain" style="--gg:8px">
+    <% __photos.forEach(function(src, i){ 
+         const full   = assetPath(src);
+         const isHero = (i===0);
+    %>
+      <a class="g-item <%= isHero ? 'is-hero' : 'is-rect' %>" 
+         href="<%= full %>" 
+         data-index="<%= i %>" 
+         aria-label="عرض الصورة <%= i+1 %> من <%= __total %>">
+        <img
+          src="<%= cldSize(src, isHero ? 900 : 600) %>"
+          srcset="<%= cldSize(src, 400) %> 400w, <%= cldSize(src, 800) %> 800w, <%= cldSize(src, 1200) %> 1200w"
+          sizes="(max-width:640px) <%= isHero ? '85vw' : '22vw' %>, (max-width:1024px) <%= isHero ? '65vw' : '20vw' %>, 720px"
+          alt="صورة مزرعة"
+          loading="lazy" decoding="async" fetchpriority="low"
+          onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+
+        <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
+        <% if (i === __limit - 1 && __more > 0) { %>
+          <span class="g-more" aria-hidden="true">+<%= __more %></span>
+          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
+        <% } %>
+      </a>
+    <% }) %>
+  </div>
+</section>
 
       <!-- تفاصيل سريعة -->
       <section class="card" aria-labelledby="quick-title" style="padding:1rem">
@@ -605,45 +391,7 @@ const pStr = Number(farm?.price||0) ? (sym + ' ' + Number(farm.price).toLocaleSt
         <% } %>
       </section>
       <% } %>
-<section id="gallery" class="card" aria-labelledby="gallery-title" style="padding:1rem">
-  <h2 id="gallery-title" style="margin:0 0 .75rem">المعرض</h2>
 
-  <%
-    // صور المعرض + منطق إظهار "+عدد"
-    const __photosAll = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg'];
-    const __total     = __photosAll.length;
-    const __limit     = 4;                  // نعرض 4 فقط
-    const __photos    = __photosAll.slice(0, __limit);
-    const __more      = Math.max(0, __total - __limit);
-  %>
-
-  <div class="gallery-grid" id="galleryMain" style="--gg:8px">
-    <% __photos.forEach(function(src, i){ 
-         const full   = assetPath(src);
-         const isHero = (i===0);
-    %>
-      <a class="g-item <%= isHero ? 'is-hero' : 'is-rect' %>" 
-         href="<%= full %>" 
-         data-index="<%= i %>" 
-         aria-label="عرض الصورة <%= i+1 %> من <%= __total %>">
-        <img
-       src="<%= cldSize(src, isHero ? 600 : 360) %>"
-srcset="<%= cldSize(src, 320) %> 320w, <%= cldSize(src, 540) %> 540w, <%= cldSize(src, 800) %> 800w"
-sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%= isHero ? '60vw' : '18vw' %>, 640px"
-
-          alt="صورة مزرعة"
-          loading="lazy" decoding="async" fetchpriority="low"
-          onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
-
-        <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
-        <% if (i === __limit - 1 && __more > 0) { %>
-          <span class="g-more" aria-hidden="true">+<%= __more %></span>
-          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
-        <% } %>
-      </a>
-    <% }) %>
-  </div>
-</section>
       <!-- فيديو (Click-to-Load) -->
       <% const __videoUrl = (farm.videoUrl||'').trim(); if (__videoUrl) { %>
       <section class="card" aria-labelledby="video-title" style="padding:1rem">
@@ -696,7 +444,6 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
 </section>
 
 <!-- مزارع أخرى لنفس المالك (سويبر) -->
-
 <% if (hasOwnerFarms) { %>
 <section class="section" aria-labelledby="owner-farms-title">
   <div class="container">
@@ -705,43 +452,30 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
       <p class="muted">قد تهمّك هذه المزارع من نفس المالك.</p>
     </header>
 
-    <div class="swiper owner-sale-swiper" dir="rtl">
+    <div class="swiper vip-swiper" dir="rtl">
       <div class="swiper-wrapper">
         <% ownerList.forEach(function(f){
-             const raw  = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
+             const raw = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
              const link = (String(f.kind||'').toLowerCase()==='rent') ? ('/rent/farm/'+f._id) : ('/farm/'+f._id);
              const loc  = f.city ? ((f.area||'') + ' — ' + f.city) : (f.area||'—');
-             const tier = (f?.owner?.subscriptionTier) || f.ownerTier || 'Basic';
-             const tierKey = String(tier).trim().toLowerCase();
         %>
         <div class="swiper-slide">
-          <article class="farm-card">
-            <a class="farm-link" href="<%= link %>">
-              <figure class="farm-media" style="position:relative">
-                <img src="<%= assetPath(raw) %>" alt="<%= f.title||'مزرعة' %>" loading="lazy"
-                     onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
-                <% if (tierKey==='vip') { %><span class="badge badge--vip">VIP</span><% } %>
-                <% if (tierKey==='premium') { %><span class="badge badge--premium">Premium</span><% } %>
-                <% if (f.videoUrl) { %><span class="badge badge--video">🎥 فيديو</span><% } %>
-              </figure>
-
-              <div class="farm-body">
-                <h3 class="farm-title" title="<%= f.title||'—' %>"><%= (f.title||'—') %></h3>
-                <p class="farm-location"><%= loc %></p>
-                <p class="farm-price">
-                  <% const sym2=(f.currency==='SYP'?'ل.س':'$'); %>
-                  <%= Number(f.price||0) ? (sym2+' '+Number(f.price).toLocaleString('en')) : '—' %>
-                  <%= (String(f.kind).toLowerCase()==='rent' ? '/شهر' : '') %>
-                </p>
-                <span class="meta-views" style="color:#0f172a">👁️ <%= Number(f.views||0).toLocaleString('en') %></span>
-                <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
+          <article class="vip-hero-slide card" style="border:none">
+            <img class="vip-hero-img" src="<%= assetPath(raw) %>" alt="<%= f.title||'مزرعة' %>" loading="lazy" onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+            <div class="vip-hero-overlay"></div>
+            <div class="vip-hero-body">
+              <h3 class="vip-hero-title"><%= f.title || '—' %></h3>
+              <div class="muted">
+                <% const sym2=(f.currency==='SYP'?'ل.س':'$'); %>
+                <%= loc %> • <%= Number(f.size||0).toLocaleString('en') %> م² •
+                <%= sym2 %><%= Number(f.price||0).toLocaleString('en') %><%= (String(f.kind).toLowerCase()==='rent' ? '/شهر' : '') %>
               </div>
-            </a>
+              <a class="vip-hero-cta" href="<%= link %>">التفاصيل</a>
+            </div>
           </article>
         </div>
         <% }) %>
       </div>
-
       <div class="swiper-button-prev" aria-label="السابق"></div>
       <div class="swiper-button-next" aria-label="التالي"></div>
       <div class="swiper-pagination"></div>
@@ -754,16 +488,6 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
 <%- include('partials/top-rent', { items: (Array.isArray(topRent) ? topRent : []) }) %>
 
 <% } /* end if farm */ %>
-<!-- ===== Lightbox / Fullscreen Gallery ===== -->
-<div id="lb" class="lb" hidden aria-hidden="true">
-  <button class="lb-close" aria-label="إغلاق">×</button>
-  <div class="swiper lb-swiper">
-    <div class="swiper-wrapper" id="lbWrapper"></div>
-    <div class="swiper-button-prev" aria-label="السابق"></div>
-    <div class="swiper-button-next" aria-label="التالي"></div>
-    <div class="swiper-pagination"></div>
-  </div>
-</div>
 
 <%- include('partials/footer') %>
 
@@ -780,7 +504,14 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
           breakpoints:{ 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
         });
       }
-      
+      if (document.querySelector('.top-rent-swiper')) {
+        new Swiper('.top-rent-swiper', {
+          loop:false, slidesPerView:1.05, spaceBetween:12, watchOverflow:true,
+          pagination:{ el:'.top-rent-swiper .swiper-pagination', clickable:true },
+          navigation:{ nextEl:'.top-rent-swiper .swiper-button-next', prevEl:'.top-rent-swiper .swiper-button-prev' },
+          breakpoints:{ 640:{slidesPerView:2.1,spaceBetween:14}, 1024:{slidesPerView:3,spaceBetween:16} }
+        });
+      }
     });
   </script>
 <% } %>
@@ -868,133 +599,5 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
   activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (document.querySelector('.owner-sale-swiper')) {
-    new Swiper('.owner-sale-swiper', {
-      watchOverflow:true,
-      pagination:{ el:'.owner-sale-swiper .swiper-pagination', clickable:true },
-      navigation:{ nextEl:'.owner-sale-swiper .swiper-button-next', prevEl:'.owner-sale-swiper .swiper-button-prev' },
-      breakpoints:{
-        0:    { slidesPerView: 2.02, spaceBetween: 10 },   /* هاتف: كرتان */
-        480:  { slidesPerView: 2.10, spaceBetween: 12 },
-        640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-        1024: { slidesPerView: 3.2,  spaceBetween: 18 },
-        1280: { slidesPerView: 4.2,  spaceBetween: 20 }
-      }
-    });
-  }
-});
-</script>
-<script>
-(function(){
-  const grid = document.getElementById('galleryMain');          // شبكة المعرض لديك
-  if(!grid) return;
-
-  const anchors = Array.from(grid.querySelectorAll('a.g-item')); // كل صورة قابلة للنقر
-  if(!anchors.length) return;
-
-  // مصادر الصور بالحجم الكامل من href
-  const sources = anchors.map(a => a.getAttribute('href'));
-
-  // عناصر اللايت بوكس
-  const lb = document.getElementById('lb');
-  const lbWrap = document.getElementById('lbWrapper');
-  const closeBtn = lb.querySelector('.lb-close');
-  let lbSwiper = null, slidesBuilt = false;
-
-  // حمّل Swiper عند الحاجة
-  function ensureSwiper(cb){
-    if (window.Swiper) return cb();
-    const link = document.createElement('link');
-    link.rel='stylesheet';
-    link.href='https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css';
-    document.head.appendChild(link);
-    const s = document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js';
-    s.onload=cb;
-    document.head.appendChild(s);
-  }
-
-  // أنشئ الشرائح مرة واحدة
-  function buildSlides(){
-    if (slidesBuilt) return;
-    lbWrap.innerHTML = sources.map(src => `<div class="swiper-slide"><img src="${src}" alt=""></div>`).join('');
-    slidesBuilt = true;
-  }
-
-  function openLB(index){
-    ensureSwiper(function(){
-      buildSlides();
-      lb.hidden = false;
-      lb.setAttribute('aria-hidden','false');
-
-      if (lbSwiper){ try{ lbSwiper.destroy(true,true); }catch(_){ } }
-      lbSwiper = new Swiper('.lb-swiper', {
-        initialSlide: index||0,
-        loop: (sources.length>1),
-        centeredSlides: true,
-        slidesPerView: 1,
-        spaceBetween: 10,
-        pagination: { el: '.lb-swiper .swiper-pagination', clickable: true },
-        navigation: { nextEl: '.lb-swiper .swiper-button-next', prevEl: '.lb-swiper .swiper-button-prev' },
-        keyboard: { enabled: true }
-      });
-
-      document.addEventListener('keydown', onKey);
-      lb.addEventListener('click', backdropClose, { once:true });
-    });
-  }
-
-  function closeLB(){
-    if (lbSwiper){ try{ lbSwiper.destroy(true,true); }catch(_){ } lbSwiper = null; }
-    lb.hidden = true;
-    lb.setAttribute('aria-hidden','true');
-    document.removeEventListener('keydown', onKey);
-  }
-  function onKey(e){ if(e.key==='Escape') closeLB(); }
-  function backdropClose(e){
-    const inside = e.target.closest('.lb-swiper');
-    const isClose = e.target.closest('.lb-close');
-    if (!inside || isClose) closeLB();
-  }
-
-  // اربط كل صورة
-  anchors.forEach((a,i)=>{
-    const img=a.querySelector('img'); if(img) img.style.cursor='zoom-in';
-    a.addEventListener('click', (ev)=>{ ev.preventDefault(); openLB(i); });
-  });
-
-  closeBtn.addEventListener('click', closeLB);
-})();
-</script>
-<script>
-/* Reveal on view for quick details + features */
-(function(){
-  // عناصر ننفّذ عليها الأنيميشن
-  var targets = [
-    ...document.querySelectorAll('.infogrid .info-item'),
-    ...document.querySelectorAll('#features .features__block'),
-    ...document.querySelectorAll('#features .chip')
-  ];
-  if (!targets.length) return;
-
-  // أضف كلاس ابتدائي
-  targets.forEach(function(el){ el.classList.add('reveal'); });
-
-  // راقب الظهور
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    });
-  }, { rootMargin: '80px 0px' });
-
-  targets.forEach(function(el){ io.observe(el); });
-})();
-</script>
-
 </body>
 </html>

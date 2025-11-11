@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Farmers — مزارع للإيجار</title>
-  <meta name="description" content="تصفح المزارع المتاحة للإيجار — صفّ حسب المنطقة والمدينة والسعر والمساحة." />
-  <link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css">
+  <title>Farmers — مزارع للبيع</title>
+  <meta name="description" content="تصفح المزارع المتاحة للبيع — صفّ حسب المنطقة والمدينة والسعر والمساحة." />
+  <link rel="stylesheet" href="/public/styles/rentandfarmdetail.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     .vip-hero-slide{position:relative;min-height:360px;border-radius:16px;overflow:hidden;background:#f6faf6;}
@@ -16,22 +16,19 @@
     .vip-hero-title{font-size:clamp(20px,3vw,34px);margin:.25rem 0 0;}
     .vip-hero-meta{opacity:.95;font-size:clamp(14px,1.5vw,16px);}
     .vip-hero-cta{margin-top:.6rem;display:inline-block;padding:.5rem .9rem;border-radius:10px;background:#fff;color:#0f172a;text-decoration:none;font-weight:600;width:150px;text-align:center;}
-
-    /* شارة VIP في سلايدر الـVIP */
     .vip-badge{position:absolute;top:12px;inset-inline-start:12px;background:#0f172a;color:#fff;border-radius:999px;font-size:.8rem;padding:.2rem .6rem;z-index:4;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 
     /* بطاقات العادية داخل سويبر */
-    .rent-swiper .swiper-slide{height:auto;}
+    .sale-swiper .swiper-slide{height:auto;}
     .farm-card{display:block;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff}
     .farm-card img{width:100%;height:220px;object-fit:cover}
     .farm-body{padding:.8rem}
     .farm-title{margin:.2rem 0 .4rem;font-size:1.05rem}
     .farm-location,.farm-price{margin:0 0 .25rem;color:#475569}
     .btn.btn-outline{width:80%; display:inline-block;border:1px solid #0f172a;text-align: center; border-radius:10px;padding:.35rem .7rem;text-decoration:none}
-    .badge{max-width: 60px; text-align: center; position:absolute;top:10px;inset-inline-start:10px;background:#0f172a;color:#fff;border-radius:999px;font-size:.75rem;padding:.15rem .5rem}
-    .badge--video{text-align:center; inset-inline-start:auto;inset-inline-end:70px;background:#ef4444;width: 70px;}
-.badge, .badge--video { z-index: 4;}
-
+    .badge{text-align: center;max-width: 50px; position:absolute;top:10px;inset-inline-start:10px;background:#0f172a;color:#fff;border-radius:999px;font-size:.75rem;padding:.15rem .5rem}
+    .badge--video{text-align:center; inset-inline-start:auto;inset-inline-end:60px;background:#ef4444}
+    .badge, .badge--video { z-index: 4;}
     /* فلاتر */
     .filter-dropdown summary{cursor:pointer;display:flex;align-items:center;gap:.5rem;font-weight:600;user-select:none;}
     .filter-dropdown summary::after{content:"▾";transition:.2s;font-size:.9rem;opacity:.9;}
@@ -44,66 +41,48 @@
     .btn.btn-primary{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem}
 
     .empty{padding:2rem;text-align:center}
-    /* شارات الخطط */
-.badge--Basic   { background:#64748b; }   /* رمادي مزرّق */
-.badge--Premium { background:#0ea5e9;max-width: 80px; }   /* سماوي */
-.badge--VIP     { background:#0f172a; }   /* كحلي */
-
-.meta-views{
-  display:inline-block;
-  margin-top:.25rem;
-  color:#475569;
-  font-size:.9rem;
-}
-/* حالة إظهار/إخفاء المزيد */
-.more-fields[hidden] { display: none; }
-.btn.btn-outline{border:1px solid #0f172a;border-radius:10px;padding:.55rem 1rem;background:#fff;color:#0f172a}
-.vip-swiper .swiper-slide{ height:auto; }
-/* ===== ترتيب الهيرو على الموبايل: أزرار على عمود مستقل مقابل الصورة/المعلومات ===== */
-@media (max-width:640px){
-  /* حوّل كتلة الهيرو إلى Grid بعمودين: معلومات (مرن) + أزرار (ثابت) */
-  .hero-top{
-    display: grid;
-    grid-template-columns: 1fr 140px;                /* عدّل 140px إلى 160–180 حسب ذوقك */
-    grid-template-areas:
-      "avatar actions"
-      "name   actions"
-      "spec   actions"
-      "region actions"
-      "rating actions"
-      "stats  stats";
-    align-items: center;
-    column-gap: .75rem;
-    row-gap: .25rem;
-    text-align: start;                                /* أعد محاذاة النص لليمين (RTL) */
+    .badge{text-align: center; position:absolute;top:10px;inset-inline-start:10px;background:#0f172a;color:#fff;border-radius:999px;font-size:.75rem;padding:.15rem .5rem}
+.badge--vip{background:#0f172a;}
+.badge--premium{background:#8b5cf6;max-width: 80px;} /* بنفسجي */
+.badge--basic{background:#64748b;}   /* رمادي */
+    .badge--video{text-align:center; inset-inline-start:auto;inset-inline-end:70px;background:#ef4444;max-width:100px;}
+.badge, .badge--video { z-index: 4;}
+.meta-views{color:#fff;padding:.15rem .5rem;font-size:.75rem;z-index:4}
+/* إعدادات زر “المزيد/أقل” والطي */
+  .btn.btn-outline{
+    background:#fff;border:1px solid #0f172a;color:#0f172a;border-radius:10px;padding:.55rem 1rem
   }
-
-  /* عرّف مناطق الشبكة */
-  .avatar--lg{ grid-area: avatar; justify-self: start; }
-  .hero-copy{ display: contents; }                    /* يمرّر أبناء hero-copy مباشرةً للشبكة */
-  .hero-copy .name{ grid-area: name; }
-  .hero-copy .specialization{ grid-area: spec; }
-  .hero-copy .region{ grid-area: region; }
-  .hero-rating{ grid-area: rating; justify-content: flex-start; }
-  .stats{ grid-area: stats; align-items: flex-start !important; }
-
-  /* عمود الأزرار */
-  .hero-actions{
-    grid-area: actions;
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-    align-self: start;
-  }
-  .hero-actions .btn{ width: 100%; }
+  .advanced-fields[hidden]{ display:none !important; }
+  /* تأثير لطيف عند الفتح (اختياري) */
+  .advanced-fields.fade-in{ animation: fadeIn .18s ease-in; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .vip-swiper .swiper-slide{ height:auto; }
+.farm-title{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-/* ===== Rent cards · polished (two-up mobile) ===== */
+/* ===== Sale cards · two-up on phones ===== */
+@media (max-width: 640px){
+  .sale-swiper .farm-card{
+    border-radius: 12px !important;
+  }
+  .sale-swiper .farm-card img{
+    height: 140px !important;        /* ↓ أقل من 220px */
+    object-fit: cover !important;
+  }
+  .sale-swiper .farm-body{ padding: .55rem !important; }
+  .sale-swiper .farm-title{ font-size: .95rem !important; margin: .15rem 0 .3rem !important; }
+  .sale-swiper .farm-location,
+  .sale-swiper .farm-price{ font-size: .82rem !important; margin: 0 0 .2rem !important; }
+  .sale-swiper .btn.btn-outline{ padding: .4rem .7rem !important; font-size: .85rem !important; }
+}
+/* ===== Polish sale cards (mobile-first, two-up stays) ===== */
 
 /* بطاقة أنظف بظل وانتقال خفيف */
 .farm-card{
   border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden;
-  box-shadow:0 2px 10px rgba(2,6,23,.05);
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  box-shadow:0 2px 10px rgba(2,6,23,.05); transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
 .farm-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(2,6,23,.08); border-color:#e2e8f0; }
 
@@ -111,39 +90,40 @@
 .farm-media{ position:relative; aspect-ratio: 4 / 3; background:#f5f7f8; }
 .farm-card img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block; }
 
-/* بادجات متناسقة */
-.badge{
-  position:absolute; inset-inline-start:10px; top:10px; z-index:4;
+/* بادجات متناسقة لا تتصادم */
+.badge{ position:absolute; inset-inline-start:10px; top:10px; z-index:4;
   display:inline-flex; align-items:center; gap:6px;
   padding:.18rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800; letter-spacing:.2px;
   box-shadow:0 4px 14px rgba(0,0,0,.12);
 }
-.badge--video{ inset-inline-start:auto; inset-inline-end:10px; background:#ef4444; color:#fff; }
-.badge--Basic{ display:none; } /* لا نعرض شارة Basic */
-.badge--Premium{ background:#0ea5e9; color:#fff; }
-.badge--VIP{ background:#0f172a; color:#fff; }
+.badge--premium{ background:#8b5cf6; color:#fff; }
+.badge--vip{ background:#0f172a; color:#fff; }
+.badge--video{ inset-inline-end:10px; inset-inline-start:auto; background:#ef4444; color:#fff; }
 
 /* جسم البطاقة شبكة بسيطة */
-.farm-body{ display:grid; row-gap:.45rem; padding:.7rem .75rem; }
+.farm-body{
+  display:grid; row-gap:.45rem; padding:.7rem .75rem;
+}
 .farm-title{
   margin:0; font-size:1rem; font-weight:900;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em;
 }
 .farm-location{ margin:0; color:#64748b; font-size:.9rem; }
 .farm-price{ margin:0; font-weight:900; letter-spacing:.2px; }
-.meta-views{ margin-inline-start:auto; font-size:.85rem; color:#475569 !important; }
 
-/* زر التفاصيل بكامل العرض */
+/* صف سفلي مرتب: السعر يمين، المشاهدات يسار */
+.farm-body .meta-views{ margin-inline-start:auto; font-size:.85rem; color:#475569 !important; }
+
+/* زر التفاصيل بعرض كامل ولمسة أنيقة */
 .farm-body .btn.btn-outline{
   width:100%; text-align:center; border:1px solid #0f172a; color:#0f172a;
   border-radius:10px; padding:.48rem .85rem; font-weight:700;
 }
 
-/* سلايدات بارتفاع تلقائي */
-.rent-swiper .swiper-slide{ height:auto; }
-
 /* ===== Mobile fine-tuning ===== */
 @media (max-width:640px){
+  /* نحافظ على كرتين لكل شاشة كما ضبطت سابقًا */
+  .sale-swiper .swiper-slide{ height:auto; }
   .farm-body{ padding:.6rem .6rem; row-gap:.4rem; }
   .farm-title{ font-size:.95rem; min-height:2.4em; }
   .farm-location{ font-size:.84rem; }
@@ -151,56 +131,12 @@
   .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
   .badge{ font-size:.68rem; padding:.15rem .5rem; }
 }
-/* ===== Filters · compact on phones ===== */
-@media (max-width:640px){
-  /* العنوان + صندوق التفاصيل */
-  #filters .filter-dropdown summary{
-    font-size: .95rem !important;
-    padding: .45rem 0 !important;
-  }
-  #filters .filters-form{
-    padding: .5rem 0 0 !important;
-  }
 
-  /* شبكة الحقول: عمودان صغيران بدل بطاقات كبيرة */
-  #filters .filters-grid{
-    grid-template-columns: repeat(2, minmax(140px, 1fr)) !important; /* كان auto-fit 200px */
-    gap: 8px !important;                                              /* تقليل الفجوات */
-  }
-
-  /* الحقل نفسه أصغر */
-  #filters .field .label{
-    margin: .1rem 0 .25rem !important;
-    font-size: .85rem !important;
-  }
-  #filters .field input,
-  #filters .field select{
-    height: 2.1rem !important;                 /* كان ~2.6rem */
-    padding: .4rem .6rem !important;
-    font-size: .88rem !important;
-    border-radius: 10px !important;
-  }
-
-  /* زر "مزيد" مضغوط */
-  #filters #toggle-more.btn.btn-outline{
-    padding: .35rem .6rem !important;
-    font-size: .86rem !important;
-    border-radius: 10px !important;
-    width: 100%;
-  }
-
-  /* الحقول الإضافية (عند فتح "مزيد") بنفس التخطيط المصغّر */
-  #filters #more-filters.filters-grid{
-    grid-template-columns: repeat(2, minmax(140px,1fr)) !important;
-    gap: 8px !important;
-  }
-
-  /* زر "تطبيق" أصغر ويتماشى مع العرض */
-  #filters .field--actions .btn.btn-primary{
-    padding: .45rem .9rem !important;
-    font-size: .9rem !important;
-    border-radius: 10px !important;
-  }
+/* ===== Tablet/Desktop touch-ups (تبقى نظيفة على الكبير) ===== */
+@media (min-width:641px){
+  .farm-card{ border-radius:16px; }
+  .farm-body{ padding:.8rem .85rem; }
+  .farm-title{ font-size:1.05rem; }
 }
 
   </style>
@@ -209,10 +145,49 @@
 <%
   const _isAuth      = (typeof isAuth !== 'undefined') ? isAuth : false;
   const _user        = (typeof user   !== 'undefined') ? user   : null;
-  const _currentPath = (typeof currentPath !== 'undefined') ? currentPath : '/rent';
+  const _currentPath = (typeof currentPath !== 'undefined') ? currentPath : '/sale';
   const _farmsSSR    = (typeof farms !== 'undefined' && Array.isArray(farms)) ? farms : [];
   function esc(x){ return String(x ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
   function num(n){ const v = Number(n); return Number.isFinite(v) ? v : 0; }
+%>
+<%
+  function priceHtml(f){
+    const c = (f.currency || 'USD');
+    const sym = (c === 'SYP') ? 'ل.س' : '$';
+    const p = Number(f.price||0);
+    return p ? (sym + p.toLocaleString('en')) : '—';
+  }
+%>
+<%
+  function truncateWords(str, n){
+    const w = String(str||'').trim().split(/\s+/);
+    return (w.length <= n) ? w.join(' ') : (w.slice(0,n).join(' ') + '…');
+  }
+%>
+<%
+function tweakCloudinary(url){
+  try{
+    var u = new URL(url);
+    if (u.hostname.includes('res.cloudinary.com') && u.pathname.includes('/upload/')){
+      u.pathname = u.pathname.replace('/upload/','/upload/f_auto,q_auto,w_800/');
+      return u.toString();
+    }
+  }catch(_){}
+  return url;
+}
+function assetPath(u){
+  u = (u||'').toString().trim();
+  if (!u) return '/public/assets/farm-default.jpg';
+  // امنع data: لأنها تنفخ الـHTML
+  if (/^data:/i.test(u)) return '/public/assets/farm-default.jpg';
+  if (/^https?:\/\//i.test(u)) return tweakCloudinary(u); // Cloudinary سريع
+  // تطبيع قديم
+  u = u.replace(/\\/g,'/').replace(/^\/?Public\//,'/public/').replace(/\/assests\//gi,'/assets/');
+  if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
+  if (u.startsWith('/assets/')) return '/public'+u;
+  if (u.startsWith('/')) return '/public'+u;
+  return '/uploads/'+u;
+}
 %>
 
 <%- include('partials/navbar', { isAuth: _isAuth, user: _user, currentPath: _currentPath }) %>
@@ -220,17 +195,16 @@
 <%- include('partials/whatsapp') %>
 <%- include('partials/promo-swiper', { bannersDoc }) %>
 
-
 <!-- الفلاتر -->
 <section id="filters" class="section filters" aria-labelledby="filters-title">
   <div class="container">
     <details class="filter-dropdown" open>
       <summary id="filters-title">تصفية النتائج</summary>
 
-      <form id="rent-filters" class="filters-form" action="#results" method="get" novalidate>
+      <form id="sale-filters" class="filters-form" action="#results" method="get" novalidate>
         <div class="filters-grid">
-          <!-- تظهر دائمًا -->
-<div class="field">
+          <!-- الأساسي (يظهر دائمًا) -->
+         <div class="field">
   <label class="label" for="city">المحافظة</label>
   <select id="city" name="city" class="input">
     <option value="">اختر المحافظة…</option>
@@ -256,22 +230,25 @@
             <input id="area" name="area" type="text" placeholder="اكتب اسم المنطقة (مثال: ريف دمشق)" />
           </div>
 
-          <!-- زر المزيد -->
-          <div class="field" style="align-self:end;max-width:150px;display: inline-block;">
-            <button id="toggle-more" type="button" class="btn btn-outline">مزيد ▾</button>
+          <!-- زر المزيد/أقل -->
+          <div class="field field--actions">
+            <button id="toggle-advanced" class="btn btn-outline" type="button" aria-expanded="false" aria-controls="advanced-fields">
+              المزيد
+            </button>
+            <button class="btn btn-primary" type="submit" style="margin-inline-start:.5rem">تطبيق</button>
           </div>
         </div>
 
-        <!-- بقية الفلاتر (تكون مخفية مبدئياً) -->
-        <div id="more-filters" class="filters-grid more-fields" hidden>
+        <!-- الحقول المتقدمة (مخفية افتراضيًا) -->
+        <div id="advanced-fields" class="filters-grid advanced-fields" hidden>
           <div class="field">
             <label class="label" for="price-min">السعر (من)</label>
-            <input id="price-min" name="price_min" type="number" placeholder="مثال: 500" />
+            <input id="price-min" name="price_min" type="number" placeholder="مثال: 50000" />
           </div>
 
           <div class="field">
             <label class="label" for="price-max">السعر (إلى)</label>
-            <input id="price-max" name="price_max" type="number" placeholder="مثال: 2500" />
+            <input id="price-max" name="price_max" type="number" placeholder="مثال: 500000" />
           </div>
 
           <div class="field">
@@ -284,24 +261,20 @@
             <input id="size-max" name="size_max" type="number" placeholder="مثال: 25000" />
           </div>
         </div>
-            <div class="field field--actions" style="align-self:end;margin-top: 1rem;display: inline-block;">
-            <button class="btn btn-primary" type="submit">تطبيق</button>
-          </div>
       </form>
     </details>
   </div>
 </section>
-
-<!-- VIP Rent Only -->
-<section id="vip-rent" class="vip-sale-section" aria-labelledby="vip-rent-title" hidden>
+<!-- VIP Sale Only -->
+<section id="vip-sale" class="vip-sale-section" aria-labelledby="vip-sale-title" hidden>
   <div class="container">
     <header class="section-header">
-      <h2 id="vip-rent-title">مزارع للإيجار</h2>
+      <h2 id="vip-sale-title">مزارع للبيع</h2>
       <p class="muted">اضغط على البطاقة لفتح صفحة تفاصيل المزرعة.</p>
     </header>
 
     <div class="swiper vip-swiper" dir="rtl">
-      <div class="swiper-wrapper" id="vipRentWrapper"></div>
+      <div class="swiper-wrapper" id="vipSaleWrapper"></div>
       <div class="swiper-button-prev" aria-label="السابق"></div>
       <div class="swiper-button-next" aria-label="التالي"></div>
       <div class="swiper-pagination"></div>
@@ -314,56 +287,54 @@
   <div class="container">
     <header class="section-header">
     </header>
-    <div class="swiper rent-swiper" dir="rtl">
-      <div class="swiper-wrapper" id="rentWrapper">
+    <div class="swiper sale-swiper" dir="rtl">
+      <div class="swiper-wrapper" id="saleWrapper">
         <% if (_farmsSSR.length) { _farmsSSR.forEach(farm => {
-     const cover    = (Array.isArray(farm.photos) && farm.photos[0]) ? farm.photos[0] : '/Public/placeholder.jpg';
-     const titleTxt = esc(farm.title || '—');
-     const hasVideo = !!(farm.videoUrl);
-     const tier     = (farm?.owner?.subscriptionTier || farm?.ownerTier || 'Basic');  // 👈 بدل isVip فقط
-     const vw       = Number(farm.views || 0);
-    if (tier === 'VIP') { return; } // لا نرسم VIP في السلايدر العام
+             const cover = (Array.isArray(farm.photos) && farm.photos[0]) ? farm.photos[0] : '/Public/placeholder.jpg';
+             const titleTxt = esc(farm.title || '—');
+             const hasVideo = !!(farm.videoUrl);
+             const isVip    = (farm?.owner?.subscriptionTier === 'VIP') || (farm?.ownerTier === 'VIP');
+             if (tierSSR === 'VIP') { return; } // ⬅️ لا نرسم VIP في السلايدر العام
+        %>
+          <div class="swiper-slide">
+            <article class="farm-card">
+              <a class="farm-link" href="/farm/<%= farm._id %>" aria-label="عرض <%= titleTxt %>">
+                <figure class="farm-media" style="position:relative">
+  <img src="<%= assetPath(cover) %>" alt="<%= titleTxt %>"
+     loading="lazy" decoding="async" fetchpriority="low"
+     onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'"/>
 
-%>
-  <div class="swiper-slide">
-    <article class="farm-card">
-      <a class="farm-link" href="/rent/farm/<%= farm._id %>" aria-label="عرض <%= titleTxt %>">
-        <figure class="farm-media" style="position:relative">
-          <img src="<%= cover %>" alt="<%= titleTxt %>" loading="lazy"
-               onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'"/>
-          <% if (hasVideo) { %>
-            <span class="badge badge--video">🎥 فيديو</span>
-          <% } %>
-          <!-- 👇 شارة الخطة حسب tier -->
-          <% if (String(tier || 'Basic').toLowerCase() !== 'basic') { %>
-  <span class="badge badge--<%= tier %>"><%= tier %></span>
+
+  <% const tierSSR = (farm?.owner?.subscriptionTier || farm?.ownerTier || 'Basic'); %>
+<% if (tierSSR === 'VIP') { %>
+  <span class="badge badge--vip">VIP</span>
+<% } else if (tierSSR === 'Premium') { %>
+  <span class="badge badge--premium">Premium</span>
 <% } %>
 
-        </figure>
-        <div class="farm-body">
-          <h3 class="farm-title"><%= titleTxt %></h3>
-          <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
-  <% const _cur = String(farm.currency || '').toUpperCase(); %>
-<p class="farm-price">
-  <%= num(farm.price)
-      ? ((_cur === 'SYP' ? 'ل.س' : '$') + ' ' + num(farm.price).toLocaleString('en') + ' / شهريًا')
-      : '—' %>
-</p>
+  <% if (farm.videoUrl) { %>
+    <span class="badge badge--video">🎥 فيديو</span>
+  <% } %>
 
+  
+</figure>
 
+                <div class="farm-body">
+                  <h3 class="farm-title" title="<%= titleTxt %>"><%= truncateWords(titleTxt, 3) %></h3>
 
-
-
-          <!-- 👇 عدد المشاهدات -->
-          <div class="meta-views">👁️ <%= vw.toLocaleString('en') %></div>
-
-          <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
-        </div>
-      </a>
-    </article>
-  </div>
-<% }) } %>
-
+                  <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
+                  <p class="farm-price">${
+  Number(f.price || 0)
+    ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
+    : '—'
+}</p>
+                  <span class="meta-views" style="color: #0f172a;">👁️ <%= Number(farm.views||0).toLocaleString('en') %></span>
+                  <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
+                </div>
+              </a>
+            </article>
+          </div>
+        <% }) } %>
       </div>
       <div class="swiper-button-prev" aria-label="السابق"></div>
       <div class="swiper-button-next" aria-label="التالي"></div>
@@ -375,40 +346,77 @@
 
   <%- include('partials/promo', { promoBottom }) %>
 
+
 <%- include('partials/footer') %>
 
-<!-- Swiper JS (مهم) -->
+
+<!-- Swiper JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
 <script type="module">
-  // زر "مزيد" لإظهار/إخفاء بقية الفلاتر
-const toggleBtn   = document.querySelector('#toggle-more');
-const moreFilters = document.querySelector('#more-filters');
-
-if (toggleBtn && moreFilters) {
-  toggleBtn.addEventListener('click', () => {
-    const isHidden = moreFilters.hasAttribute('hidden');
-    if (isHidden) {
-      moreFilters.removeAttribute('hidden');
-      toggleBtn.textContent = 'إخفاء ▲';
-    } else {
-      moreFilters.setAttribute('hidden', '');
-      toggleBtn.textContent = 'مزيد ▾';
+function tweakCloudinary(url){
+  try{
+    const u = new URL(url);
+    if (u.hostname.includes('res.cloudinary.com') && u.pathname.includes('/upload/')){
+      u.pathname = u.pathname.replace('/upload/','/upload/f_auto,q_auto,w_800/');
+      return u.toString();
     }
-  });
+  }catch(e){}
+  return url;
+}
+function assetPath(u){
+  u = (u || '').toString().trim();
+  if (/^data:/i.test(u)) return '/public/assets/farm-default.jpg'; // منع data:
+  if (/^https?:\/\//i.test(u)) return tweakCloudinary(u);         // Cloudinary سريع
+  u = u.replace(/\\/g,'/').replace(/^\/?Public\//,'/public/').replace(/\/assests\//gi,'/assets/');
+  if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
+  if (u.startsWith('/assets/')) return '/public'+u;
+  if (u.startsWith('/')) return '/public'+u;
+  return '/uploads/'+u;
+}
+
+</script>
+
+<script>
+  // تبديل إظهار/إخفاء الحقول المتقدمة
+  (function(){
+    const btn  = document.getElementById('toggle-advanced');
+    const box  = document.getElementById('advanced-fields');
+    if (!btn || !box) return;
+
+    btn.addEventListener('click', ()=>{
+      const willShow = box.hasAttribute('hidden');
+      if (willShow){
+        box.hidden = false;
+        box.classList.remove('fade-in'); // لإعادة تشغيل الأنيميشن
+        // force reflow لإعادة تشغيل الأنيميشن كل مرة
+        void box.offsetWidth;
+        box.classList.add('fade-in');
+        btn.textContent = 'أقل';
+        btn.setAttribute('aria-expanded','true');
+      } else {
+        box.hidden = true;
+        btn.textContent = 'المزيد';
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+  })();
+</script>
+<script type="module">
+  function truncateWordsJS(str, n){
+  const w = String(str || '').trim().split(/\s+/);
+  return (w.length <= n) ? w.join(' ') : (w.slice(0, n).join(' ') + '…');
 }
 
 /* ======= أدوات صغيرة ======= */
 const $  = (s,ctx=document)=>ctx.querySelector(s);
 const $$ = (s,ctx=document)=>Array.from(ctx.querySelectorAll(s));
 const fmtEN = n => Number(n||0).toLocaleString('en');
-const moneySym = c => String(c || '').toUpperCase() === 'SYP' ? 'ل.س' : '$';
 
 /* ======= عناصر الصفحة ======= */
-const form          = $('#rent-filters');
-const vipSection    = $('#vip-rent');
-const vipWrap       = $('#vipRentWrapper');
-const rentWrapper   = $('#rentWrapper');
+const form        = $('#sale-filters');
+const vipSection  = $('#vip-sale');
+const vipWrap     = $('#vipSaleWrapper');
+const saleWrapper = $('#saleWrapper');
 
 /* ======= HTML helpers ======= */
 function htmlEscape(s=''){ return String(s).replace(/[&<>"]/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
@@ -422,18 +430,24 @@ function assetPath(u){
   return '/uploads/' + u;
 }
 
-
 /* ======= قوالب الشرائح ======= */
-function rentSlide(f){
+function saleSlide(f){
   const raw   = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
   const cover = assetPath(raw);
-  const link  = (String(f.kind || '').toLowerCase() === 'rent') ? `/rent/farm/${f._id}` : `/farm/${f._id}`;
+  const link  = `/farm/${f._id}`;
   const loc   = f.city ? `${f.area || ''} — ${f.city}` : (f.area || '—');
+
+  // طبّع الخطة للتأكد من حساسية حالة الأحرف
   const tierRaw = ((f.owner && f.owner.subscriptionTier) || f.ownerTier || 'Basic');
-const tier    = String(tierRaw);
-const showBadge = tier.toLowerCase() !== 'basic';
-const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>` : '';  
-  const vws   = Number(f.views || 0); // 👈 المشاهدات
+  const tierKey = String(tierRaw).trim().toLowerCase();
+
+  // أظهر البادج فقط إن كانت Premium أو VIP
+  const tierBadge =
+    tierKey === 'vip'     ? '<span class="badge badge--vip">VIP</span>' :
+    tierKey === 'premium' ? '<span class="badge badge--premium">Premium</span>' :
+                            '';
+
+  const views = Number(f.views || 0);
 
   return `
     <div class="swiper-slide">
@@ -442,18 +456,21 @@ const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>
           <figure class="farm-media" style="position:relative">
             <img src="${cover}" alt="${htmlEscape(f.title || 'مزرعة')}" loading="lazy"
                  onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+            ${tierBadge}
             ${f.videoUrl ? `<span class="badge badge--video">🎥 فيديو</span>` : ``}
-            ${badgeHTML}
           </figure>
           <div class="farm-body">
-            <h3 class="farm-title">${htmlEscape(f.title || '—')}</h3>
+            <h3 class="farm-title" title="${htmlEscape(f.title || '—')}">
+  ${htmlEscape(truncateWordsJS(f.title || '—', 3))}
+</h3>
+
             <p class="farm-location">${htmlEscape(loc)}</p>
             <p class="farm-price">${
-  Number(f.price || 0)
-    ? (moneySym(f.currency) + ' ' + fmtEN(f.price) + ' / شهريًا')
-    : '—'
-}</p>
-            <div class="meta-views">👁️ ${fmtEN(vws)}</div>
+              Number(f.price || 0)
+                ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
+                : '—'
+            }</p>
+            <span class="meta-views" style="color: #0f172a;">👁️ ${fmtEN(views)}</span>
             <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
           </div>
         </a>
@@ -461,10 +478,12 @@ const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>
     </div>`;
 }
 
-// VIP يستخدم نفس بطاقة الكرت العام
+
+// VIP يستخدم نفس بطاقة البيع العامة (تحافظ على 'ل.س' عند SYP)
 function vipSlide(f){
-  return rentSlide(f);
+  return saleSlide(f);
 }
+
 
 /* ======= جلب API ======= */
 async function fetchJSON(url){
@@ -475,21 +494,22 @@ async function fetchJSON(url){
 }
 
 /* ======= الحالة والسويبرات ======= */
-let allRent = [];
+let allSale = [];
 let vipAll  = [];
-let rentSwiper = null;
+let saleSwiper = null;
 let vipSwiper  = null;
-let nonVipRent = [];
-function destroySwiper(sw){ if (sw) try{ sw.destroy(true,true); }catch(_){} }
+function destroySwiper(sw){
+  if (sw) try{ sw.destroy(true,true); }catch(_){}
+}
 
-function initRentSwiper(){
-  destroySwiper(rentSwiper);
-  rentSwiper = new Swiper('.rent-swiper', {
+function initSaleSwiper(){
+  destroySwiper(saleSwiper);
+  saleSwiper = new Swiper('.sale-swiper', {
     watchOverflow: true,
-    pagination: { el: '.rent-swiper .swiper-pagination', clickable: true },
+    pagination: { el: '.sale-swiper .swiper-pagination', clickable: true },
     navigation: {
-      nextEl: '.rent-swiper .swiper-button-next',
-      prevEl: '.rent-swiper .swiper-button-prev'
+      nextEl: '.sale-swiper .swiper-button-next',
+      prevEl: '.sale-swiper .swiper-button-prev'
     },
     breakpoints: {
       /* هاتف: كرتين */
@@ -497,41 +517,36 @@ function initRentSwiper(){
       480:  { slidesPerView: 2.10, spaceBetween: 12 },
       /* تابلت صغير */
       640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
+      /* تابلت/ديسكتوب كما كان */
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
   });
 }
+
 function initVipSwiper(){
   destroySwiper(vipSwiper);
   vipSwiper = new Swiper('.vip-swiper', {
-    slidesPerView: 1.05,
-    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.vip-swiper .swiper-pagination', clickable: true },
     navigation: {
       nextEl: '.vip-swiper .swiper-button-next',
       prevEl: '.vip-swiper .swiper-button-prev'
     },
-   breakpoints: {
-      /* هاتف: كرتين */
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },
+    breakpoints: {
+      0:    { slidesPerView: 2.02, spaceBetween: 10 },  /* نفس فكرة الهاتف */
       480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      /* تابلت صغير */
       640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
   });
 }
 
-
-function renderRent(list){
-  if (!rentWrapper) return;
-  rentWrapper.innerHTML = (list && list.length) ? list.map(rentSlide).join('') : `<div class="empty muted">لا توجد نتائج مطابقة.</div>`;
-  initRentSwiper();
+function renderSale(list){
+  if (!saleWrapper) return;
+  saleWrapper.innerHTML = (list && list.length) ? list.map(saleSlide).join('') : `<div class="empty muted">لا توجد نتائج مطابقة.</div>`;
+  initSaleSwiper();
 }
 function renderVip(list){
   if (!vipSection || !vipWrap) return;
@@ -562,36 +577,39 @@ function applyFilters(){
     return okArea && okCity && okPrice && okSize;
   };
 
-  const filteredRent = nonVipRent.filter(pass); 
-  const filteredVip  = vipAll.filter(pass);
-  renderRent(filteredRent);
-  renderVip(filteredVip);
+ const filteredSale = allSale
+  .filter(pass)
+  .filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
+const filteredVip  = vipAll.filter(pass);
+renderSale(filteredSale);
+renderVip(filteredVip);
+
 }
 
 /* ======= بدء ======= */
 async function init(){
   try {
-    const apiRent = await fetchJSON('/api/farms/rent'); // كل الإيجار المقبول
-allRent = Array.isArray(apiRent) ? apiRent : [];
+   const apiSale = await fetchJSON('/api/farms/sale'); // كلّ البيع المقبول
+allSale = Array.isArray(apiSale) ? apiSale : [];
 
-// استبعاد VIP من السلايدر العام
-nonVipRent = allRent.filter(f => {
+// ⬅️ استبعد VIP من السلايدر العام
+const nonVipSale = allSale.filter(f => {
   const tier = (f?.owner?.subscriptionTier) || f.ownerTier || 'Basic';
   return tier !== 'VIP';
 });
 
-renderRent(nonVipRent);
+renderSale(nonVipSale);
 
-  } catch(e){ console.warn('rent fetch error:', e); renderRent([]); }
+  } catch(e){ console.warn('sale fetch error:', e); renderSale([]); }
 
   try {
-    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1');
+    vipAll = await fetchJSON('/api/farms/sale?vipOnly=1');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 
   if (form){
     form.addEventListener('submit', e=>{ e.preventDefault(); applyFilters(); });
-    $$('#rent-filters input, #rent-filters select').forEach(inp=>{
+    $$('#sale-filters input, #sale-filters select').forEach(inp=>{
       inp.addEventListener('change', applyFilters);
       inp.addEventListener('input',  e=>{
         const n = (e.target?.name||'');
@@ -604,7 +622,7 @@ renderRent(nonVipRent);
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <%- include('partials/mobile-nav', { 
-  activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
+  activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
 </body>

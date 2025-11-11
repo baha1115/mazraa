@@ -120,14 +120,12 @@ function assetPath(u){
         nextEl: container.querySelector('.swiper-button-next'),
         prevEl: container.querySelector('.swiper-button-prev')
       },
-    breakpoints: {
-  0:    { slidesPerView: 2.02, spaceBetween: 10 },  // هاتف: كرتان
-  480:  { slidesPerView: 2.10, spaceBetween: 12 },
-  640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-  1024: { slidesPerView: 3.2,  spaceBetween: 18 },
-  1280: { slidesPerView: 4.2,  spaceBetween: 20 }
-}
-
+      breakpoints: {
+        480:  { slidesPerView: 1.3, spaceBetween: 14 },
+        640:  { slidesPerView: 2.1, spaceBetween: 16 },
+        1024: { slidesPerView: 3.2, spaceBetween: 18 },
+        1280: { slidesPerView: 4.2, spaceBetween: 20 }
+      }
     });
   }
 

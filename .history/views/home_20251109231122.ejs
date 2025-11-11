@@ -97,7 +97,7 @@ const _contImg   = assetPath(_ql.contractorsImg || '/Public/assests/farm4k1.jpg'
 
 <section id="quick-links" class="section qlicon" aria-labelledby="quick-links-title">
   <div class="container">
-    <h2 id="quick-links-title" class="section-title" style="text-align:center;margin-bottom:1rem">تصفّح الأقسام الشائعة</h2>
+    <h2 id="quick-links-title" class="section-title" style="text-align:center;">تصفّح الأقسام الشائعة</h2>
 
     <div class="row" role="list" dir="rtl">
       <!-- بيع -->
@@ -409,37 +409,6 @@ const _contImg   = assetPath(_ql.contractorsImg || '/Public/assests/farm4k1.jpg'
       if(document.querySelector(s)) mk(s);
     });
   });
-  
-/* Mobile-first animations: in-view + touch ripple */
-(function(){
-  const sec = document.querySelector('#quick-links.qlicon'); if(!sec) return;
-  // 1) Reveal on view
-  const cells = sec.querySelectorAll('.cell');
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(en=>{
-      if(en.isIntersecting){
-        en.target.classList.add('is-in');
-        io.unobserve(en.target);
-      }
-    });
-  }, {threshold:.15});
-  cells.forEach(c=> io.observe(c));
-
-  // 2) Touch ripple (works on mobile tap)
-  sec.addEventListener('click', function(e){
-    const link = e.target.closest('.link'); if(!link) return;
-    const r = link.getBoundingClientRect();
-    const x = (e.touches?.[0]?.clientX ?? e.clientX) - r.left;
-    const y = (e.touches?.[0]?.clientY ?? e.clientY) - r.top;
-    const span = document.createElement('span');
-    span.className = 'ripple';
-    span.style.left = x + 'px';
-    span.style.top  = y + 'px';
-    link.appendChild(span);
-    setTimeout(()=> span.remove(), 650);
-  }, {passive:true});
-})();
-
 </script>
 <%- include('partials/mobile-nav', { 
   activeTab: 'home',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'

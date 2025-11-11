@@ -62,128 +62,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* ===== Sale cards · two-up on phones ===== */
+/* ===== Gallery · Mobile tighter ===== */
 @media (max-width: 640px){
-  .sale-swiper .farm-card{
-    border-radius: 12px !important;
+  .gallery-grid{
+    grid-template-columns: repeat(3, 1fr) !important; /* بدل 2 أعمدة ← 3 أعمدة */
+    gap: 6px !important;                               /* فجوة أصغر */
   }
-  .sale-swiper .farm-card img{
-    height: 140px !important;        /* ↓ أقل من 220px */
+  .gallery-grid .g-item{
+    aspect-ratio: 1 / 1 !important;                    /* مربّعات أصغر لكل صورة */
+  }
+  .gallery-grid .g-item.is-hero{
+    grid-column: span 3 !important;                    /* الأولى تمتد عرض الشبكة كلها */
+    aspect-ratio: 4 / 3 !important;                    /* أول صورة أعرض قليلًا */
+  }
+  .gallery-grid .g-item img{
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover !important;
-  }
-  .sale-swiper .farm-body{ padding: .55rem !important; }
-  .sale-swiper .farm-title{ font-size: .95rem !important; margin: .15rem 0 .3rem !important; }
-  .sale-swiper .farm-location,
-  .sale-swiper .farm-price{ font-size: .82rem !important; margin: 0 0 .2rem !important; }
-  .sale-swiper .btn.btn-outline{ padding: .4rem .7rem !important; font-size: .85rem !important; }
-}
-/* ===== Polish sale cards (mobile-first, two-up stays) ===== */
-
-/* بطاقة أنظف بظل وانتقال خفيف */
-.farm-card{
-  border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden;
-  box-shadow:0 2px 10px rgba(2,6,23,.05); transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-.farm-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(2,6,23,.08); border-color:#e2e8f0; }
-
-/* صورة بنسبة 4:3 بدل ارتفاع ثابت */
-.farm-media{ position:relative; aspect-ratio: 4 / 3; background:#f5f7f8; }
-.farm-card img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block; }
-
-/* بادجات متناسقة لا تتصادم */
-.badge{ position:absolute; inset-inline-start:10px; top:10px; z-index:4;
-  display:inline-flex; align-items:center; gap:6px;
-  padding:.18rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800; letter-spacing:.2px;
-  box-shadow:0 4px 14px rgba(0,0,0,.12);
-}
-.badge--premium{ background:#8b5cf6; color:#fff; }
-.badge--vip{ background:#0f172a; color:#fff; }
-.badge--video{ inset-inline-end:10px; inset-inline-start:auto; background:#ef4444; color:#fff; }
-
-/* جسم البطاقة شبكة بسيطة */
-.farm-body{
-  display:grid; row-gap:.45rem; padding:.7rem .75rem;
-}
-.farm-title{
-  margin:0; font-size:1rem; font-weight:900;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em;
-}
-.farm-location{ margin:0; color:#64748b; font-size:.9rem; }
-.farm-price{ margin:0; font-weight:900; letter-spacing:.2px; }
-
-/* صف سفلي مرتب: السعر يمين، المشاهدات يسار */
-.farm-body .meta-views{ margin-inline-start:auto; font-size:.85rem; color:#475569 !important; }
-
-/* زر التفاصيل بعرض كامل ولمسة أنيقة */
-.farm-body .btn.btn-outline{
-  width:100%; text-align:center; border:1px solid #0f172a; color:#0f172a;
-  border-radius:10px; padding:.48rem .85rem; font-weight:700;
-}
-
-/* ===== Mobile fine-tuning ===== */
-@media (max-width:640px){
-  /* نحافظ على كرتين لكل شاشة كما ضبطت سابقًا */
-  .sale-swiper .swiper-slide{ height:auto; }
-  .farm-body{ padding:.6rem .6rem; row-gap:.4rem; }
-  .farm-title{ font-size:.95rem; min-height:2.4em; }
-  .farm-location{ font-size:.84rem; }
-  .farm-price{ font-size:.9rem; }
-  .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
-  .badge{ font-size:.68rem; padding:.15rem .5rem; }
-}
-
-/* ===== Tablet/Desktop touch-ups (تبقى نظيفة على الكبير) ===== */
-@media (min-width:641px){
-  .farm-card{ border-radius:16px; }
-  .farm-body{ padding:.8rem .85rem; }
-  .farm-title{ font-size:1.05rem; }
-}
-/* ===== Filters · compact on phones (sale page) ===== */
-@media (max-width:640px){
-  /* عنوان صندوق التصفية */
-  #filters .filter-dropdown summary{
-    font-size: .95rem !important;
-    padding: .45rem 0 !important;
-  }
-  #filters .filters-form{ padding: .5rem 0 0 !important; }
-
-  /* شبكة الحقول: عمودان صغيران */
-  #filters .filters-grid{
-    grid-template-columns: repeat(2, minmax(130px, 1fr)) !important;
-    gap: 8px !important;
-  }
-
-  /* الحقول نفسها أصغر */
-  #filters .field .label{
-    margin: .1rem 0 .25rem !important;
-    font-size: .85rem !important;
-  }
-  #filters .field input,
-  #filters .field select{
-    height: 2.1rem !important;          /* كان ~2.6rem */
-    padding: .35rem .55rem !important;
-    font-size: .88rem !important;
-    border-radius: 10px !important;
-  }
-
-  /* أزرار: "المزيد" و"تطبيق" */
-  #filters .field--actions{ gap: 6px !important; }
-  #filters .field--actions .btn.btn-outline{
-    padding: .35rem .6rem !important;
-    font-size: .86rem !important;
-    border-radius: 10px !important;
-  }
-  #filters .field--actions .btn.btn-primary{
-    padding: .42rem .8rem !important;
-    font-size: .9rem !important;
-    border-radius: 10px !important;
-  }
-
-  /* الحقول المتقدمة عند الفتح بنفس التخطيط المصغّر */
-  #filters #advanced-fields.filters-grid{
-    grid-template-columns: repeat(2, minmax(130px, 1fr)) !important;
-    gap: 8px !important;
-    margin-top: .35rem !important;
+    object-position: center !important;
   }
 }
 
@@ -235,6 +131,21 @@ function assetPath(u){
   if (u.startsWith('/assets/')) return '/public'+u;
   if (u.startsWith('/')) return '/public'+u;
   return '/uploads/'+u;
+}
+%>
+<%
+function cldSize(url, w){
+  try{
+    var u = new URL(assetPath(url)); // يمر عبر assetPath لضمان Cloudinary/محلي
+    if (u.hostname.includes('res.cloudinary.com') && u.pathname.includes('/upload/')){
+      u.pathname = u.pathname.replace(/\/upload\/[^/]*\//, '/upload/f_auto,q_auto,w_'+w+'/');
+      if (!/\/upload\/[^/]*\//.test(u.pathname)) {
+        u.pathname = u.pathname.replace('/upload/', '/upload/f_auto,q_auto,w_'+w+'/');
+      }
+      return u.toString();
+    }
+  }catch(_){}
+  return assetPath(url);
 }
 %>
 
@@ -546,6 +457,7 @@ let allSale = [];
 let vipAll  = [];
 let saleSwiper = null;
 let vipSwiper  = null;
+
 function destroySwiper(sw){
   if (sw) try{ sw.destroy(true,true); }catch(_){}
 }
@@ -553,6 +465,8 @@ function destroySwiper(sw){
 function initSaleSwiper(){
   destroySwiper(saleSwiper);
   saleSwiper = new Swiper('.sale-swiper', {
+    slidesPerView: 1.05,
+    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.sale-swiper .swiper-pagination', clickable: true },
     navigation: {
@@ -560,12 +474,8 @@ function initSaleSwiper(){
       prevEl: '.sale-swiper .swiper-button-prev'
     },
     breakpoints: {
-      /* هاتف: كرتين */
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },
-      480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      /* تابلت صغير */
-      640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* تابلت/ديسكتوب كما كان */
+      480:  { slidesPerView: 1.2,  spaceBetween: 14 },
+      640:  { slidesPerView: 2.2,  spaceBetween: 16 },
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
@@ -575,6 +485,8 @@ function initSaleSwiper(){
 function initVipSwiper(){
   destroySwiper(vipSwiper);
   vipSwiper = new Swiper('.vip-swiper', {
+    slidesPerView: 1.05,
+    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.vip-swiper .swiper-pagination', clickable: true },
     navigation: {
@@ -582,14 +494,14 @@ function initVipSwiper(){
       prevEl: '.vip-swiper .swiper-button-prev'
     },
     breakpoints: {
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },  /* نفس فكرة الهاتف */
-      480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      640:  { slidesPerView: 2.4,  spaceBetween: 14 },
+      480:  { slidesPerView: 1.2,  spaceBetween: 14 },
+      640:  { slidesPerView: 2.2,  spaceBetween: 16 },
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
   });
 }
+
 
 function renderSale(list){
   if (!saleWrapper) return;

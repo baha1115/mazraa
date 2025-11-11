@@ -737,25 +737,22 @@ html[lang="ar"] body{
   .qlicon .icon{ animation: none; }
   .qlicon .cell{ transition: none; }
 }
-/* ===== Hero · compact & consistent on phones (FIX) ===== */
+/* ===== Hero · smaller on phones ===== */
 @media (max-width: 640px){
-
-  /* مسافات أقل للقسم */
-  #hero.hero-swiper-section{
-    padding-top: .55rem !important;
-    padding-bottom: .75rem !important;
+  /* اجعل سكشن الهيرو أقصر */
+  #hero.hero-swiper-section { 
+    padding-top: .6rem !important;
+    padding-bottom: .8rem !important;
   }
-
-  /* مهم: اجعل السلايد يحسب ارتفاعه تلقائيًا */
-  .hero-swiper .swiper-slide{ height: auto !important; }
-
-  /* وحّد الارتفاع المصغَّر بين كل طبقات الهيرو */
-  .hero-swiper .hero.hero-slide,
-  .hero-swiper .hero-inner{
-    min-height: 42vh !important;  /* يمكنك تغييرها 40–46vh حسب الذوق */
+  /* بطاقة الشريحة نفسها */
+  .hero-swiper .hero.hero-slide{
+    min-height: 46vh !important;         /* كان أعلى – اجعله ~46% من ارتفاع الشاشة */
+    border-radius: 14px !important;
+    overflow: hidden;
   }
+  /* الوسائط (الصورة) تلتزم بالارتفاع الجديد */
   .hero-swiper .hero-media{
-    height: 42vh !important;
+    height: 46vh !important;
   }
   .hero-swiper .hero-media img{
     width: 100% !important;
@@ -763,104 +760,28 @@ html[lang="ar"] body{
     object-fit: cover !important;
     object-position: center !important;
   }
-
-  /* لتفادي ازدحام الخلفية على الشاشات الصغيرة */
-  .hero-layer--green,
-  .hero-layer--yellow{
-    display: none !important;
+  /* النصوص والمسافات */
+  .hero-swiper .hero-inner{ 
+    padding: .9rem !important; 
   }
-
-  /* النصوص والمسافات أصغر قليلاً */
-  .hero-swiper .hero-inner{ padding: .85rem !important; }
-  .hero-swiper .hero-title{
-    font-size: 1.12rem !important;
+  .hero-swiper .hero-title{ 
+    font-size: 1.15rem !important; 
     line-height: 1.25 !important;
     margin-bottom: .35rem !important;
   }
   .hero-swiper .hero-lead{
     font-size: .9rem !important;
     line-height: 1.35 !important;
-    margin-bottom: .55rem !important;
+    margin-bottom: .6rem !important;
   }
   .hero-swiper .hero-actions .btn{
-    padding: .52rem .85rem !important;
+    padding: .55rem .9rem !important;
     font-size: .9rem !important;
   }
-
-  /* أزرار التنقّل أخف */
+  /* أزرار السويبر أصغر/أهدأ على الهاتف */
   .hero-swiper .swiper-button-prev,
   .hero-swiper .swiper-button-next{
     transform: scale(.82);
     opacity: .8;
-  }
-}
-/* ===== Compact hero-cards inside home swipers (phones) ===== */
-@media (max-width: 640px){
-
-  /* تقليل الارتفاع والفراغات داخل الكرت */
-  .rentTop-swiper .hero-card,
-  .saleTop-swiper .hero-card,
-  .bestContractors-swiper .hero-card{
-    min-height: 170px !important;   /* ↓ كان 260px */
-    border-radius: 12px !important;
-  }
-
-  /* الصورة تلتزم بالارتفاع الأصغر */
-  .rentTop-swiper .hero-card > img,
-  .saleTop-swiper .hero-card > img,
-  .bestContractors-swiper .hero-card > img{
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    object-position: center !important;
-  }
-
-  /* تليين التدرّج */
-  .rentTop-swiper .hero-card .overlay,
-  .saleTop-swiper .hero-card .overlay,
-  .bestContractors-swiper .hero-card .overlay{
-    background: linear-gradient(90deg, rgba(0,0,0,.40), rgba(0,0,0,.12) 50%, transparent) !important;
-  }
-
-  /* تصغير النصوص والمسافات */
-  .rentTop-swiper .hero-card .card-body,
-  .saleTop-swiper .hero-card .card-body,
-  .bestContractors-swiper .hero-card .card-body{
-    padding: .6rem !important;
-  }
-  .rentTop-swiper .hero-card h3,
-  .saleTop-swiper .hero-card h3,
-  .bestContractors-swiper .hero-card h3{
-    font-size: 1rem !important;
-    margin: 0 0 .25rem !important;
-  }
-  .rentTop-swiper .hero-card .muted,
-  .saleTop-swiper .hero-card .muted,
-  .bestContractors-swiper .hero-card .muted{
-    font-size: .85rem !important;
-    line-height: 1.25 !important;
-  }
-  .rentTop-swiper .hero-card .btn,
-  .saleTop-swiper .hero-card .btn,
-  .bestContractors-swiper .hero-card .btn{
-    padding: .45rem .8rem !important;
-    font-size: .88rem !important;
-    border-radius: .6rem !important;
-  }
-
-  /* أزرار السويبر أصغر ومسافة أقل بين الشرائح */
-  .rentTop-swiper,
-  .saleTop-swiper,
-  .bestContractors-swiper{
-    --swiper-navigation-size: 18px;
-  }
-  .rentTop-swiper .swiper-button-prev,
-  .rentTop-swiper .swiper-button-next,
-  .saleTop-swiper .swiper-button-prev,
-  .saleTop-swiper .swiper-button-next,
-  .bestContractors-swiper .swiper-button-prev,
-  .bestContractors-swiper .swiper-button-next{
-    transform: scale(.85);
-    opacity: .85;
   }
 }

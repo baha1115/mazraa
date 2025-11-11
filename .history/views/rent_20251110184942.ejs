@@ -151,57 +151,6 @@
   .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
   .badge{ font-size:.68rem; padding:.15rem .5rem; }
 }
-/* ===== Filters · compact on phones ===== */
-@media (max-width:640px){
-  /* العنوان + صندوق التفاصيل */
-  #filters .filter-dropdown summary{
-    font-size: .95rem !important;
-    padding: .45rem 0 !important;
-  }
-  #filters .filters-form{
-    padding: .5rem 0 0 !important;
-  }
-
-  /* شبكة الحقول: عمودان صغيران بدل بطاقات كبيرة */
-  #filters .filters-grid{
-    grid-template-columns: repeat(2, minmax(140px, 1fr)) !important; /* كان auto-fit 200px */
-    gap: 8px !important;                                              /* تقليل الفجوات */
-  }
-
-  /* الحقل نفسه أصغر */
-  #filters .field .label{
-    margin: .1rem 0 .25rem !important;
-    font-size: .85rem !important;
-  }
-  #filters .field input,
-  #filters .field select{
-    height: 2.1rem !important;                 /* كان ~2.6rem */
-    padding: .4rem .6rem !important;
-    font-size: .88rem !important;
-    border-radius: 10px !important;
-  }
-
-  /* زر "مزيد" مضغوط */
-  #filters #toggle-more.btn.btn-outline{
-    padding: .35rem .6rem !important;
-    font-size: .86rem !important;
-    border-radius: 10px !important;
-    width: 100%;
-  }
-
-  /* الحقول الإضافية (عند فتح "مزيد") بنفس التخطيط المصغّر */
-  #filters #more-filters.filters-grid{
-    grid-template-columns: repeat(2, minmax(140px,1fr)) !important;
-    gap: 8px !important;
-  }
-
-  /* زر "تطبيق" أصغر ويتماشى مع العرض */
-  #filters .field--actions .btn.btn-primary{
-    padding: .45rem .9rem !important;
-    font-size: .9rem !important;
-    border-radius: 10px !important;
-  }
-}
 
   </style>
 </head>
@@ -480,11 +429,15 @@ let vipAll  = [];
 let rentSwiper = null;
 let vipSwiper  = null;
 let nonVipRent = [];
-function destroySwiper(sw){ if (sw) try{ sw.destroy(true,true); }catch(_){} }
+function destroySwiper(sw){
+  if (sw) try{ sw.destroy(true,true); }catch(_){}
+}
 
 function initRentSwiper(){
   destroySwiper(rentSwiper);
   rentSwiper = new Swiper('.rent-swiper', {
+    slidesPerView: 1.05,
+    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.rent-swiper .swiper-pagination', clickable: true },
     navigation: {
@@ -492,12 +445,8 @@ function initRentSwiper(){
       prevEl: '.rent-swiper .swiper-button-prev'
     },
     breakpoints: {
-      /* هاتف: كرتين */
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },
-      480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      /* تابلت صغير */
-      640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
+      480:  { slidesPerView: 1.2,  spaceBetween: 14 },
+      640:  { slidesPerView: 2.2,  spaceBetween: 16 },
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
@@ -514,13 +463,10 @@ function initVipSwiper(){
       nextEl: '.vip-swiper .swiper-button-next',
       prevEl: '.vip-swiper .swiper-button-prev'
     },
-   breakpoints: {
-      /* هاتف: كرتين */
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },
-      480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      /* تابلت صغير */
-      640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
+    // نفس منطق السويبر العام تقريبًا
+    breakpoints: {
+      480:  { slidesPerView: 1.2,  spaceBetween: 14 },
+      640:  { slidesPerView: 2.2,  spaceBetween: 16 },
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }

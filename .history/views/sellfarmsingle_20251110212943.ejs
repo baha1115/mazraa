@@ -370,145 +370,6 @@
   .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
   .badge{ font-size:.68rem; padding:.15rem .5rem; }
 }
-/* ===== Lightbox base ===== */
-.lb{
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,.92);
-  display: grid; place-items: center;
-}
-.lb[hidden]{ display: none; }
-
-.lb-close{
-  position: absolute; top: 12px; inset-inline-end: 12px;
-  width: 40px; height: 40px; border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.35);
-  color: #fff; font-size: 24px; line-height: 1; cursor: pointer;
-  display: grid; place-items:center;
-}
-.lb-close:hover{ background: rgba(255,255,255,.1); }
-
-.lb-swiper{ width: min(100vw, 1100px); height: min(100vh, 88vh); }
-.lb-swiper .swiper-slide{ display: grid; place-items: center; background: transparent; }
-.lb-swiper img{
-  max-width: 100%; max-height: 100%;
-  object-fit: contain; object-position: center;
-  border-radius: 10px;
-}
-
-/* أسهم/نقاط */
-.lb .swiper-button-prev, .lb .swiper-button-next{
-  color: #fff; filter: drop-shadow(0 4px 10px rgba(0,0,0,.6)); transform: scale(1.05);
-}
-.lb .swiper-pagination-bullet{ background: rgba(255,255,255,.85); }
-
-@media (max-width:640px){
-  .lb-swiper{ width: 100vw; height: 78vh; }
-}
-/* ==== Compact + Animate: Quick details & Features (phones) ==== */
-
-/* أنيميشن عام: تفعيلها بإضافة .in عبر JS */
-@keyframes fadeSlideUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
-.reveal { opacity:0; transform: translateY(12px); transition: opacity .35s ease, transform .35s ease; }
-.reveal.in { opacity:1; transform: none; animation: fadeSlideUp .45s ease both; }
-
-/* مراعاة تقليل الحركة */
-@media (prefers-reduced-motion: reduce){
-  .reveal, .reveal.in { animation: none !important; transform: none !important; }
-}
-
-/* ——— الهواتف: تصغير قوي ——— */
-@media (max-width: 640px){
-
-  /* سكشن التفاصيل السريعة */
-  #quick-title { font-size: 1rem !important; margin-bottom: .5rem !important; }
-  .infogrid{
-    grid-template-columns: repeat(2, minmax(0,1fr)) !important; /* عمودان */
-    gap: 8px !important;
-  }
-  .info-item{
-    padding: .55rem .6rem !important;
-    border-radius: 10px !important;
-  }
-  .info-ico{
-    width: 24px !important; height: 24px !important; border-radius: 6px !important;
-  }
-  .info-ico svg{ width: 16px !important; height: 16px !important; }
-  .info-t h3{ font-size: .92rem !important; margin: .05rem 0 .15rem !important; }
-  .info-t p{ font-size: .85rem !important; }
-
-  /* سكشن المزايا/المرافق */
-  #features { padding: .7rem !important; }
-  #features #features-title { font-size: 1rem !important; margin-bottom: .45rem !important; }
-  #features .features__h { font-size: .95rem !important; margin: .2rem 0 .35rem !important; }
-  #features .chips{ gap: .35rem !important; }
-  #features .chip{
-    padding: .25rem .5rem !important;
-    font-size: .85rem !important;
-    border-radius: 999px !important;
-    transition: transform .18s ease, box-shadow .18s ease;
-    will-change: transform;
-  }
-  #features .chip:active{ transform: scale(.97); }
-  #features .chip svg{ width: 14px !important; height: 14px !important; }
-}
-
-/* لمسات هوفر خفيفة على كل المقاسات */
-#features .chip:hover{ box-shadow: 0 6px 16px rgba(2,6,23,.09); transform: translateY(-1px); }
-.info-item:hover{ box-shadow: 0 6px 18px rgba(2,6,23,.08); border-color: #e2e8f0; }
-/* ==== HERO · Mobile facelift (sellfarmsingle) ==== */
-@media (max-width:640px){
-  .hero{
-    min-height: unset !important;
-    aspect-ratio: 16 / 9;              /* ارتفاع منطقي على الهاتف */
-    border-radius: 16px !important;
-    margin-block: .6rem !important;
-    overflow: hidden;
-  }
-  .hero__bg{
-    width:100%; height:100%; object-fit:cover;
-    transform: scale(1.02);
-    transition: transform .55s ease, filter .55s ease;
-    filter: brightness(.92) saturate(1.05);
-  }
-  .hero:hover .hero__bg{ transform: scale(1.045); }
-
-  .hero__veil{
-    position:absolute; inset:0;
-    background: linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.55) 85%);
-    backdrop-filter: blur(.5px);
-  }
-
-  .hero__body{
-    position:absolute; inset-inline:.75rem; inset-block-end:.75rem;
-    display:grid; gap:.35rem; color:#fff;
-  }
-  .hero__title{
-    margin:0; font-size:1.06rem; font-weight:900; letter-spacing:-.2px;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-  }
-  .hero__meta{ margin:0; font-size:.86rem; opacity:.95; }
-
-  .hero__actions{ display:flex; gap:.4rem; margin-top:.45rem; }
-  .hero__actions .btn{
-    padding:.46rem .7rem !important; border-radius:10px !important; font-size:.9rem !important;
-    box-shadow:0 10px 26px rgba(0,0,0,.12);
-  }
-
-  /* شارة الحالة بأنيمايشن دخول */
-  .hero__badges{
-    position:absolute; top:.6rem; inset-inline-start:.6rem; z-index:5; display:flex; gap:.35rem;
-  }
-  .h-badge{
-    display:inline-flex; align-items:center; gap:.35rem;
-    padding:.22rem .55rem; border-radius:999px; font-size:.78rem; font-weight:800;
-    background: rgba(17,24,39,.78); color:#fff; border:1px solid rgba(255,255,255,.12);
-    backdrop-filter: blur(2px); box-shadow:0 6px 16px rgba(0,0,0,.18);
-    transform: translateY(-6px); opacity:0; animation: heroBadgeIn .45s .08s ease forwards;
-  }
-  .h-badge--ok{ background:#065f46; }   /* Approved */
-  .h-badge--no{ background:#991b1b; }   /* Rejected */
-  @keyframes heroBadgeIn{ to{ opacity:1; transform:none; } }
-}
 
   </style>
 </head>
@@ -640,6 +501,44 @@ if (/^https?:\/\//i.test(u)) {
       <!-- Gallery with thumbs -->
      <!-- ===== Gallery (Grid, no Swiper) ===== -->
 <!-- ===== Gallery (Grid, no Swiper) ===== -->
+<section id="gallery" class="card" aria-labelledby="gallery-title" style="padding:1rem">
+  <h2 id="gallery-title" style="margin:0 0 .75rem">المعرض</h2>
+
+  <%
+    // حضّر الصور + المنطق الخاص بعدّاد الزيادة
+    const __photosAll = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg'];
+    const __total     = __photosAll.length;
+    const __limit     = 4;                       // نعرض 4 فقط
+    const __photos    = __photosAll.slice(0, __limit);
+    const __more      = Math.max(0, __total - __limit);
+  %>
+
+  <div class="gallery-grid" id="galleryMain" style="--gg:8px">
+    <% __photos.forEach(function(src, i){ 
+         const full = assetPath(src);
+         const isHero = (i===0);
+    %>
+      <a class="g-item <%= isHero ? 'is-hero' : 'is-rect' %>" 
+         href="<%= full %>" 
+         data-index="<%= i %>" 
+         aria-label="عرض الصورة <%= i+1 %> من <%= __total %>">
+        <img
+          src="<%= cldSize(src, isHero ? 900 : 600) %>"
+          srcset="<%= cldSize(src, 400) %> 400w, <%= cldSize(src, 800) %> 800w, <%= cldSize(src, 1200) %> 1200w"
+          sizes="(max-width:640px) <%= isHero ? '85vw' : '22vw' %>, (max-width:1024px) <%= isHero ? '65vw' : '20vw' %>, 720px"
+
+          alt="صورة مزرعة"
+          loading="lazy" decoding="async" fetchpriority="low"
+          onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
+        <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
+        <% if (i === __limit - 1 && __more > 0) { %>
+          <span class="g-more" aria-hidden="true">+<%= __more %></span>
+          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
+        <% } %>
+      </a>
+    <% }) %>
+  </div>
+</section>
 
 
       <!-- Quick info (icons) -->
@@ -753,44 +652,6 @@ if (/^https?:\/\//i.test(u)) {
   <% } %>
 </section>
 <% } %>
-<section id="gallery" class="card" aria-labelledby="gallery-title" style="padding:1rem">
-  <h2 id="gallery-title" style="margin:0 0 .75rem">المعرض</h2>
-
-  <%
-    // حضّر الصور + المنطق الخاص بعدّاد الزيادة
-    const __photosAll = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg'];
-    const __total     = __photosAll.length;
-    const __limit     = 4;                       // نعرض 4 فقط
-    const __photos    = __photosAll.slice(0, __limit);
-    const __more      = Math.max(0, __total - __limit);
-  %>
-
-  <div class="gallery-grid" id="galleryMain" style="--gg:8px">
-    <% __photos.forEach(function(src, i){ 
-         const full = assetPath(src);
-         const isHero = (i===0);
-    %>
-      <a class="g-item <%= isHero ? 'is-hero' : 'is-rect' %>" 
-         href="<%= full %>" 
-         data-index="<%= i %>" 
-         aria-label="عرض الصورة <%= i+1 %> من <%= __total %>">
-        <img
-          src="<%= cldSize(src, isHero ? 900 : 600) %>"
-          srcset="<%= cldSize(src, 400) %> 400w, <%= cldSize(src, 800) %> 800w, <%= cldSize(src, 1200) %> 1200w"
-          sizes="(max-width:640px) <%= isHero ? '85vw' : '22vw' %>, (max-width:1024px) <%= isHero ? '65vw' : '20vw' %>, 720px"
-
-          alt="صورة مزرعة"
-          loading="lazy" decoding="async" fetchpriority="low"
-          onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
-        <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
-        <% if (i === __limit - 1 && __more > 0) { %>
-          <span class="g-more" aria-hidden="true">+<%= __more %></span>
-          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
-        <% } %>
-      </a>
-    <% }) %>
-  </div>
-</section>
 
 
       <!-- فيديو (اختياري) -->
@@ -908,16 +769,6 @@ if (/^https?:\/\//i.test(u)) {
 <% } /* end if farm */ %>
 
 <%- include('partials/footer') %>
-<!-- ===== Lightbox / Fullscreen Gallery ===== -->
-<div id="lb" class="lb" hidden aria-hidden="true">
-  <button class="lb-close" aria-label="إغلاق">×</button>
-  <div class="swiper lb-swiper">
-    <div class="swiper-wrapper" id="lbWrapper"></div>
-    <div class="swiper-button-prev" aria-label="السابق"></div>
-    <div class="swiper-button-next" aria-label="التالي"></div>
-    <div class="swiper-pagination"></div>
-  </div>
-</div>
 
 <!-- Scripts -->
 <% if (_needsSwiper) { %>
@@ -1040,125 +891,6 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 });
-</script>
-<script>
-(function(){
-  // التعرّف على صور المعرض (حسب بنية sellfarmsingle الحالية)
-  const grid = document.getElementById('galleryMain');
-  if(!grid) return;
-
-  const anchors = Array.from(grid.querySelectorAll('a.g-item'));
-  if(!anchors.length) return;
-
-  // مصادر الصور بالحجم الكامل من href (نفس ما تعرضه بالبطاقة)
-  const sources = anchors.map(a => a.getAttribute('href'));
-
-  // عناصر اللايت بوكس
-  const lb     = document.getElementById('lb');
-  const lbWrap = document.getElementById('lbWrapper');
-  const closeB = lb.querySelector('.lb-close');
-  let   lbSwiper = null;
-
-  // تحميل Swiper عند الحاجة
-  function ensureSwiper(cb){
-    if (window.Swiper) return cb();
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css';
-    document.head.appendChild(link);
-
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js';
-    s.onload = cb;
-    document.head.appendChild(s);
-  }
-
-  // بناء الشرائح مرة واحدة
-  let slidesBuilt = false;
-  function buildSlides(){
-    if (slidesBuilt) return;
-    lbWrap.innerHTML = sources.map(src => (
-      `<div class="swiper-slide"><img src="${src}" alt=""></div>`
-    )).join('');
-    slidesBuilt = true;
-  }
-
-  // فتح اللايت بوكس على صورة معينة
-  function openLB(index){
-    ensureSwiper(function(){
-      buildSlides();
-      lb.hidden = false;
-      lb.setAttribute('aria-hidden','false');
-
-      if (lbSwiper){ try{ lbSwiper.destroy(true,true); }catch(_){ } }
-      lbSwiper = new Swiper('.lb-swiper', {
-        initialSlide: index || 0,
-        loop: (sources.length > 1),
-        centeredSlides: true,
-        slidesPerView: 1,
-        spaceBetween: 10,
-        pagination: { el: '.lb-swiper .swiper-pagination', clickable: true },
-        navigation: { nextEl: '.lb-swiper .swiper-button-next', prevEl: '.lb-swiper .swiper-button-prev' },
-        keyboard:   { enabled: true }
-      });
-
-      document.addEventListener('keydown', onKey);
-      lb.addEventListener('click', onBackdrop, { once: true });
-    });
-  }
-
-  function closeLB(){
-    if (lbSwiper){ try{ lbSwiper.destroy(true,true); }catch(_){ } lbSwiper = null; }
-    lb.hidden = true;
-    lb.setAttribute('aria-hidden','true');
-    document.removeEventListener('keydown', onKey);
-  }
-
-  function onKey(e){ if (e.key === 'Escape') closeLB(); }
-
-  function onBackdrop(e){
-    const inside = e.target.closest('.lb-swiper');
-    const isClose = e.target.closest('.lb-close');
-    if (!inside || isClose) closeLB();
-  }
-
-  // ربط النقر على كل صورة (نمنع الذهاب للرابط ونفتح اللايت بوكس)
-  anchors.forEach((a, i) => {
-    const img = a.querySelector('img');
-    if (img) img.style.cursor = 'zoom-in';
-    a.addEventListener('click', function(ev){
-      ev.preventDefault();
-      openLB(i);
-    });
-  });
-
-  // زر الإغلاق
-  closeB.addEventListener('click', closeLB);
-})();
-</script>
-<script>
-/* Reveal on view for quick details + features */
-(function(){
-  var targets = [
-    ...document.querySelectorAll('.infogrid .info-item'),
-    ...document.querySelectorAll('#features .features__block'),
-    ...document.querySelectorAll('#features .chip')
-  ];
-  if (!targets.length) return;
-
-  targets.forEach(function(el){ el.classList.add('reveal'); });
-
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    });
-  }, { rootMargin: '80px 0px' });
-
-  targets.forEach(function(el){ io.observe(el); });
-})();
 </script>
 
 <!-- شريط الإجراءات السفلي للموبايل -->

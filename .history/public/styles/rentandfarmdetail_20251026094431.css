@@ -580,7 +580,3 @@ input:focus, select:focus{outline:none;border-color:transparent;box-shadow:var(-
   .promo-banner .promo-media{ height:200px }
   .promo-banner .promo-body{ align-items:center; text-align:center }
 }
-/* Mobile nav: hide on desktop, show only on mobile for safety */
-@media (min-width: 768px){
-  .nvx-tabbar{ display:none !important; visibility:hidden !important; }
-}
