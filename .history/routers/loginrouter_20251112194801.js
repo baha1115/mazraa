@@ -146,9 +146,8 @@ function validate(schema, view, viewData = {}, tabName) {
     // تخصيص لكل حقل مهم
     if (field === 'email')   return (t==='string.email') ? 'أدخل بريدًا إلكترونيًا صحيحًا' : baseByType[t] || detail.message;
     if (field === 'phone')   return (t==='string.pattern.base')
-  ? 'رقم الهاتف يجب أن يبدأ بـ +963 ويتبعه 9 أرقام (مثل +9639XXXXXXXX)'
-  : baseByType[t] || detail.message;
-
+                                ? 'أدخل رقم هاتف صحيحًا مثل +9639xxxxxxx'
+                                : baseByType[t] || detail.message;
     if (field === 'password')return (t==='string.min')
                                 ? `كلمة المرور يجب ألا تقل عن ${c.limit} أحرف`
                                 : baseByType[t] || detail.message;

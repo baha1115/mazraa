@@ -146,9 +146,8 @@ function validate(schema, view, viewData = {}, tabName) {
     // تخصيص لكل حقل مهم
     if (field === 'email')   return (t==='string.email') ? 'أدخل بريدًا إلكترونيًا صحيحًا' : baseByType[t] || detail.message;
     if (field === 'phone')   return (t==='string.pattern.base')
-  ? 'رقم الهاتف يجب أن يبدأ بـ +963 ويتبعه 9 أرقام (مثل +9639XXXXXXXX)'
-  : baseByType[t] || detail.message;
-
+                                ? 'أدخل رقم هاتف صحيحًا مثل +9639xxxxxxx'
+                                : baseByType[t] || detail.message;
     if (field === 'password')return (t==='string.min')
                                 ? `كلمة المرور يجب ألا تقل عن ${c.limit} أحرف`
                                 : baseByType[t] || detail.message;
@@ -264,16 +263,6 @@ router.post('/signup', validate(signupSchema, 'signup', {}, 'signup'), async (re
 
     const normPhone = normalizePhone(phone);
     const lowerEmail = String(email || '').toLowerCase();
-// داخل POST /signup قبل Promise.all([...]) مباشرة
-if (!normPhone) {
-  return res.status(400).render('signup', {
-    tab: 'signup',
-    errors: { phone: 'رقم الهاتف يجب أن يكون بصيغة دولية: +963 متبوعًا بتسعة أرقام (مثل +9639XXXXXXXX)' },
-    old: req.body,
-    msg: 'تحقق من رقم الهاتف',
-    type: 'error',
-  });
-}
 
     // ابحث منفصلًا لتعرف أيهما متكرر فعلاً
     const [byEmail, byPhone] = await Promise.all([

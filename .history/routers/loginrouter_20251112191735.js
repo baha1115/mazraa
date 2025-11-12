@@ -88,33 +88,16 @@ async function contractorPlanLimit(plan){
 }
 // ========= Helpers =========
 // --- normalize phone helper (أعلى الملف) ---
-// --- normalize phone helper (سوريا: +963 ثم 9 أرقام) ---
 function normalizePhone(raw = '') {
-  if (raw == null) return '';
   let s = String(raw).trim();
-
-  // أزل الفراغات وكل شيء غير الرقم + علامة +
   s = s.replace(/\s+/g, '');
-  // أمثلة مقبولة محلياً نحولها إلى الصيغة الدولية:
-  // 09XXXXXXXXX  -> +9639XXXXXXXX
-  // 9XXXXXXXX    -> +9639XXXXXXXX  (لو نسي الصفر)
-  // 009639XXXXXXXX -> +9639XXXXXXXX
-  // 9639XXXXXXXX  -> +9639XXXXXXXX
-  if (/^0\d{9}$/.test(s)) {
-    // يبدأ بـ 0 وطوله 10
-    s = '+963' + s.slice(1); // احذف 0
-  } else if (/^\+?963\d{9}$/.test(s)) {
-    // 963 + تسعة أرقام، مع أو بدون +
-    s = (s.startsWith('+') ? '' : '+') + s.replace(/^(\+?)/,'');
-  } else if (/^00963\d{9}$/.test(s)) {
-    s = '+' + s.slice(2);
+  if (s.startsWith('+')) {
+    s = '+' + s.slice(1).replace(/\D/g, '');
+  } else {
+    s = s.replace(/\D/g, '');
   }
-
-  // بعد التحويل يجب أن يطابق بالضبط +963 ثم 9 أرقام
-  if (!/^\+963\d{9}$/.test(s)) return '';
-  return s;
+  return s.length >= 6 ? s : '';
 }
-
 
 function isAdminEmail(email) {
   const list = (process.env.ADMIN_EMAILS || '')
@@ -146,9 +129,8 @@ function validate(schema, view, viewData = {}, tabName) {
     // تخصيص لكل حقل مهم
     if (field === 'email')   return (t==='string.email') ? 'أدخل بريدًا إلكترونيًا صحيحًا' : baseByType[t] || detail.message;
     if (field === 'phone')   return (t==='string.pattern.base')
-  ? 'رقم الهاتف يجب أن يبدأ بـ +963 ويتبعه 9 أرقام (مثل +9639XXXXXXXX)'
-  : baseByType[t] || detail.message;
-
+                                ? 'أدخل رقم هاتف صحيحًا مثل +9639xxxxxxx'
+                                : baseByType[t] || detail.message;
     if (field === 'password')return (t==='string.min')
                                 ? `كلمة المرور يجب ألا تقل عن ${c.limit} أحرف`
                                 : baseByType[t] || detail.message;
@@ -264,16 +246,6 @@ router.post('/signup', validate(signupSchema, 'signup', {}, 'signup'), async (re
 
     const normPhone = normalizePhone(phone);
     const lowerEmail = String(email || '').toLowerCase();
-// داخل POST /signup قبل Promise.all([...]) مباشرة
-if (!normPhone) {
-  return res.status(400).render('signup', {
-    tab: 'signup',
-    errors: { phone: 'رقم الهاتف يجب أن يكون بصيغة دولية: +963 متبوعًا بتسعة أرقام (مثل +9639XXXXXXXX)' },
-    old: req.body,
-    msg: 'تحقق من رقم الهاتف',
-    type: 'error',
-  });
-}
 
     // ابحث منفصلًا لتعرف أيهما متكرر فعلاً
     const [byEmail, byPhone] = await Promise.all([
