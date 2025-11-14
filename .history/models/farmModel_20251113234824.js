@@ -50,6 +50,7 @@ deletedAt: { type: Date, default: null }  // حذف ناعم بعد انتهاء
 FarmSchema.index({ rejectedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
 // فهارس أداء للقوائم/الفرز/التصفية:
 FarmSchema.index({ kind: 1, status: 1, isSuspended: 1, deletedAt: 1, createdAt: -1 });
+FarmSchema.index({ ownerTier: 1, createdAt: -1 });
 
 // لو تستخدم تمييز مالك VIP داخل وثيقة المزرعة (denormalized):
 FarmSchema.index({ ownerTier: 1, createdAt: -1 });

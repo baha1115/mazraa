@@ -209,7 +209,6 @@ router.get('/owner/lands', requireAuth, async (req, res) => {
 
 // DELETE /owner/lands/:id — حذف أرض يملكها المستخدم
 router.delete('/owner/lands/:id', requireAuth, async (req, res) => {
-  
   try {
     const r = await Farm.findOneAndDelete({ _id: req.params.id, owner: req.session.user._id });
     if (!r) return res.status(404).json({ ok:false, msg:'Not found' });

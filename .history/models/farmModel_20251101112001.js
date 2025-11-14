@@ -7,7 +7,6 @@ const OwnerInfoSchema = new mongoose.Schema({
 }, {_id:false});
 const FarmSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // أو اتركه كما عندك
-  ownerTier: { type: String, enum: ['Basic','Premium','VIP'], default: 'Basic' },
    ownerInfo: OwnerInfoSchema,
 currency: { type: String, enum: ['USD','SYP'], default: 'USD' }
 ,
@@ -48,13 +47,5 @@ deletedAt: { type: Date, default: null }  // حذف ناعم بعد انتهاء
 // فهرس TTL: يحذف الوثائق بعد 7 أيام من قيمة rejectedAt.
 // ملاحظة: TTL يعمل فقط عندما تكون rejectedAt != null
 FarmSchema.index({ rejectedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
-// فهارس أداء للقوائم/الفرز/التصفية:
-FarmSchema.index({ kind: 1, status: 1, isSuspended: 1, deletedAt: 1, createdAt: -1 });
-
-// لو تستخدم تمييز مالك VIP داخل وثيقة المزرعة (denormalized):
-FarmSchema.index({ ownerTier: 1, createdAt: -1 });
-
-// في حال التصفية بالمدينة/المنطقة:
-FarmSchema.index({ city: 1, area: 1 });
 
 module.exports = mongoose.model('Farm', FarmSchema);

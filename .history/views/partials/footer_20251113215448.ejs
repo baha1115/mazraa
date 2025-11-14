@@ -203,64 +203,6 @@
   .farm-footer .footer-links .c-open .c-ico{ transform:rotate(180deg); }
   .farm-footer .footer-links .c-open .c-body{ max-height:320px; padding-bottom:10px; }
 }
-/* ==== Footer quick-fix: keep site colors + make it shorter ==== */
-
-/* 1) ارجاع الألوان لألوان الموقع (لا تفرض خلفية داكنة) */
-.farm-footer{
-  background: transparent !important;  /* خذ لون خلفية الصفحة */
-  color: inherit !important;            /* خذ لون النص الافتراضي */
-  padding: 16px 0 10px !important;      /* تقليل الارتفاع العام */
-  border-top: 1px solid #e5e7eb;        /* خط علوي خفيف فقط */
-}
-.farm-footer a{ color: inherit !important; }
-.farm-footer a:hover{ color: inherit !important; text-decoration: underline; }
-
-/* لا تعمل بطاقة داكنة لبلوك الشعار */
-.farm-footer .footer-brand{
-  background: transparent !important;
-  border: 0 !important;
-  padding: 8px 0 !important;
-}
-.farm-footer .logo-mark{
-  background: transparent !important;   /* أزل لون المربّع */
-  color: inherit !important;
-}
-
-/* 2) تقصير النص والوصف */
-.farm-footer .brand-desc{
-  margin: 2px 0 0 !important;
-  color: inherit !important;
-  display: -webkit-box;                 /* سطرين فقط */
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* 3) روابط الفوتر: أعمدة أقل ومسافات أصغر */
-.farm-footer .footer-top{ gap: 10px !important; padding-inline: 12px !important; }
-.farm-footer .footer-links{ gap: 8px 16px !important; }
-.farm-footer .footer-title{ margin: 0 0 4px !important; font-size: 14px !important; }
-.farm-footer ul{ gap: 4px !important; }
-.farm-footer ul li a{ padding: 2px 0 !important; }
-
-/* 4) القسم السفلي أصغر */
-.farm-footer .footer-bottom{
-  padding: 8px 12px 0 !important;
-  gap: 6px !important;
-}
-.farm-footer .s-link{ width: 34px !important; height: 34px !important; }
-.farm-footer .copyright, .farm-footer .mini-links{ font-size: 12px !important; }
-
-/* 5) موبايل: عمودان فقط وروابط قابلة للطي افتراضياً لتقصير الطول */
-@media (max-width:640px){
-  .farm-footer .footer-links{
-    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
-  }
-  /* ابدأ مطوي */
-  .farm-footer .footer-links .c-body{ max-height: 0 !important; padding-bottom: 0 !important; }
-  .farm-footer .footer-links .collapsible:not(.c-open) .c-ico{ transform: rotate(0) !important; }
-}
-.farm-footer{ background: #f8fafc !important; }
 
 </style>
 

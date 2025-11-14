@@ -7,7 +7,6 @@ const OwnerInfoSchema = new mongoose.Schema({
 }, {_id:false});
 const FarmSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // أو اتركه كما عندك
-  ownerTier: { type: String, enum: ['Basic','Premium','VIP'], default: 'Basic' },
    ownerInfo: OwnerInfoSchema,
 currency: { type: String, enum: ['USD','SYP'], default: 'USD' }
 ,

@@ -206,6 +206,22 @@ router.get('/owner/lands', requireAuth, async (req, res) => {
     return res.status(500).json({ ok:false, msg:'Server error' });
   }
 });
+// ownerRouter.js
+router.delete('/owner/lands/:id', requireAuth, async (req, res) => {
+  try {
+    const isAdmin = req.session?.user?.role === 'admin';
+    const q = isAdmin
+      ? { _id: req.params.id } // الأدمن يقدر يحذف بأيّ حالة
+      : { _id: req.params.id, owner: req.session.user._id }; // المالك فقط
+
+    const r = await Farm.findOneAndDelete(q);
+    if (!r) return res.status(404).json({ ok:false, msg:'Not found' });
+    return res.json({ ok:true, msg:'Deleted' });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok:false, msg:'Server error' });
+  }
+});
 
 // DELETE /owner/lands/:id — حذف أرض يملكها المستخدم
 router.delete('/owner/lands/:id', requireAuth, async (req, res) => {
