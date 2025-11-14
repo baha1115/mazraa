@@ -143,25 +143,22 @@
                 <!-- الهاتف (مطلوب) -->
               <div class="field">
                 <label class="label" for="phone">رقم الهاتف</label>
-              <input class="input" id="phone" type="tel" name="phone"
-  dir="ltr" inputmode="numeric" pattern="^\+963\d{9}$"
-  placeholder="+9639xxxxxxx" value="<%= oldData.phone || '' %>" required
-  oninput="
-    // أرقام عربية → إنجليزية، وإزالة غير المسموح
-    this.value = this.value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d+]/g,'');
-    // تحويلات شائعة إلى +963 + محلي
-    let v=this.value;
-    if (/^00963/.test(v)) v='+'+v.slice(2);
-    if (/^963/.test(v))   v='+'+v;
-    if (/^0\d{9}$/.test(v)) v='+963'+v.slice(1);
-    // قصّ المحلي إلى 9 أرقام كحد أقصى
-    if (/^\+?963/.test(v)) {
-      const local = v.replace(/^\+?963/,'').replace(/\D/g,'').slice(0,9);
-      v = '+963'+local;
-    }
-    this.value = v;
-  "
+                <input class="input" id="phone" type="tel" name="phone"
+       dir="ltr" inputmode="numeric" pattern="^\+963\d{9}$"
+       placeholder="+9639xxxxxxx"
+       value="<%= oldData.phone || '' %>" required
+       oninput="
+         // تحويل الأرقام العربية إلى إنجليزية وإزالة غير الأرقام و+
+         this.value = this.value
+           .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+           .replace(/[^\d+]/g,'');
+         // تحويـل الصيغ الشائعة إلى +9639XXXXXXXX
+         if (/^0\d{9}$/.test(this.value)) { this.value = '+963' + this.value.slice(1); }
+         else if (/^00963\d{9}$/.test(this.value)) { this.value = '+' + this.value.slice(2); }
+         else if (/^963\d{9}$/.test(this.value)) { this.value = '+' + this.value; }
+       "
 />
+<p class="form-note">الصيغة الصحيحة: <b>+963</b> ثم 9 أرقام (مثال: <b>+9639XXXXXXXX</b>).</p>
 
                 <% if (err.phone) { %><p class="error"><%= err.phone %></p><% } %>
               </div>

@@ -90,31 +90,32 @@ async function contractorPlanLimit(plan){
 // --- normalize phone helper (أعلى الملف) ---
 // --- normalize phone helper (سوريا: +963 ثم 9 أرقام) ---
 // --- normalize phone helper (سوريا: +963 ثم 9 أرقام) ---
-// تطبيع رقم سوري إلى +963 ثم 9 أرقام بالضبط
-function normalizePhone(raw='') {
+function normalizePhone(raw = '') {
   if (raw == null) return '';
   let s = String(raw).trim();
 
-  // حوّل الأرقام العربية
+  // 1) حوّل الأرقام العربية إلى إنجليزية
   const arab = '٠١٢٣٤٥٦٧٨٩';
   s = s.replace(/[٠-٩]/g, d => String(arab.indexOf(d)));
 
-  // أبقِ الأرقام و+
+  // 2) أزِل كل شيء غير الأرقام وعلامة +
   s = s.replace(/[^\d+]/g, '');
 
-  // أزل البادئات الشائعة للحصول على الجزء المحلي فقط
-  // أمثلة: +9639xxxxxxx / 009639xxxxxxx / 9639xxxxxxx / 09xxxxxxx / 9xxxxxxx
-  if (/^\+?963/.test(s)) s = s.replace(/^\+?963/, '');
-  else if (/^00963/.test(s)) s = s.replace(/^00963/, '');
-  else if (/^0\d{9}$/.test(s)) s = s.slice(1); // 09xxxxxxxx → 9xxxxxxxx
+  // 3) حالات مألوفة نحو الصيغة الدولية: +9639XXXXXXXX
+  if (/^0\d{9}$/.test(s)) {
+    // يبدأ بـ 0 وطوله 10 (مثل 09XXXXXXXX)
+    s = '+963' + s.slice(1);
+  } else if (/^00963\d{9}$/.test(s)) {
+    s = '+' + s.slice(2);
+  } else if (/^\+?963\d{9}$/.test(s)) {
+    s = (s.startsWith('+') ? '' : '+') + s.replace(/^\+?/, '');
+  }
 
-  // الآن s هو المحلي، قصّه إلى 9 أرقام كحد أقصى
-  s = s.replace(/\D/g,'').slice(0, 9);
-
-  // تحقق النهائي
-  if (!/^\d{9}$/.test(s)) return '';
-  return `+963${s}`;
+  // 4) بعد التحويل يجب أن تكون الصيغة +963 ثم 9 أرقام (مثل +9639XXXXXXXX)
+  if (!/^\+963\d{9}$/.test(s)) return '';
+  return s;
 }
+
 
 function isAdminEmail(email) {
   const list = (process.env.ADMIN_EMAILS || '')
@@ -166,21 +167,6 @@ function validate(schema, view, viewData = {}, tabName) {
   }
 
   return (req, res, next) => {
-  // قبل schema.validate — طَبِّع الهاتف/المعرّف
-if (req.body && typeof req.body.phone !== 'undefined') {
-  const n = normalizePhone(req.body.phone);
-  req.body.phone = n;              // اكتب المطبع أو '' لو فشل
-  console.log('📞 normalized phone =>', n); // يجب أن تظهر في الطرفية
-}
-if (req.body && typeof req.body.identifier !== 'undefined') {
-  const id = String(req.body.identifier || '').trim();
-  const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id);
-  if (!looksLikeEmail) {
-    req.body.identifier = normalizePhone(id); // إمّا +963xxxxxxxxx أو ''
-  }
-}
-
-
     const { value, error } = schema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true,

@@ -166,20 +166,21 @@ function validate(schema, view, viewData = {}, tabName) {
   }
 
   return (req, res, next) => {
-  // قبل schema.validate — طَبِّع الهاتف/المعرّف
+    // ✳️ قبل schema.validate — طَبِّع الهاتف/المعرّف إلى صيغة +9639XXXXXXXX
 if (req.body && typeof req.body.phone !== 'undefined') {
   const n = normalizePhone(req.body.phone);
-  req.body.phone = n;              // اكتب المطبع أو '' لو فشل
-  console.log('📞 normalized phone =>', n); // يجب أن تظهر في الطرفية
+  console.log('📞 normalized phone =>', n);
+  if (n) req.body.phone = n; // لا نستبدل إلا إذا نجح التطبيع
 }
+// بعض النماذج تستعمل identifier (تسجيل الدخول)
 if (req.body && typeof req.body.identifier !== 'undefined') {
   const id = String(req.body.identifier || '').trim();
   const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id);
   if (!looksLikeEmail) {
-    req.body.identifier = normalizePhone(id); // إمّا +963xxxxxxxxx أو ''
+    const n = normalizePhone(id);
+    if (n) req.body.identifier = n;
   }
 }
-
 
     const { value, error } = schema.validate(req.body, {
       abortEarly: false,

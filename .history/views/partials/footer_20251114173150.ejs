@@ -30,7 +30,7 @@
       </div>
 
       <!-- عن المنصة (يحتوي كل عناوين صفحة about) -->
-      <div class="about-col" >
+      <div class="browse-col" >
         <h3 class="footer-title">عن المنصة</h3>
         <ul>
           <li><a href="/about#about">من نحن</a></li>
@@ -56,7 +56,7 @@
 
 <!-- تواصل (عمود مستقل) -->
 <% if (hasContact) { %>
-<div class="contact-col">
+<div class="browse-col">
   <h3 class="footer-title">تواصل</h3>
   <ul class="contact">
     <% if (f.email) { %><li><a href="mailto:<%= f.email %>"><%= f.email %></a></li><% } %>
@@ -272,28 +272,6 @@
   .farm-footer .footer-links .browse-col  { grid-column: 1; }
   .farm-footer .footer-links .contact-col { grid-column: 1; } /* تحت تصفح */
   .farm-footer .footer-links .about-col   { grid-column: 2; } /* العمود الثاني */
-}
-/* ترتيب صريح على الموبايل: 
-   الصف 1: [ تصفّح | عن المنصّة ]
-   الصف 2: [ تواصل  | عن المنصّة ] */
-@media (max-width:640px){
-  .farm-footer .footer-links{
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    grid-template-areas:
-      "browse about"
-      "contact about";
-    gap: 8px 16px !important;
-    align-items: start;
-  }
-  .farm-footer .browse-col  { grid-area: browse !important; }
-  .farm-footer .contact-col { grid-area: contact !important; }
-  .farm-footer .about-col   { grid-area: about   !important; }
-
-  /* تقليل الفراغات لمظهر أقصر */
-  .farm-footer .footer-title{ margin-bottom:4px !important; }
-  .farm-footer ul{ gap:4px !important; }
-  .farm-footer ul li a{ padding:2px 0 !important; }
 }
 
 </style>
