@@ -70,73 +70,52 @@ const _enabled = !!_doc.enabled && _items.length > 0;
     </div>
   </div>
 </section>
+
 <script>
-(function initPromoSwiper(){
-  // 1) اعثر على الجذر الصحيح لهذا السويبر فقط
-  var root, swiperEl;
-  try {
-    // أولًا الأقرب إلى هذا السكربت
-    root = document.currentScript.closest('.promo-swiper')
-        || document.currentScript.closest('.promoTop')
-        || document.currentScript.closest('.section');
-  } catch (_) {}
-  // لو الأقرب غير متاح، جرّب أول سويبر بالصفحة
-  if (!root) root = document.querySelector('.promo-swiper')
-            || document.querySelector('.promoTop')
-            || document.querySelector('.section');
+(function(){
+  // لازم مكتبة Swiper تكون محمّلة قبل هذا السكربت
+  if (!window.Swiper) return;
+
+  // نحدد هذا السويبر تحديداً (بدون الاعتماد على IDs ثابتة)
+  const root = (function(){
+    // أقرب .promoTop لهذا السكربت (لو عندك عدة سويبرز في الصفحة)
+    try { return document.currentScript.closest('.promoTop'); } catch(_) {}
+    return document.querySelector('.promoTop');
+  })();
   if (!root) return;
 
-  // لو الجذر هو نفس عنصر السويبر نفسه
-  swiperEl = root.classList.contains('promo-swiper')
-           ? root
-           : root.querySelector('.promo-swiper') || root.querySelector('.swiper');
-  if (!swiperEl) return;
+  const elSwiper = root.querySelector('.swiper');
+  if (!elSwiper) return;
 
-  // 2) انتظر مكتبة Swiper لو لم تكن جاهزة بعد
-  function ready(fn){ if (document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
-  function whenSwiper(cb){
-    if (window.Swiper) return cb();
-    var tries = 0; (function tick(){
-      if (window.Swiper) return cb();
-      if (++tries > 50) return;          // ~5 ثواني
-      setTimeout(tick, 100);
-    })();
+  const slidesCount = root.querySelectorAll('.swiper-slide').length;
+  const hasMany     = slidesCount > 1;
+
+  // إن ما كان فيه غير سلايد واحدة: اخفِ الأسهم والنقاط
+  if (!hasMany) {
+    root.querySelectorAll('.swiper-button-prev,.swiper-button-next,.swiper-pagination')
+        .forEach(el => { if (el) el.style.display = 'none'; });
   }
 
-  // 3) شغّل بعد الجاهزية
-  ready(function(){
-    whenSwiper(function(){
-      var slides = swiperEl.querySelectorAll('.swiper-slide');
-      var hasMany = slides.length > 1;
+  // تهيئة Swiper بدون ما نلمس ستايلك القديم
+  const opts = {
+    slidesPerView: 1,
+    spaceBetween: 8,
+    speed: 500,
+    loop: hasMany,
+    autoplay: hasMany ? { delay: 3500, disableOnInteraction: false } : false
+  };
 
-      // لو شريحة واحدة، أخفِ الأسهم/النقاط (لا نغيّر CSSك العام)
-      if (!hasMany){
-        var h = swiperEl.querySelectorAll('.swiper-button-prev,.swiper-button-next,.swiper-pagination');
-        h.forEach(function(el){ if (el) el.style.display = 'none'; });
-      }
+  if (hasMany) {
+    // اربط عناصر النافيجيشن/النقاط الخاصة بهذا السويبر فقط
+    const nextEl = root.querySelector('.swiper-button-next');
+    const prevEl = root.querySelector('.swiper-button-prev');
+    const pagEl  = root.querySelector('.swiper-pagination');
+    if (nextEl && prevEl) opts.navigation = { nextEl, prevEl };
+    if (pagEl)            opts.pagination = { el: pagEl, clickable: true };
+  }
 
-      var opts = {
-        slidesPerView: 1,
-        spaceBetween: 8,
-        speed: 500,
-        loop: hasMany,
-        autoplay: hasMany ? { delay: 3500, disableOnInteraction: false } : false,
-        observer: true, observeParents: true, watchOverflow: true
-      };
-
-      if (hasMany){
-        var nextEl = swiperEl.querySelector('.swiper-button-next');
-        var prevEl = swiperEl.querySelector('.swiper-button-prev');
-        var pagEl  = swiperEl.querySelector('.swiper-pagination');
-        if (nextEl && prevEl) opts.navigation = { nextEl: nextEl, prevEl: prevEl };
-        if (pagEl)            opts.pagination = { el: pagEl, clickable: true };
-      }
-
-      new Swiper(swiperEl, opts);
-    });
-  });
+  new Swiper(elSwiper, opts);
 })();
 </script>
-
 
 <% } %>

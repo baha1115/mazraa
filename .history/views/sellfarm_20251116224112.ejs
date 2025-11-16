@@ -784,66 +784,6 @@ async function init(){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script>
-  (function(){
-    const gate     = document.getElementById('location-gate');
-    const gateCity = document.getElementById('gate-city');
-    const gateArea = document.getElementById('gate-area');
-    const btnApply = document.getElementById('gate-apply');
-
-    // فلاترك الحالية (نفس الحقول الموجودة في الفلاتر)
-    const filterCity = document.getElementById('city');
-    const filterArea = document.getElementById('area');
-
-    // helpers
-    function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
-    function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
-
-    // أزرار الإغلاق (خارج/×/تخطّي)
-    document.addEventListener('click', (e)=>{
-      const t = e.target;
-      if (t && t.dataset && t.dataset.close){ closeGate(); }
-      if (t && t.classList && t.classList.contains('gate-backdrop')){ closeGate(); }
-    });
-
-    // تطبيق الاختيار ↔️ تعبئة الفلاتر ↔️ ترشيح
-    if (btnApply){
-      btnApply.addEventListener('click', ()=>{
-        const c = (gateCity?.value || '').trim();
-        const a = (gateArea?.value || '').trim();
-
-        if (filterCity) filterCity.value = c;
-        if (filterArea) filterArea.value = a;
-
-        // علامة حتى لا نكرر السؤال في نفس الجلسة
-        try { sessionStorage.setItem('saleLocationChosen','1'); } catch(_){}
-
-        // شغّل الفلاتر وأغلق
-        try { window.applyFilters && window.applyFilters(); } catch(_){}
-        closeGate();
-
-        // مرّن المستخدم للنتائج
-        const sec = document.getElementById('results');
-        if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
-      });
-    }
-
-    // منطق الظهور: مرة واحدة فقط في الجلسة + فقط إن لم يحدّد المستخدم شيئًا
-    function shouldOpen(){
-      try { if (sessionStorage.getItem('saleLocationChosen')==='1') return false; } catch(_){}
-      const url = new URL(location.href);
-      const hasQ = url.searchParams.get('city') || url.searchParams.get('area');
-      // افتح إذا لا توجد معايير مسبقة
-      return !hasQ;
-    }
-
-    // افتح بعد تحميل الصفحة بقليل (حتى لا يتعارض مع SSR)
-    window.addEventListener('DOMContentLoaded', ()=>{
-      if (shouldOpen()) openGate();
-    });
-  })();
-</script>
-
 <%- include('partials/mobile-nav', { 
   activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,

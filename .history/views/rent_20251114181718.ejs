@@ -223,37 +223,6 @@
   #filters .filters-form{ padding-top: 0 !important; }
   #filters .filters-grid{ margin-top: 0 !important; }
 }
-/* ===== Rent Location Gate ===== */
-#rent-location-gate{position:fixed;inset:0;display:none;z-index:1100}
-#rent-location-gate[aria-hidden="false"]{display:block}
-#rent-location-gate .gate-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px)}
-#rent-location-gate .gate-card{
-  position:relative; margin:6vh auto 0; max-width:560px; background:#fff; color:#0f172a;
-  border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.22); animation: gatePop .18s ease-out
-}
-#rent-location-gate .gate-close{position:absolute; inset-inline-end:8px; top:6px; width:36px;height:36px;
-  border:none;border-radius:10px;background:#f1f5f9;cursor:pointer;font-size:20px;line-height:1}
-#rent-location-gate h3{margin:.25rem 0 .35rem; font-size:1.25rem; font-weight:900}
-#rent-location-gate .gate-note{margin:0 0 .6rem; color:#64748b; font-size:.95rem}
-#rent-location-gate .gate-fields{display:grid; gap:10px; margin:.5rem 0 .8rem}
-#rent-location-gate .gate-label{font-weight:700; font-size:.9rem}
-#rent-location-gate .gate-input{
-  width:100%; height:2.6rem; border:1px solid #e2e8f0; border-radius:12px; padding:.55rem .75rem; font-size:1rem
-}
-#rent-location-gate .gate-actions{display:flex; gap:8px; align-items:center; justify-content:flex-start}
-#rent-location-gate .gate-btn{
-  border:1px solid #e2e8f0; background:#fff; color:#0f172a; border-radius:12px; padding:.6rem .9rem; font-weight:800; cursor:pointer
-}
-#rent-location-gate .gate-primary{ background:#0f172a; color:#fff; border-color:#0f172a }
-@keyframes gatePop{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
-
-@media (max-width:640px){
-  #rent-location-gate .gate-card{ margin:10vh 12px 0; padding:14px }
-  #rent-location-gate h3{ font-size:1.1rem }
-  #rent-location-gate .gate-note{ font-size:.9rem }
-  #rent-location-gate .gate-input{ height:2.4rem; font-size:.95rem }
-  #rent-location-gate .gate-btn{ padding:.5rem .8rem; font-size:.95rem }
-}
 
   </style>
 </head>
@@ -272,44 +241,6 @@
 <%- include('partials/whatsapp') %>
 <%- include('partials/promo-swiper', { bannersDoc }) %>
 
-<!-- ===== بوابة اختيار الموقع (Rent) ===== -->
-<div id="rent-location-gate" aria-hidden="true">
-  <div class="gate-backdrop" data-close="1"></div>
-  <div class="gate-card" role="dialog" aria-modal="true" aria-labelledby="rent-gate-title">
-    <button class="gate-close" type="button" aria-label="إغلاق" data-close="1">×</button>
-    <h3 id="rent-gate-title">أين تريد البحث؟</h3>
-    <p class="gate-note">اختر المحافظة وأدخل المنطقة (اختياريًا) لنظهر لك نتائج أدقّ.</p>
-
-    <div class="gate-fields">
-      <label class="gate-label" for="rent-gate-city">المحافظة</label>
-      <select id="rent-gate-city" class="gate-input">
-        <option value="">اختر المحافظة…</option>
-        <option>دمشق</option>
-        <option>ريف دمشق</option>
-        <option>حلب</option>
-        <option>حمص</option>
-        <option>حماة</option>
-        <option>اللاذقية</option>
-        <option>طرطوس</option>
-        <option>إدلب</option>
-        <option>دير الزور</option>
-        <option>الحسكة</option>
-        <option>الرقة</option>
-        <option>درعا</option>
-        <option>القنيطرة</option>
-        <option>السويداء</option>
-      </select>
-
-      <label class="gate-label" for="rent-gate-area">المنطقة (اختياري)</label>
-      <input id="rent-gate-area" class="gate-input" type="text" placeholder="مثال: قدسيا، المزة،..." />
-    </div>
-
-    <div class="gate-actions">
-      <button id="rent-gate-apply" class="gate-btn gate-primary" type="button">اعرض النتائج</button>
-      <button class="gate-btn" type="button" data-close="1">تخطّي الآن</button>
-    </div>
-  </div>
-</div>
 
 <!-- الفلاتر -->
 <section id="filters" class="section filters" aria-labelledby="filters-title">
@@ -588,10 +519,7 @@ function initRentSwiper(){
     navigation: {
       nextEl: '.rent-swiper .swiper-button-next',
       prevEl: '.rent-swiper .swiper-button-prev'
-    },preloadImages: false,
-lazy: { loadPrevNext: true, loadPrevNextAmount: 2 },
-watchSlidesProgress: true,
-
+    },
     breakpoints: {
       /* هاتف: كرتين */
       0:    { slidesPerView: 2.02, spaceBetween: 10 },
@@ -614,10 +542,7 @@ function initVipSwiper(){
     navigation: {
       nextEl: '.vip-swiper .swiper-button-next',
       prevEl: '.vip-swiper .swiper-button-prev'
-    },preloadImages: false,
-lazy: { loadPrevNext: true, loadPrevNextAmount: 2 },
-watchSlidesProgress: true,
-
+    },
    breakpoints: {
       /* هاتف: كرتين */
       0:    { slidesPerView: 2.02, spaceBetween: 10 },
@@ -675,32 +600,24 @@ function applyFilters(){
 /* ======= بدء ======= */
 async function init(){
   try {
-    // دفعة أولى صغيرة للعرض السريع
-    const first = await fetchJSON('/api/farms/rent?limit=24');
-    allRent = Array.isArray(first) ? first : [];
+    const apiRent = await fetchJSON('/api/farms/rent'); // كل الإيجار المقبول
+allRent = Array.isArray(apiRent) ? apiRent : [];
 
-    // استبعاد VIP من العام
-    nonVipRent = allRent.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
-    renderRent(nonVipRent);
+// استبعاد VIP من السلايدر العام
+nonVipRent = allRent.filter(f => {
+  const tier = (f?.owner?.subscriptionTier) || f.ownerTier || 'Basic';
+  return tier !== 'VIP';
+});
 
-    // لاحقًا: أكمل البيانات وضعها بهدوء
-    requestIdleCallback(async () => {
-      try{
-        const rest = await fetchJSON('/api/farms/rent?limit=60');
-        allRent = rest;
-        nonVipRent = allRent.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
-        renderRent(nonVipRent);
-      }catch(_){}
-    });
+renderRent(nonVipRent);
+
   } catch(e){ console.warn('rent fetch error:', e); renderRent([]); }
 
-  // VIP بشكل منفصل (عدد أقل)
   try {
-    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1&limit=24');
+    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 
-  // ربط الفلاتر كما هو…
   if (form){
     form.addEventListener('submit', e=>{ e.preventDefault(); applyFilters(); });
     $$('#rent-filters input, #rent-filters select').forEach(inp=>{
@@ -713,62 +630,8 @@ async function init(){
   }
 }
 
-
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script>
-  (function(){
-    const gate       = document.getElementById('rent-location-gate');
-    const gateCity   = document.getElementById('rent-gate-city');
-    const gateArea   = document.getElementById('rent-gate-area');
-    const btnApply   = document.getElementById('rent-gate-apply');
-
-    // حقول الفلاتر الموجودة أصلًا في الصفحة:
-    const filterCity = document.getElementById('city');
-    const filterArea = document.getElementById('area');
-
-    function openGate(){ gate?.setAttribute('aria-hidden','false'); }
-    function closeGate(){ gate?.setAttribute('aria-hidden','true'); }
-
-    // إغلاق بالضغط على الخلفية/×/تخطّي
-    document.addEventListener('click', (e)=>{
-      const t = e.target;
-      if (t?.dataset?.close){ closeGate(); }
-      if (t?.classList?.contains('gate-backdrop')){ closeGate(); }
-    });
-
-    // تطبيق الاختيار ↔ تعبئة الفلاتر ↔ تشغيل الفلترة
-    btnApply?.addEventListener('click', ()=>{
-      const c = (gateCity?.value || '').trim();
-      const a = (gateArea?.value || '').trim();
-
-      if (filterCity) filterCity.value = c;
-      if (filterArea) filterArea.value = a;
-
-      try { sessionStorage.setItem('rentLocationChosen','1'); } catch(_){}
-
-      try { window.applyFilters && window.applyFilters(); } catch(_){}
-      closeGate();
-
-      // انزل بالمستخدم إلى النتائج
-      const sec = document.getElementById('results');
-      if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
-    });
-
-    // افتح البوابة مرة واحدة لكل جلسة، وفقط إذا لا يوجد city/area بالـURL
-    function shouldOpen(){
-      try { if (sessionStorage.getItem('rentLocationChosen')==='1') return false; } catch(_){}
-      const url = new URL(location.href);
-      const hasQ = url.searchParams.get('city') || url.searchParams.get('area');
-      return !hasQ;
-    }
-
-    window.addEventListener('DOMContentLoaded', ()=>{
-      if (shouldOpen()) openGate();
-    });
-  })();
-</script>
-
 <%- include('partials/mobile-nav', { 
   activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,

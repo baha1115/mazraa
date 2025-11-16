@@ -203,37 +203,6 @@
   #filters .filters-form{ padding-top: 0 !important; }
   #filters .filters-grid{ margin-top: 0 !important; }
 }
-/* ===== Location Gate (بوابة الموقع) ===== */
-#location-gate{position:fixed;inset:0;display:none;z-index:1100}
-#location-gate[aria-hidden="false"]{display:block}
-#location-gate .gate-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px)}
-#location-gate .gate-card{
-  position:relative; margin:6vh auto 0; max-width:560px; background:#fff; color:#0f172a;
-  border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.22); animation: gatePop .18s ease-out
-}
-#location-gate .gate-close{position:absolute; inset-inline-end:8px; top:6px; width:36px;height:36px;
-  border:none;border-radius:10px;background:#f1f5f9;cursor:pointer;font-size:20px;line-height:1}
-#location-gate h3{margin:.25rem 0 .35rem; font-size:1.25rem; font-weight:900}
-#location-gate .gate-note{margin:0 0 .6rem; color:#64748b; font-size:.95rem}
-#location-gate .gate-fields{display:grid; gap:10px; margin:.5rem 0 .8rem}
-#location-gate .gate-label{font-weight:700; font-size:.9rem}
-#location-gate .gate-input{
-  width:100%; height:2.6rem; border:1px solid #e2e8f0; border-radius:12px; padding:.55rem .75rem; font-size:1rem
-}
-#location-gate .gate-actions{display:flex; gap:8px; align-items:center; justify-content:flex-start}
-#location-gate .gate-btn{
-  border:1px solid #e2e8f0; background:#fff; color:#0f172a; border-radius:12px; padding:.6rem .9rem; font-weight:800; cursor:pointer
-}
-#location-gate .gate-primary{ background:#0f172a; color:#fff; border-color:#0f172a }
-@keyframes gatePop{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
-
-@media (max-width:640px){
-  #location-gate .gate-card{ margin:10vh 12px 0; padding:14px }
-  #location-gate h3{ font-size:1.1rem }
-  #location-gate .gate-note{ font-size:.9rem }
-  #location-gate .gate-input{ height:2.4rem; font-size:.95rem }
-  #location-gate .gate-btn{ padding:.5rem .8rem; font-size:.95rem }
-}
 
   </style>
 </head>
@@ -784,66 +753,6 @@ async function init(){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script>
-  (function(){
-    const gate     = document.getElementById('location-gate');
-    const gateCity = document.getElementById('gate-city');
-    const gateArea = document.getElementById('gate-area');
-    const btnApply = document.getElementById('gate-apply');
-
-    // فلاترك الحالية (نفس الحقول الموجودة في الفلاتر)
-    const filterCity = document.getElementById('city');
-    const filterArea = document.getElementById('area');
-
-    // helpers
-    function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
-    function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
-
-    // أزرار الإغلاق (خارج/×/تخطّي)
-    document.addEventListener('click', (e)=>{
-      const t = e.target;
-      if (t && t.dataset && t.dataset.close){ closeGate(); }
-      if (t && t.classList && t.classList.contains('gate-backdrop')){ closeGate(); }
-    });
-
-    // تطبيق الاختيار ↔️ تعبئة الفلاتر ↔️ ترشيح
-    if (btnApply){
-      btnApply.addEventListener('click', ()=>{
-        const c = (gateCity?.value || '').trim();
-        const a = (gateArea?.value || '').trim();
-
-        if (filterCity) filterCity.value = c;
-        if (filterArea) filterArea.value = a;
-
-        // علامة حتى لا نكرر السؤال في نفس الجلسة
-        try { sessionStorage.setItem('saleLocationChosen','1'); } catch(_){}
-
-        // شغّل الفلاتر وأغلق
-        try { window.applyFilters && window.applyFilters(); } catch(_){}
-        closeGate();
-
-        // مرّن المستخدم للنتائج
-        const sec = document.getElementById('results');
-        if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
-      });
-    }
-
-    // منطق الظهور: مرة واحدة فقط في الجلسة + فقط إن لم يحدّد المستخدم شيئًا
-    function shouldOpen(){
-      try { if (sessionStorage.getItem('saleLocationChosen')==='1') return false; } catch(_){}
-      const url = new URL(location.href);
-      const hasQ = url.searchParams.get('city') || url.searchParams.get('area');
-      // افتح إذا لا توجد معايير مسبقة
-      return !hasQ;
-    }
-
-    // افتح بعد تحميل الصفحة بقليل (حتى لا يتعارض مع SSR)
-    window.addEventListener('DOMContentLoaded', ()=>{
-      if (shouldOpen()) openGate();
-    });
-  })();
-</script>
-
 <%- include('partials/mobile-nav', { 
   activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,

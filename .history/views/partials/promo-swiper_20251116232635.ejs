@@ -73,24 +73,13 @@ const _enabled = !!_doc.enabled && _items.length > 0;
 <script>
 (function initPromoSwiper(){
   // 1) اعثر على الجذر الصحيح لهذا السويبر فقط
-  var root, swiperEl;
-  try {
-    // أولًا الأقرب إلى هذا السكربت
-    root = document.currentScript.closest('.promo-swiper')
-        || document.currentScript.closest('.promoTop')
-        || document.currentScript.closest('.section');
-  } catch (_) {}
-  // لو الأقرب غير متاح، جرّب أول سويبر بالصفحة
-  if (!root) root = document.querySelector('.promo-swiper')
-            || document.querySelector('.promoTop')
-            || document.querySelector('.section');
+  var root;
+  try { root = document.currentScript.closest('.promoTop'); } catch (_) {}
+  if (!root) root = document.querySelector('.promoTop');
   if (!root) return;
 
-  // لو الجذر هو نفس عنصر السويبر نفسه
-  swiperEl = root.classList.contains('promo-swiper')
-           ? root
-           : root.querySelector('.promo-swiper') || root.querySelector('.swiper');
-  if (!swiperEl) return;
+  var elSwiper = root.querySelector('.swiper');
+  if (!elSwiper) return;
 
   // 2) انتظر مكتبة Swiper لو لم تكن جاهزة بعد
   function ready(fn){ if (document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
@@ -98,7 +87,7 @@ const _enabled = !!_doc.enabled && _items.length > 0;
     if (window.Swiper) return cb();
     var tries = 0; (function tick(){
       if (window.Swiper) return cb();
-      if (++tries > 50) return;          // ~5 ثواني
+      if (++tries > 50) return;          // 50 محاولة (~5ث)
       setTimeout(tick, 100);
     })();
   }
@@ -106,33 +95,35 @@ const _enabled = !!_doc.enabled && _items.length > 0;
   // 3) شغّل بعد الجاهزية
   ready(function(){
     whenSwiper(function(){
-      var slides = swiperEl.querySelectorAll('.swiper-slide');
+      var slides = root.querySelectorAll('.swiper-slide');
       var hasMany = slides.length > 1;
 
-      // لو شريحة واحدة، أخفِ الأسهم/النقاط (لا نغيّر CSSك العام)
+      // لو شريحة واحدة، أخفِ الأسهم/النقاط (بدون تغيير CSS الأصلي)
       if (!hasMany){
-        var h = swiperEl.querySelectorAll('.swiper-button-prev,.swiper-button-next,.swiper-pagination');
+        var h = root.querySelectorAll('.swiper-button-prev,.swiper-button-next,.swiper-pagination');
         h.forEach(function(el){ if (el) el.style.display = 'none'; });
       }
 
+      // تهيئة مرنة لا تغيّر ستايلك
       var opts = {
         slidesPerView: 1,
         spaceBetween: 8,
         speed: 500,
         loop: hasMany,
         autoplay: hasMany ? { delay: 3500, disableOnInteraction: false } : false,
+        // مهم للحالات اللي يكون فيها السويبر داخل عنصر يتغير ترتيبه/إظهاره
         observer: true, observeParents: true, watchOverflow: true
       };
 
       if (hasMany){
-        var nextEl = swiperEl.querySelector('.swiper-button-next');
-        var prevEl = swiperEl.querySelector('.swiper-button-prev');
-        var pagEl  = swiperEl.querySelector('.swiper-pagination');
+        var nextEl = root.querySelector('.swiper-button-next');
+        var prevEl = root.querySelector('.swiper-button-prev');
+        var pagEl  = root.querySelector('.swiper-pagination');
         if (nextEl && prevEl) opts.navigation = { nextEl: nextEl, prevEl: prevEl };
         if (pagEl)            opts.pagination = { el: pagEl, clickable: true };
       }
 
-      new Swiper(swiperEl, opts);
+      new Swiper(elSwiper, opts);
     });
   });
 })();

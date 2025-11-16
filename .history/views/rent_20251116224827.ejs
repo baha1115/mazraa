@@ -716,59 +716,6 @@ async function init(){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<script>
-  (function(){
-    const gate       = document.getElementById('rent-location-gate');
-    const gateCity   = document.getElementById('rent-gate-city');
-    const gateArea   = document.getElementById('rent-gate-area');
-    const btnApply   = document.getElementById('rent-gate-apply');
-
-    // حقول الفلاتر الموجودة أصلًا في الصفحة:
-    const filterCity = document.getElementById('city');
-    const filterArea = document.getElementById('area');
-
-    function openGate(){ gate?.setAttribute('aria-hidden','false'); }
-    function closeGate(){ gate?.setAttribute('aria-hidden','true'); }
-
-    // إغلاق بالضغط على الخلفية/×/تخطّي
-    document.addEventListener('click', (e)=>{
-      const t = e.target;
-      if (t?.dataset?.close){ closeGate(); }
-      if (t?.classList?.contains('gate-backdrop')){ closeGate(); }
-    });
-
-    // تطبيق الاختيار ↔ تعبئة الفلاتر ↔ تشغيل الفلترة
-    btnApply?.addEventListener('click', ()=>{
-      const c = (gateCity?.value || '').trim();
-      const a = (gateArea?.value || '').trim();
-
-      if (filterCity) filterCity.value = c;
-      if (filterArea) filterArea.value = a;
-
-      try { sessionStorage.setItem('rentLocationChosen','1'); } catch(_){}
-
-      try { window.applyFilters && window.applyFilters(); } catch(_){}
-      closeGate();
-
-      // انزل بالمستخدم إلى النتائج
-      const sec = document.getElementById('results');
-      if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
-    });
-
-    // افتح البوابة مرة واحدة لكل جلسة، وفقط إذا لا يوجد city/area بالـURL
-    function shouldOpen(){
-      try { if (sessionStorage.getItem('rentLocationChosen')==='1') return false; } catch(_){}
-      const url = new URL(location.href);
-      const hasQ = url.searchParams.get('city') || url.searchParams.get('area');
-      return !hasQ;
-    }
-
-    window.addEventListener('DOMContentLoaded', ()=>{
-      if (shouldOpen()) openGate();
-    });
-  })();
-</script>
-
 <%- include('partials/mobile-nav', { 
   activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,

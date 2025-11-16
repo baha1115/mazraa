@@ -105,54 +105,38 @@ router.get('/sale', async (req, res) => {
 // ===== API: Farms for lists (used by client-side fetch) =====
 
 // GET /api/farms/sale?vipOnly=1|0
-// GET /api/farms/sale?vipOnly=1|0&limit=40
 router.get('/api/farms/sale', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
 
-    // 1) صفّي ورتّب وحدّد العدد أولاً
-    const base = [
+    const rows = await Farm.aggregate([
       { $match: { kind: 'sale', status: 'approved', isSuspended: { $ne: true }, deletedAt: null } },
-      { $sort:  { createdAt: -1 } },
-      { $limit: limit },
-    ];
-
-    // 2) lookup لاشتقاق ownerTier ثم (اختياري) فلترة VIP
-    const pipe = [
-      ...base,
-      { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'u' } },
-      { $addFields: { ownerTier: { $ifNull: [{ $arrayElemAt: ['$u.subscriptionTier', 0] }, 'Basic'] } } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'owner',
+          foreignField: '_id',
+          as: 'u'
+        }
+      },
+      {
+        $addFields: {
+          ownerTier: { $ifNull: [{ $arrayElemAt: ['$u.subscriptionTier', 0] }, 'Basic'] }
+        }
+      },
       ...(vipOnly ? [{ $match: { ownerTier: 'VIP' } }] : []),
-      { $project: {
-          _id: 1, title: 1, area: 1, city: 1, size: 1, price: 1, currency: 1,
-          videoUrl: 1, views: 1, ownerTier: 1, kind: 1,
-          photos: { $cond: [
-            { $and: [ { $isArray: '$photos' }, { $gt: [ { $size: '$photos' }, 0 ] } ] },
-            { $slice: ['$photos', 1] }, [] ] }
-      } }
-    ];
+      { $sort: { createdAt: -1 } },
+      { $project: { u: 0 } }
+    ]);
 
-    let rows = await Farm.aggregate(pipe).allowDiskUse(true);
-
-    // 3) تصغير Cloudinary سيرفر-سايد
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-      ? u.replace('/upload/', '/upload/f_auto,q_auto,w_480/')
-      : u;
-
-    rows = rows.map(r => ({
-      ...r,
-      photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-    }));
-
-    res.set('Cache-Control', 'public, max-age=30');   // كاش بسيط
-    return res.json({ ok: true, data: rows });
+    res.json({ ok: true, data: rows });
   } catch (e) {
-    console.error('api/farms/sale', e);
-    return res.status(500).json({ ok: false, data: [] });
+    console.error(e);
+    res.status(500).json({ ok: false, msg: 'Server error' });
   }
 });
 
+// GET /api/farms/rent?vipOnly=1|0
 // GET /api/farms/rent?vipOnly=1|0&limit=40
 router.get('/api/farms/rent', async (req, res) => {
   try {
