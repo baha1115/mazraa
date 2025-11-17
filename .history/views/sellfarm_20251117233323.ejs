@@ -796,53 +796,66 @@ document.addEventListener('DOMContentLoaded', init);
   };
 </script>
 <script>
-/* ======== حارس اختيار الموقع — يظهر في كل زيارة ======== */
-(function(){
-  const gate     = document.getElementById('location-gate');
-  const gateCity = document.getElementById('gate-city');
-  const gateArea = document.getElementById('gate-area');
-  const btnApply = document.getElementById('gate-apply');
+  (function(){
+    const gate     = document.getElementById('location-gate');
+    const gateCity = document.getElementById('gate-city');
+    const gateArea = document.getElementById('gate-area');
+    const btnApply = document.getElementById('gate-apply');
 
-  const filterCity = document.getElementById('city');
-  const filterArea = document.getElementById('area');
+    // فلاترك الحالية (نفس الحقول الموجودة في الفلاتر)
+    const filterCity = document.getElementById('city');
+    const filterArea = document.getElementById('area');
 
-  function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
-  function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
+    // helpers
+    function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
+    function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
 
-  // إغلاق بالضغط على الخلفية/زر ×/تخطّي
-  document.addEventListener('click', (e)=>{
-    const t = e.target;
-    if (t && (t.dataset?.close || t.classList?.contains('gate-backdrop'))){
-      closeGate();
+    // أزرار الإغلاق (خارج/×/تخطّي)
+    document.addEventListener('click', (e)=>{
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close){ closeGate(); }
+      if (t && t.classList && t.classList.contains('gate-backdrop')){ closeGate(); }
+    });
+
+    // تطبيق الاختيار ↔️ تعبئة الفلاتر ↔️ ترشيح
+    btnApply.addEventListener('click', ()=>{
+  const c = (gateCity?.value || '').trim();
+  const a = (gateArea?.value || '').trim();
+
+  // املأ الفلاتر
+  if (filterCity) filterCity.value = c;
+  if (filterArea) filterArea.value = a;
+
+  try { sessionStorage.setItem('saleLocationChosen','1'); } catch(_){}
+
+  // استدعِ الدالة المعروضة من الـmodule
+  if (window.setSaleFilters) {
+    window.setSaleFilters(c, a);
+  } else if (window.applyFilters) {
+    window.applyFilters();
+  }
+
+  closeGate();
+
+  const sec = document.getElementById('results');
+  if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+
+    // منطق الظهور: مرة واحدة فقط في الجلسة + فقط إن لم يحدّد المستخدم شيئًا
+    function shouldOpen(){
+      try { if (sessionStorage.getItem('saleLocationChosen')==='1') return false; } catch(_){}
+      const url = new URL(location.href);
+      const hasQ = url.searchParams.get('city') || url.searchParams.get('area');
+      // افتح إذا لا توجد معايير مسبقة
+      return !hasQ;
     }
-  });
 
-  // تطبيق الاختيار: املأ الفلاتر ونفّذ الترشيح
-  btnApply?.addEventListener('click', ()=>{
-    const c = (gateCity?.value || '').trim();
-    const a = (gateArea?.value || '').trim();
-
-    if (filterCity) filterCity.value = c;
-    if (filterArea) filterArea.value = a;
-
-    // نادِ دوال الفلترة المعرّضة من سكربت الموديول
-    if (window.setSaleFilters)      window.setSaleFilters(c, a);
-    else if (window.applyFilters)   window.applyFilters();
-
-    closeGate();
-
-    // مرّر لمنطقة النتائج
-    document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
-  });
-
-  // افتح الحارس دائمًا عند كل زيارة/تحميل
-  window.addEventListener('DOMContentLoaded', openGate);
-
-  // عند الرجوع من تاريخ المتصفح (BFCache) — أعد الفتح أيضًا
-  window.addEventListener('pageshow', (e)=>{
-    if (e.persisted) openGate();
-  });
-})();
+    // افتح بعد تحميل الصفحة بقليل (حتى لا يتعارض مع SSR)
+    window.addEventListener('DOMContentLoaded', ()=>{
+      if (shouldOpen()) openGate();
+    });
+  })();
 </script>
 
 <%- include('partials/mobile-nav', { 

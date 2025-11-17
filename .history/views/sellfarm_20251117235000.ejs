@@ -796,54 +796,75 @@ document.addEventListener('DOMContentLoaded', init);
   };
 </script>
 <script>
-/* ======== حارس اختيار الموقع — يظهر في كل زيارة ======== */
-(function(){
-  const gate     = document.getElementById('location-gate');
-  const gateCity = document.getElementById('gate-city');
-  const gateArea = document.getElementById('gate-area');
-  const btnApply = document.getElementById('gate-apply');
+  (function(){
+    const gate     = document.getElementById('location-gate');
+    const gateCity = document.getElementById('gate-city');
+    const gateArea = document.getElementById('gate-area');
+    const btnApply = document.getElementById('gate-apply');
 
-  const filterCity = document.getElementById('city');
-  const filterArea = document.getElementById('area');
+    const filterCity = document.getElementById('city');
+    const filterArea = document.getElementById('area');
 
-  function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
-  function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
+    function openGate(){ gate?.setAttribute('aria-hidden','false'); }
+    function closeGate(){ gate?.setAttribute('aria-hidden','true'); }
 
-  // إغلاق بالضغط على الخلفية/زر ×/تخطّي
-  document.addEventListener('click', (e)=>{
-    const t = e.target;
-    if (t && (t.dataset?.close || t.classList?.contains('gate-backdrop'))){
-      closeGate();
+    // علامة الجلسة: اكتبها فقط عند اتخاذ قرار المستخدم (تطبيق/تخطي)
+    function markChosen(){
+      try { sessionStorage.setItem('saleLocationChosen', String(Date.now())); } catch(_){}
     }
-  });
 
-  // تطبيق الاختيار: املأ الفلاتر ونفّذ الترشيح
-  btnApply?.addEventListener('click', ()=>{
-    const c = (gateCity?.value || '').trim();
-    const a = (gateArea?.value || '').trim();
+    // إغلاق بالضغط على الخلفية/×/تخطّي  ➜ سجّل العلامة أيضًا
+    document.addEventListener('click', (e)=>{
+      const t = e.target;
+      if (t?.dataset?.close || t?.classList?.contains('gate-backdrop')){
+        markChosen();
+        closeGate();
+      }
+    });
 
-    if (filterCity) filterCity.value = c;
-    if (filterArea) filterArea.value = a;
+    // تطبيق الاختيار: املأ الفلاتر + فعّل الترشيح + سجّل العلامة
+    btnApply?.addEventListener('click', ()=>{
+      const c = (gateCity?.value || '').trim();
+      const a = (gateArea?.value || '').trim();
 
-    // نادِ دوال الفلترة المعرّضة من سكربت الموديول
-    if (window.setSaleFilters)      window.setSaleFilters(c, a);
-    else if (window.applyFilters)   window.applyFilters();
+      if (filterCity) filterCity.value = c;
+      if (filterArea) filterArea.value = a;
 
-    closeGate();
+      // نادِ دوال الفلترة المعرّضة من module
+      if (window.setSaleFilters)      window.setSaleFilters(c, a);
+      else if (window.applyFilters)   window.applyFilters();
 
-    // مرّر لمنطقة النتائج
-    document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
-  });
+      markChosen();
+      closeGate();
 
-  // افتح الحارس دائمًا عند كل زيارة/تحميل
-  window.addEventListener('DOMContentLoaded', openGate);
+      document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
 
-  // عند الرجوع من تاريخ المتصفح (BFCache) — أعد الفتح أيضًا
-  window.addEventListener('pageshow', (e)=>{
-    if (e.persisted) openGate();
-  });
-})();
+    // لا تكتب أي شيء في sessionStorage هنا! (كان هذا سبب المشكلة)
+
+    // منطق “افتح/لا تفتح”
+    function shouldOpen(){
+      try {
+        const ts = Number(sessionStorage.getItem('saleLocationChosen')||0);
+        if (ts && (Date.now()-ts) < 10*60*1000) return false; // أقل من 10 دقائق
+      } catch(_){}
+      const url = new URL(location.href);
+      const hasQ = url.searchParams.get('city') || url.searchParams.get('area');
+      return !hasQ; // افتح فقط إذا ما في city/area بالـURL
+    }
+
+    // (اختياري) امسح العلامة عند مغادرة الصفحة لتعود البوابة أسرع في الزيارات القادمة
+    // ضع هذا إن رغبت بهذا السلوك:
+    // window.addEventListener('beforeunload', ()=> {
+    //   try { sessionStorage.removeItem('saleLocationChosen'); } catch(_){}
+    // });
+
+    window.addEventListener('DOMContentLoaded', ()=>{
+      if (shouldOpen()) openGate();
+    });
+  })();
 </script>
+
 
 <%- include('partials/mobile-nav', { 
   activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'

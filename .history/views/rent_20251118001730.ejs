@@ -715,15 +715,6 @@ async function init(){
 
 
 document.addEventListener('DOMContentLoaded', init);
- window.applyFilters = applyFilters;
-  window.setRentFilters = (city, area) => {
-    const form = document.getElementById('rent-filters');
-    if (form) {
-      if (form.city) form.city.value = city || '';
-      if (form.area) form.area.value = area || '';
-    }
-    applyFilters();
-  };
 </script>
 <script>
 /* ======== Rent Location Gate — يظهر في كل زيارة ======== */
