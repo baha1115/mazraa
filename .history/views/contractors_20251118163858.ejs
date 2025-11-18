@@ -498,50 +498,6 @@ renderVip(vipOnlyList);
     applyFilters();
   };
   </script>
-  <script>
-/* ======== Contractor Gate — يسأل عن التخصص + المحافظة ويظهر في كل زيارة ======== */
-(function(){
-  const gate     = document.getElementById('contractor-gate');
-  const gateSpec = document.getElementById('gate-spec');
-  const gateCity = document.getElementById('gate-city');
-  const btnApply = document.getElementById('gate-apply');
-
-  // حقول الفلاتر في الصفحة
-  const filterForm  = document.getElementById('contractor-filters');
-  const filterSpec  = filterForm ? filterForm.querySelector('#specialization') : null;
-  const filterCity  = filterForm ? filterForm.querySelector('#city')           : null;
-
-  function openGate(){ gate?.setAttribute('aria-hidden','false'); }
-  function closeGate(){ gate?.setAttribute('aria-hidden','true'); }
-
-  // إغلاق بالضغط على الخلفية/زر ×/تخطّي
-  document.addEventListener('click', (e)=>{
-    const t = e.target;
-    if (t?.dataset?.close || t?.classList?.contains('gate-backdrop')) closeGate();
-  });
-
-  // تطبيق الاختيار ↔ تعبئة الفلاتر ↔ تشغيل الفلترة
-  btnApply?.addEventListener('click', ()=>{
-    const s = (gateSpec?.value || '').trim();
-    const c = (gateCity?.value || '').trim();
-
-    if (filterSpec) filterSpec.value = s;
-    if (filterCity) filterCity.value = c;
-
-    if (window.setContractorFilters)      window.setContractorFilters(s, c);
-    else if (window.applyFilters)         window.applyFilters();
-
-    closeGate();
-    document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
-  });
-
-  // افتح الحارس دائمًا عند كل زيارة/تحميل
-  window.addEventListener('DOMContentLoaded', openGate);
-  // وعند الرجوع من الكاش الخلفي (BFCache) افتحه أيضًا
-  window.addEventListener('pageshow', (e)=>{ if (e.persisted) openGate(); });
-})();
-</script>
-
   <%- include('partials/mobile-nav', { 
   activeTab: 'contractors',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
