@@ -599,76 +599,35 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
 
   <!-- الخدمات -->
   
- <!-- طلب خدمة -->
-<section id="request" class="section request" aria-labelledby="request-title">
-  <div class="container">
-    <h2 id="request-title">طلب خدمة</h2>
-    <p class="muted">املأ بياناتك وسنتواصل معك في أقرب وقت.</p>
-
-    <form id="request-form" action="/request" method="post" novalidate>
-      <input type="hidden" name="contractorId" value="<%= contractor._id %>"/>
-
-      <div class="form-grid">
-        <div class="field">
-          <label class="label" for="rq-name">الاسم</label>
-          <input id="rq-name" class="input" name="name" type="text" placeholder="اكتب اسمك" required />
+  <!-- طلب خدمة -->
+  <section id="request" class="section request" aria-labelledby="request-title">
+    <div class="container">
+      <h2 id="request-title">طلب خدمة</h2>
+      <p class="muted">املأ بياناتك وسنتواصل معك في أقرب وقت.</p>
+      <form id="request-form" action="/request" method="post" novalidate>
+        <input type="hidden" name="contractorId" value="<%= contractor._id %>"/>
+        <div class="form-grid">
+          <div class="field">
+            <label class="label" for="rq-name">الاسم</label>
+            <input id="rq-name" class="input" name="name" type="text" placeholder="اكتب اسمك" required />
+          </div>
+          <div class="field">
+            <label class="label" for="rq-phone">رقم الهاتف</label>
+            <input id="rq-phone" class="input" name="phone" type="tel" placeholder="+963 XXX XXX" required />
+          </div>
+         
+          <div class="field field--full">
+            <label class="label" for="rq-desc">وصف مختصر</label>
+            <textarea id="rq-desc" class="input" name="description" rows="4" placeholder="صف طلبك بشكل مختصر"></textarea>
+          </div>
+          <div class="field field--actions">
+            <button class="btn btn-primary" type="submit">إرسال</button>
+            <a class="btn btn-outline" href="https://wa.me/96300000000?text=<%= encodeURIComponent('أحتاج خدمة من المقاول: '+name) %>" target="_blank" rel="noopener">واتساب</a>
+          </div>
         </div>
-
-        <div class="field">
-          <label class="label" for="rq-phone">رقم الهاتف</label>
-          <input id="rq-phone" class="input" name="phone" type="tel" placeholder="+963 XXX XXX" required />
-        </div>
-
-        <div class="field field--full">
-          <label class="label" for="rq-desc">وصف مختصر</label>
-          <textarea id="rq-desc" class="input" name="description" rows="4" placeholder="صف طلبك بشكل مختصر"></textarea>
-        </div>
-
-        <div class="field field--actions">
-          <button class="btn btn-primary" type="submit">إرسال</button>
-
-          <% if (waMsisdn) { %>
-            <!-- زر واتساب احتياطي مباشرةً -->
-            <a class="btn btn-outline"
-               href="https://wa.me/<%= waMsisdn %>?text=<%= encodeURIComponent('أحتاج خدمة من المقاول: '+name) %>"
-               target="_blank" rel="noopener">واتساب مباشر</a>
-          <% } %>
-        </div>
-      </div>
-    </form>
-  </div>
-</section>
-<script>
-(function(){
-  const form = document.getElementById('request-form');
-  if (!form) return;
-
-  const msisdn = '<%= waMsisdn %>'; // رقم واتساب للمقاول بصيغة MSISDN
-  const contractorName = '<%= name %>';
-
-  form.addEventListener('submit', function(e){
-    // لو عندنا رقم واتساب صالح للمقاول → افتح واتساب برسالة مكوَّنة من الحقول
-    if (msisdn) {
-      e.preventDefault();
-
-      const name  = (form.name?.value || '').trim();
-      const phone = (form.phone?.value || '').trim();
-      const desc  = (form.description?.value || '').trim();
-
-      const msg = `مرحبًا، أنا ${name||'—'} (${phone||'—'}).\n` +
-                  `أرغب بطلب خدمة من المقاول: ${contractorName}.\n` +
-                  `الوصف: ${desc||'—'}`;
-
-      const url = `https://wa.me/${msisdn}?text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank', 'noopener');
-
-      // (اختياري) لو حابب أيضًا تحفظ الطلب في السيرفر:
-      // form.submit(); // ← أزل التعليق لإرسال الخانات لسيرفرك بعد فتح واتساب
-    }
-    // إن لم يوجد رقم واتساب، يكمل الإرسال العادي إلى /request
-  });
-})();
-</script>
+      </form>
+    </div>
+  </section>
 <section id="rating" class="section rating" aria-labelledby="rating-title">
   <div class="container">
     <h2 id="rating-title" style="margin-bottom:.5rem;">التقييم</h2>

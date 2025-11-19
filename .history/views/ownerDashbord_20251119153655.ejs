@@ -294,7 +294,7 @@
       await refreshQuota();                   // انتظر تحميل الحصّة
       setTimeout(()=> map?.invalidateSize(), 100);
     }
-          //if (t==='subscribe') prefillSubscribe();
+          if (t==='subscribe') prefillSubscribe();
         });
       });
 
@@ -761,19 +761,20 @@ if (ft2) ft2.textContent = 'إضافة أرض';
         return /^\+?\d{6,15}$/.test(n);
       }
 
-     function prefillSubscribe(){
-   const f = document.getElementById('subscribeForm');
-   if (!f) return;
-   try{
-     // جرّب آخر إعلان حقيقي جلبناه من السيرفر
-     const src = (window.__myLands || []).find(x => x?.ownerInfo) || null;
-     const o   = src?.ownerInfo || {};
-     if (!f.ownerFirst.value)    f.ownerFirst.value    = o.first    || '';
-     if (!f.ownerLast.value)     f.ownerLast.value     = o.last     || '';
-     if (!f.ownerWhatsapp.value) f.ownerWhatsapp.value = o.whatsapp || '';
-   }catch{}
-   if (!f.plan.value) f.plan.value = 'Premium';
- }
+      function prefillSubscribe(){
+        const f = document.getElementById('subscribeForm');
+        if (!f) return;
+        try{
+          const last = (state.lands||[])[0];
+          if (last?.owner){
+            if (!f.ownerFirst.value)   f.ownerFirst.value   = last.owner.first || '';
+            if (!f.ownerLast.value)    f.ownerLast.value    = last.owner.last  || '';
+            if (!f.ownerWhatsapp.value)f.ownerWhatsapp.value= last.owner.whatsapp || '';
+          }
+        }catch{}
+        if (!f.plan.value) f.plan.value = 'Premium';
+      }
+
       function makeWaLink({to, text}){
         const num = to.replace(/\D/g,'');
         return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;

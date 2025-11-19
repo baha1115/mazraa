@@ -638,37 +638,7 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
     </form>
   </div>
 </section>
-<script>
-(function(){
-  const form = document.getElementById('request-form');
-  if (!form) return;
 
-  const msisdn = '<%= waMsisdn %>'; // رقم واتساب للمقاول بصيغة MSISDN
-  const contractorName = '<%= name %>';
-
-  form.addEventListener('submit', function(e){
-    // لو عندنا رقم واتساب صالح للمقاول → افتح واتساب برسالة مكوَّنة من الحقول
-    if (msisdn) {
-      e.preventDefault();
-
-      const name  = (form.name?.value || '').trim();
-      const phone = (form.phone?.value || '').trim();
-      const desc  = (form.description?.value || '').trim();
-
-      const msg = `مرحبًا، أنا ${name||'—'} (${phone||'—'}).\n` +
-                  `أرغب بطلب خدمة من المقاول: ${contractorName}.\n` +
-                  `الوصف: ${desc||'—'}`;
-
-      const url = `https://wa.me/${msisdn}?text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank', 'noopener');
-
-      // (اختياري) لو حابب أيضًا تحفظ الطلب في السيرفر:
-      // form.submit(); // ← أزل التعليق لإرسال الخانات لسيرفرك بعد فتح واتساب
-    }
-    // إن لم يوجد رقم واتساب، يكمل الإرسال العادي إلى /request
-  });
-})();
-</script>
 <section id="rating" class="section rating" aria-labelledby="rating-title">
   <div class="container">
     <h2 id="rating-title" style="margin-bottom:.5rem;">التقييم</h2>
