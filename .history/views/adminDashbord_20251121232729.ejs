@@ -1021,45 +1021,40 @@ ${(f.amenitiesDesc||'').trim() ? `
     try{
       items = await apiGetPendingFarms(areaFilter.value);
     }catch{}
-    
-   items.forEach(l=>{
-  const cover = (l.photos && l.photos[0]) || 'assets/rent/featured-03.jpg';
-  const loc = l.location ? ` • 📍 ${esc(l.location.address || (l.location.lat+', '+l.location.lng))}` : '';
-  const el = document.createElement('article');
-  el.className='land';
+    items.forEach(l=>{
+      const cover = (l.photos && l.photos[0]) || 'assets/rent/featured-03.jpg';
+      const loc = l.location ? ` • 📍 ${esc(l.location.address || (l.location.lat+', '+l.location.lng))}` : '';
+      const el = document.createElement('article');
+      el.className='land';
+      el.innerHTML = `
+        <div class="land__media"><img src="${cover}" alt=""></div>
+        <div>
+          <h3 class="title" style="margin:.1rem 0">${esc(l.title)}</h3>
+          <div class="meta">
+            ${l.kind==='sale'?'بيع':'إيجار'} • ${esc(l.area)} — ${esc(l.city||'')}${loc}
+            • ${
+    l.kind==='rent'
+      ? (moneySym(l.currency) + fmt.format(l.price) + '/شهر')
+      : (moneySym(l.currency) + fmt.format(l.price))
+  } • ${fmt.format(l.size)} م²
+            <span class="pill p--pending">بانتظار المراجعة</span>
+          </div>
 
-  // 👇 هنا نحدد نص السعر حسب نوع الإيجار
-  const isRent   = String(l.kind || '').toLowerCase() === 'rent';
-  const isDaily  = String(l.rentPeriod || '').toLowerCase() === 'daily';
-  const priceStr = isRent
-    ? (moneySym(l.currency) + fmt.format(l.price) + (isDaily ? '/يوم' : '/شهر'))
-    : (moneySym(l.currency) + fmt.format(l.price));
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem">
+            <button class="btn btn--ghost btn--sm" data-act="preview" data-id="${l._id}">معاينة</button>
 
-  el.innerHTML = `
-    <div class="land__media"><img src="${cover}" alt=""></div>
-    <div>
-      <h3 class="title" style="margin:.1rem 0">${esc(l.title)}</h3>
-      <div class="meta">
-        ${l.kind==='sale'?'بيع':'إيجار'} • ${esc(l.area)} — ${esc(l.city||'')}${loc}
-        • ${priceStr} • ${fmt.format(l.size)} م²
-        <span class="pill p--pending">بانتظار المراجعة</span>
-      </div>
+            <form action="/admin/farms/${l._id}/approve?_method=PATCH" method="post" style="display:inline">
+              <button class="btn btn--ok btn--sm" type="submit">موافقة</button>
+            </form>
 
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem">
-        <button class="btn btn--ghost btn--sm" data-act="preview" data-id="${l._id}">معاينة</button>
-
-        <form action="/admin/farms/${l._id}/approve?_method=PATCH" method="post" style="display:inline">
-          <button class="btn btn--ok btn--sm" type="submit">موافقة</button>
-        </form>
-
-        <form action="/admin/farms/${l._id}/reject?_method=PATCH" method="post" style="display:inline-flex;gap:.35rem;align-items:center">
-          <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:200px;padding:.3rem .5rem"/>
-          <button class="btn btn--danger btn--sm" type="submit">رفض</button>
-        </form>
-      </div>
-    </div>`;
-  farmsWrap.appendChild(el);
-});
+            <form action="/admin/farms/${l._id}/reject?_method=PATCH" method="post" style="display:inline-flex;gap:.35rem;align-items:center">
+              <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:200px;padding:.3rem .5rem"/>
+              <button class="btn btn--danger btn--sm" type="submit">رفض</button>
+            </form>
+          </div>
+        </div>`;
+      farmsWrap.appendChild(el);
+    });
     farmsEmpty.hidden = items.length>0;
   }
 

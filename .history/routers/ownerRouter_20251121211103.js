@@ -251,10 +251,6 @@ router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), asy
     const update = {
       title: (b.title||'').trim(),
       kind : (b.kind==='rent' ? 'rent' : 'sale'),
-        rentPeriod: (b.kind === 'rent')
-    ? (b.rentPeriod === 'daily' ? 'daily' : 'monthly')
-    : null,
-
       area : (b.area||'').trim(),
       city : (b.city||'').trim(),
       size : Number(b.size)||0,

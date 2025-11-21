@@ -538,10 +538,7 @@ function rentSlide(f){
 const tier    = String(tierRaw);
 const showBadge = tier.toLowerCase() !== 'basic';
 const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>` : '';  
-  const vws   = Number(f.views || 0); // عدد المشاهدات
- const isRent   = String(f.kind || '').toLowerCase() === 'rent';
-  const isDaily  = String(f.rentPeriod || '').toLowerCase() === 'daily';
-  const periodTx = isRent ? (isDaily ? ' / يوميًا' : ' / شهريًا') : '';
+  const vws   = Number(f.views || 0); // 👈 المشاهدات
 
   return `
     <div class="swiper-slide">
@@ -560,11 +557,11 @@ const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>
           <div class="farm-body">
             <h3 class="farm-title">${htmlEscape(f.title || '—')}</h3>
             <p class="farm-location">${htmlEscape(loc)}</p>
-       <p class="farm-price">${
-              Number(f.price || 0)
-                ? (moneySym(f.currency) + ' ' + fmtEN(f.price) + periodTx)
-                : '—'
-            }</p>
+            <p class="farm-price">${
+  Number(f.price || 0)
+    ? (moneySym(f.currency) + ' ' + fmtEN(f.price) + ' / شهريًا')
+    : '—'
+}</p>
             <div class="meta-views">👁️ ${fmtEN(vws)}</div>
             <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
           </div>

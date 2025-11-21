@@ -147,13 +147,6 @@
     <option value="SYP">ل.س الليرة السورية</option>
   </select>
 </label>
-<label class="field" id="rentPeriodField" style="display:none">
-  <span class="label">نوع الإيجار</span>
-  <select name="rentPeriod" class="input">
-    <option value="monthly">إيجار شهري</option>
-    <option value="daily">إيجار يومي</option>
-  </select>
-</label>
 
           <!-- رفع الصور بالسحب والإفلات -->
           <div class="field field--full">
@@ -349,17 +342,9 @@ window.__myLands = rows; // ← نخزّن آخر بيانات حقيقية لل
     rows.forEach(l=>{
       const cover = (Array.isArray(l.photos) && l.photos[0]) || 'https://images.unsplash.com/photo-1613336026275-d6d0d43688ff?w=800';
       const kindText = l.kind === 'rent' ? 'إيجار' : 'بيع';
-const symbol   = (l.currency === 'SYP') ? 'ل.س' : '$';
-
-// حدّد النص حسب rentPeriod
-let periodText = '';
-if (l.kind === 'rent') {
-  periodText = (l.rentPeriod === 'daily') ? '/يوم' : '/شهر';
-}
-
-const priceText = (l.kind === 'rent')
-  ? `${symbol}${fmt(l.price)}${periodText}`
-  : `${symbol}${fmt(l.price)}`;
+const symbol    = (l.currency === 'SYP') ? 'ل.س' : '$';
+const priceText = (l.kind === 'rent') ? `${symbol}${fmt(l.price)}/شهر`
+                                      : `${symbol}${fmt(l.price)}`;
 
       const loc = l.location
         ? ` • 📍 ${esc(l.location.address || ((l.location.lat||'')+', '+(l.location.lng||'')))}`
@@ -438,21 +423,15 @@ list.addEventListener('click', async (e)=>{
       form.querySelector('[name="size"]').value          = Number(l.size || 0);
       form.querySelector('[name="price"]').value         = Number(l.price || 0);
       form.querySelector('[name="currency"]').value = (l.currency === 'SYP' ? 'SYP' : 'USD');
- const rentSel = form.querySelector('[name="rentPeriod"]');
-if (rentSel) {
-  rentSel.value = (l.rentPeriod === 'daily' ? 'daily' : 'monthly');
-}
-
       form.querySelector('[name="desc"]').value          = l.description || '';
       form.querySelector('[name="videoUrl"]').value      = l.videoUrl || '';
       form.querySelector('[name="poolDesc"]').value      = l.poolDesc || '';
       form.querySelector('[name="amenitiesDesc"]').value = l.amenitiesDesc || '';
-      form.querySelector('[name="buildingDesc"]').value  = l.buildingDesc || '';
+      form.querySelector('[name="buildingDesc"]').value  = l.buildingDesc || ''
 
       // الصور
       pendingPhotos = Array.isArray(l.photos) ? [...l.photos] : [];
       renderThumbs?.();
-      toggleRentPeriod?.();
 
       // الموقع
       const lat = Number(l?.location?.lat);
@@ -685,26 +664,6 @@ if (submitBtnPrimary) {
   submitBtnPrimary.title = 'جارِ التحقق من حصتك…';
 }
 
-// إظهار/إخفاء نوع الإيجار حسب kind
-const kindSelect       = landForm.querySelector('[name="kind"]');
-const rentPeriodField  = landForm.querySelector('#rentPeriodField');
-
-function toggleRentPeriod() {
-  if (!kindSelect || !rentPeriodField) return;
-  if (kindSelect.value === 'rent') {
-    rentPeriodField.style.display = '';
-  } else {
-    rentPeriodField.style.display = 'none';
-  }
-}
-
-// أول تحميل
-toggleRentPeriod();
-
-// عند تغيير النوع
-if (kindSelect) {
-  kindSelect.addEventListener('change', toggleRentPeriod);
-}
 
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
@@ -749,8 +708,6 @@ if (!isEdit) {
     size: parseInt(fd.get('size')||0,10),
     price: parseInt(fd.get('price')||0,10),
     currency: (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
-      rentPeriod: (fd.get('rentPeriod') || '').toString(),
-
     photos: [...pendingPhotos],
       poolDesc:      (fd.get('poolDesc')      || '').toString().trim(),
   amenitiesDesc: (fd.get('amenitiesDesc') || '').toString().trim(),

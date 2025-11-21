@@ -170,9 +170,6 @@ router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (r
       ownerInfo,
       title: value.title.trim(),
       kind: value.kind === 'rent' ? 'rent' : 'sale',
-      rentPeriod: (value.kind === 'rent')
-    ? (value.rentPeriod === 'daily' ? 'daily' : 'monthly')
-    : null,
       area: (value.area || '').trim(),
       city: (value.city || '').trim(),
       size: Number(value.size) || 0,
@@ -251,10 +248,6 @@ router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), asy
     const update = {
       title: (b.title||'').trim(),
       kind : (b.kind==='rent' ? 'rent' : 'sale'),
-        rentPeriod: (b.kind === 'rent')
-    ? (b.rentPeriod === 'daily' ? 'daily' : 'monthly')
-    : null,
-
       area : (b.area||'').trim(),
       city : (b.city||'').trim(),
       size : Number(b.size)||0,

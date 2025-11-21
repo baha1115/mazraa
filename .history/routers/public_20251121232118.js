@@ -52,7 +52,7 @@ async function getTopFarms(kindWanted, excludeId = null, limit = 3) {
   let rows = await Farm.find(q)
     .sort({ views: -1, updatedAt: -1, createdAt: -1 })
     .limit(limit)
-        .select('title area city size price currency photos views kind status rentPeriod')
+    .select('title area city size price photos views kind status')
     .lean();
 
   // fallback لو ما في نتائج
@@ -66,8 +66,7 @@ async function getTopFarms(kindWanted, excludeId = null, limit = 3) {
     rows = await Farm.find(q2)
       .sort({ views: -1, updatedAt: -1, createdAt: -1 })
       .limit(limit)
-          .select('title area city size price currency photos views kind status rentPeriod')
-
+      .select('title area city size price photos views kind status')
       .lean();
   }
   return rows;

@@ -438,7 +438,7 @@ list.addEventListener('click', async (e)=>{
       form.querySelector('[name="size"]').value          = Number(l.size || 0);
       form.querySelector('[name="price"]').value         = Number(l.price || 0);
       form.querySelector('[name="currency"]').value = (l.currency === 'SYP' ? 'SYP' : 'USD');
- const rentSel = form.querySelector('[name="rentPeriod"]');
+      const rentSel = form.querySelector('[name="rentPeriod"]');
 if (rentSel) {
   rentSel.value = (l.rentPeriod === 'daily' ? 'daily' : 'monthly');
 }
@@ -447,7 +447,12 @@ if (rentSel) {
       form.querySelector('[name="videoUrl"]').value      = l.videoUrl || '';
       form.querySelector('[name="poolDesc"]').value      = l.poolDesc || '';
       form.querySelector('[name="amenitiesDesc"]').value = l.amenitiesDesc || '';
-      form.querySelector('[name="buildingDesc"]').value  = l.buildingDesc || '';
+      form.querySelector('[name="buildingDesc"]').value  = l.buildingDesc || ''
+
+      const rentSel = form.querySelector('[name="rentPeriod"]');
+if (rentSel) {
+  rentSel.value = (l.rentPeriod === 'daily' ? 'daily' : 'monthly');
+}
 
       // الصور
       pendingPhotos = Array.isArray(l.photos) ? [...l.photos] : [];

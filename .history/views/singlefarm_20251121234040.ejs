@@ -539,21 +539,15 @@ const pStr = priceNum
             <div class="info-t"><h3>المساحة</h3><p><strong><%= Number(farm.size||0).toLocaleString('en') %></strong> م²</p></div>
           </article>
           <article class="info-item">
-  <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.5"/></svg></span>
-  <div class="info-t">
-    <h3>السعر</h3>
-    <%
-      const __sym     = (farm?.currency === 'SYP') ? 'ل.س' : '$';
-      const __p       = Number(farm?.price || 0);
-      const __isRent  = String(farm?.kind || '').toLowerCase() === 'rent';
-      const __isDaily = String(farm?.rentPeriod || '').toLowerCase() === 'daily';
-      const __per     = __isRent ? (__isDaily ? '/يوم' : '/شهر') : '';
-      const __txt     = __p ? (__sym + ' ' + __p.toLocaleString('en')) : '—';
-    %>
-    <p><strong><%= __txt %></strong><%= __per %></p>
-  </div>
-</article>
-
+            <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.5"/></svg></span>
+            <div class="info-t">
+              <h3>السعر</h3>
+              <% const __sym  = (farm?.currency === 'SYP') ? 'ل.س' : '$';
+                 const __p    = Number(farm?.price||0);
+                 const __txt  = __p ? (__sym + ' ' + __p.toLocaleString('en')) : '—'; %>
+              <p><strong><%= __txt %></strong>/شهر</p>
+            </div>
+          </article>
           <article class="info-item">
             <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-7 7-11a7 7 0 10-14 0c0 4 7 11 7 11z" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="10" r="2.7" fill="currentColor"/></svg></span>
             <div class="info-t"><h3>الموقع</h3><p><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p></div>
