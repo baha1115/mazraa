@@ -181,9 +181,6 @@
             <span class="label">اسم المؤسسة</span>
             <input maxlength="100" name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
           </label>
-<% const selectedService = Array.isArray(safeProfile.services)
-      ? (safeProfile.services[0] || '')
-      : (safeProfile.services || ''); %>
 
          <label class="field">
   <span class="label">الخدمة / التخصص</span>
