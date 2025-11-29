@@ -11,496 +11,251 @@
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
 
   <style>
-  /* ===== VIP Hero ===== */
-  .vip-hero-slide{
-    position:relative;
-    min-height:360px;
-    border-radius:16px;
-    overflow:hidden;
-    background:#f6faf6;
-  }
-  @media (min-width:1024px){
-    .vip-hero-slide{ min-height:520px; }
-  }
-  .vip-hero-img{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center;
-    filter:brightness(.85);
-  }
-  .vip-hero-overlay{
-    position:absolute;
-    inset:0;
-    background:linear-gradient(
-      90deg,
-      rgba(0,0,0,.35),
-      rgba(0,0,0,.15) 40%,
-      rgba(0,0,0,0) 70%
-    );
-  }
-  .vip-hero-body{
-    position:absolute;
-    inset-inline:1.2rem;
-    inset-block-end:1.1rem;
-    color:#fff;
-    display:grid;
-    gap:.35rem;
-  }
-  .vip-hero-title{
-    font-size:clamp(20px,3vw,34px);
-    margin:.25rem 0 0;
-  }
-  .vip-hero-meta{
-    opacity:.95;
-    font-size:clamp(14px,1.5vw,16px);
-  }
-  .vip-hero-cta{
-    margin-top:.6rem;
-    display:inline-block;
-    padding:.5rem .9rem;
-    border-radius:10px;
-    background:#fff;
-    color:#0f172a;
-    text-decoration:none;
-    font-weight:600;
-    width:150px;
-    text-align:center;
+    .vip-hero-slide{position:relative;min-height:360px;border-radius:16px;overflow:hidden;background:#f6faf6;}
+    @media (min-width:1024px){.vip-hero-slide{min-height:520px;}}
+    .vip-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(.85);}
+    .vip-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,.35), rgba(0,0,0,.15) 40%, rgba(0,0,0,0) 70%);}
+    .vip-hero-body{position:absolute;inset-inline:1.2rem;inset-block-end:1.1rem;color:#fff;display:grid;gap:.35rem;text-align:flex-start;}
+    .vip-hero-title{font-size:clamp(20px,3vw,34px);margin:.25rem 0 0;}
+    .vip-hero-meta{opacity:.95;font-size:clamp(14px,1.5vw,16px);}
+    .vip-hero-cta{margin-top:.6rem;display:inline-block;padding:.5rem .9rem;border-radius:10px;background:#fff;color:#0f172a;text-decoration:none;font-weight:600;width:150px;text-align:center;}
+
+    /* شارة VIP في سلايدر الـVIP */
+    .vip-badge{position:absolute;top:12px;inset-inline-start:12px;background:#0f172a;color:#fff;border-radius:999px;font-size:.8rem;padding:.2rem .6rem;z-index:4;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+
+    /* بطاقات العادية داخل سويبر */
+    .rent-swiper .swiper-slide{height:auto;}
+    .farm-card{display:block;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff}
+    .farm-card img{width:100%;height:220px;object-fit:cover}
+    .farm-body{padding:.8rem}
+    .farm-title{margin:.2rem 0 .4rem;font-size:1.05rem}
+    .farm-location,.farm-price{margin:0 0 .25rem;color:#475569}
+    .btn.btn-outline{width:80%; display:inline-block;border:1px solid #0f172a;text-align: center; border-radius:10px;padding:.35rem .7rem;text-decoration:none}
+    .badge{max-width: 60px; text-align: center; position:absolute;top:10px;inset-inline-start:10px;background:#0f172a;color:#fff;border-radius:999px;font-size:.75rem;padding:.15rem .5rem}
+    .badge--video{text-align:center; inset-inline-start:auto;inset-inline-end:70px;background:#ef4444;width: 70px;}
+.badge, .badge--video { z-index: 4;}
+
+    /* فلاتر */
+    .filter-dropdown summary{cursor:pointer;display:flex;align-items:center;gap:.5rem;font-weight:600;user-select:none;}
+    .filter-dropdown summary::after{content:"▾";transition:.2s;font-size:.9rem;opacity:.9;}
+    .filter-dropdown[open] summary::after{transform:rotate(180deg);}
+    .filters-form{padding:.75rem 0 0;}
+    .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+    .field .label{display:block;margin:.2rem 0 .35rem}
+    .field input,.field select{height:2.6rem;width:100%;padding:.75rem .9rem;border:1px solid #e2e8f0;border-radius:12px;}
+    .field--actions{display:flex;align-items:flex-end}
+    .btn.btn-primary{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem}
+
+    .empty{padding:2rem;text-align:center}
+    /* شارات الخطط */
+.badge--Basic   { background:#64748b; }   /* رمادي مزرّق */
+.badge--Premium { background:#0ea5e9;max-width: 80px; }   /* سماوي */
+.badge--VIP     { background:#0f172a; }   /* كحلي */
+
+.meta-views{
+  display:inline-block;
+  margin-top:.25rem;
+  color:#475569;
+  font-size:.9rem;
+}
+/* حالة إظهار/إخفاء المزيد */
+.more-fields[hidden] { display: none; }
+.btn.btn-outline{border:1px solid #0f172a;border-radius:10px;padding:.55rem 1rem;background:#fff;color:#0f172a}
+.vip-swiper .swiper-slide{ height:auto; }
+/* ===== ترتيب الهيرو على الموبايل: أزرار على عمود مستقل مقابل الصورة/المعلومات ===== */
+@media (max-width:640px){
+  /* حوّل كتلة الهيرو إلى Grid بعمودين: معلومات (مرن) + أزرار (ثابت) */
+  .hero-top{
+    display: grid;
+    grid-template-columns: 1fr 140px;                /* عدّل 140px إلى 160–180 حسب ذوقك */
+    grid-template-areas:
+      "avatar actions"
+      "name   actions"
+      "spec   actions"
+      "region actions"
+      "rating actions"
+      "stats  stats";
+    align-items: center;
+    column-gap: .75rem;
+    row-gap: .25rem;
+    text-align: start;                                /* أعد محاذاة النص لليمين (RTL) */
   }
 
-  /* شارة VIP في سلايدر الـVIP */
-  .vip-badge{
-    position:absolute;
-    top:12px;
-    inset-inline-start:12px;
-    background:#0f172a;
-    color:#fff;
-    border-radius:999px;
-    font-size:.8rem;
-    padding:.2rem .6rem;
-    z-index:4;
-    box-shadow:0 2px 8px rgba(0,0,0,.25);
+  /* عرّف مناطق الشبكة */
+  .avatar--lg{ grid-area: avatar; justify-self: start; }
+  .hero-copy{ display: contents; }                    /* يمرّر أبناء hero-copy مباشرةً للشبكة */
+  .hero-copy .name{ grid-area: name; }
+  .hero-copy .specialization{ grid-area: spec; }
+  .hero-copy .region{ grid-area: region; }
+  .hero-rating{ grid-area: rating; justify-content: flex-start; }
+  .stats{ grid-area: stats; align-items: flex-start !important; }
+
+  /* عمود الأزرار */
+  .hero-actions{
+    grid-area: actions;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    align-self: start;
+  }
+  .hero-actions .btn{ width: 100%; }
+}
+/* ===== Rent cards · polished (two-up mobile) ===== */
+
+/* بطاقة أنظف بظل وانتقال خفيف */
+.farm-card{
+  border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden;
+  box-shadow:0 2px 10px rgba(2,6,23,.05);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.farm-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(2,6,23,.08); border-color:#e2e8f0; }
+
+/* صورة بنسبة 4:3 بدل ارتفاع ثابت */
+.farm-media{ position:relative; aspect-ratio: 4 / 3; background:#f5f7f8; }
+.farm-card img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block; }
+
+/* بادجات متناسقة */
+.badge{
+  position:absolute; inset-inline-start:10px; top:10px; z-index:4;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:.18rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800; letter-spacing:.2px;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);
+}
+.badge--video{ inset-inline-start:auto; inset-inline-end:10px; background:#ef4444; color:#fff; }
+.badge--Basic{ display:none; } /* لا نعرض شارة Basic */
+.badge--Premium{ background:#0ea5e9; color:#fff; }
+.badge--VIP{ background:#0f172a; color:#fff; }
+
+/* جسم البطاقة شبكة بسيطة */
+.farm-body{ display:grid; row-gap:.45rem; padding:.7rem .75rem; }
+.farm-title{
+  margin:0; font-size:1rem; font-weight:900;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em;
+}
+.farm-location{ margin:0; color:#64748b; font-size:.9rem; }
+.farm-price{ margin:0; font-weight:900; letter-spacing:.2px; }
+.meta-views{ margin-inline-start:auto; font-size:.85rem; color:#475569 !important; }
+
+/* زر التفاصيل بكامل العرض */
+.farm-body .btn.btn-outline{
+  width:100%; text-align:center; border:1px solid #0f172a; color:#0f172a;
+  border-radius:10px; padding:.48rem .85rem; font-weight:700;
+}
+
+/* سلايدات بارتفاع تلقائي */
+.rent-swiper .swiper-slide{ height:auto; }
+
+/* ===== Mobile fine-tuning ===== */
+@media (max-width:640px){
+  .farm-body{ padding:.6rem .6rem; row-gap:.4rem; }
+  .farm-title{ font-size:.95rem; min-height:2.4em; }
+  .farm-location{ font-size:.84rem; }
+  .farm-price{ font-size:.9rem; }
+  .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
+  .badge{ font-size:.68rem; padding:.15rem .5rem; }
+}
+/* ===== Filters · compact on phones ===== */
+@media (max-width:640px){
+  /* العنوان + صندوق التفاصيل */
+  #filters .filter-dropdown summary{
+    font-size: .95rem !important;
+    padding: .45rem 0 !important;
+  }
+  #filters .filters-form{
+    padding: .5rem 0 0 !important;
   }
 
-  /* ===== بطاقات الإيجار داخل السويبر ===== */
-  .rent-swiper .swiper-slide{ height:auto; }
-
-  /* بطاقة المزرعة (النسخة النهائية الموحّدة) */
-  .farm-card{
-    display:block;
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    overflow:hidden;
-    background:#fff;
-    box-shadow:0 2px 10px rgba(2,6,23,.05);
-    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  }
-  .farm-card:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 24px rgba(2,6,23,.08);
-    border-color:#e2e8f0;
+  /* شبكة الحقول: عمودان صغيران بدل بطاقات كبيرة */
+  #filters .filters-grid{
+    grid-template-columns: repeat(2, minmax(140px, 1fr)) !important; /* كان auto-fit 200px */
+    gap: 8px !important;                                              /* تقليل الفجوات */
   }
 
-  /* صورة بنسبة 4:3 */
-  .farm-media{
-    position:relative;
-    aspect-ratio:4/3;
-    background:#f5f7f8;
+  /* الحقل نفسه أصغر */
+  #filters .field .label{
+    margin: .1rem 0 .25rem !important;
+    font-size: .85rem !important;
   }
-  .farm-card img{
-    width:100% !important;
-    height:100% !important;
-    object-fit:cover !important;
-    display:block;
-  }
-
-  /* جسم البطاقة */
-  .farm-body{
-    display:grid;
-    row-gap:.45rem;
-    padding:.7rem .75rem;
+  #filters .field input,
+  #filters .field select{
+    height: 2.1rem !important;                 /* كان ~2.6rem */
+    padding: .4rem .6rem !important;
+    font-size: .88rem !important;
+    border-radius: 10px !important;
   }
 
-  .farm-title{
-    margin:0;
-    font-size:1rem;
-    font-weight:900;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
-    min-height:2.6em;
+  /* زر "مزيد" مضغوط */
+  #filters #toggle-more.btn.btn-outline{
+    padding: .35rem .6rem !important;
+    font-size: .86rem !important;
+    border-radius: 10px !important;
+    width: 100%;
   }
 
-  .farm-location,
-  .farm-price{
-    margin:0 0 .25rem;
-  }
-  .farm-location{
-    color:#64748b;
-    font-size:.9rem;
-  }
-  .farm-price{
-    color:#475569;
-    font-weight:900;
-    letter-spacing:.2px;
+  /* الحقول الإضافية (عند فتح "مزيد") بنفس التخطيط المصغّر */
+  #filters #more-filters.filters-grid{
+    grid-template-columns: repeat(2, minmax(140px,1fr)) !important;
+    gap: 8px !important;
   }
 
-  /* عدد المشاهدات */
-  .meta-views{
-    display:inline-block;
-    margin-top:.25rem;
-    margin-inline-start:auto;
-    font-size:.85rem;
-    color:#475569 !important;
+  /* زر "تطبيق" أصغر ويتماشى مع العرض */
+  #filters .field--actions .btn.btn-primary{
+    padding: .45rem .9rem !important;
+    font-size: .9rem !important;
+    border-radius: 10px !important;
   }
+}
+/* إخفاء عناصر واجهة الفلاتر على الهاتف فقط */
+@media (max-width:640px){
+  /* أخفِ عنوان "تصفية النتائج" */
+  #filters .filter-dropdown > summary{
+    display: none !important;
+  }
+  /* أخفِ زر "مزيد" */
+  #filters #toggle-more{
+    display: none !important;
+  }
+  /* أخفِ زر "تطبيق" */
+  #filters .field--actions{
+    display: none !important;
+  }
+  /* ضبط هوامش بعد الإخفاء */
+  #filters .filters-form{ padding-top: 0 !important; }
+  #filters .filters-grid{ margin-top: 0 !important; }
+}
+/* ===== Rent Location Gate ===== */
+#rent-location-gate{position:fixed;inset:0;display:none;z-index:1100}
+#rent-location-gate[aria-hidden="false"]{display:block}
+#rent-location-gate .gate-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px)}
+#rent-location-gate .gate-card{
+  position:relative; margin:6vh auto 0; max-width:560px; background:#fff; color:#0f172a;
+  border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.22); animation: gatePop .18s ease-out
+}
+#rent-location-gate .gate-close{position:absolute; inset-inline-end:8px; top:6px; width:36px;height:36px;
+  border:none;border-radius:10px;background:#f1f5f9;cursor:pointer;font-size:20px;line-height:1}
+#rent-location-gate h3{margin:.25rem 0 .35rem; font-size:1.25rem; font-weight:900}
+#rent-location-gate .gate-note{margin:0 0 .6rem; color:#64748b; font-size:.95rem}
+#rent-location-gate .gate-fields{display:grid; gap:10px; margin:.5rem 0 .8rem}
+#rent-location-gate .gate-label{font-weight:700; font-size:.9rem}
+#rent-location-gate .gate-input{
+  width:100%; height:2.6rem; border:1px solid #e2e8f0; border-radius:12px; padding:.55rem .75rem; font-size:1rem
+}
+#rent-location-gate .gate-actions{display:flex; gap:8px; align-items:center; justify-content:flex-start}
+#rent-location-gate .gate-btn{
+  border:1px solid #e2e8f0; background:#fff; color:#0f172a; border-radius:12px; padding:.6rem .9rem; font-weight:800; cursor:pointer
+}
+#rent-location-gate .gate-primary{ background:#0f172a; color:#fff; border-color:#0f172a }
+@keyframes gatePop{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
 
-  /* زر التفاصيل (أساس عام) */
-  .btn.btn-outline{
-    width:80%;
-    display:inline-block;
-    border:1px solid #0f172a;
-    border-radius:10px;
-    padding:.55rem 1rem;
-    background:#fff;
-    color:#0f172a;
-    text-align:center;
-    text-decoration:none;
-  }
-  /* داخل جسم البطاقة: بعرض كامل */
-  .farm-body .btn.btn-outline{
-    width:100%;
-    padding:.48rem .85rem;
-    font-weight:700;
-  }
+@media (max-width:640px){
+  #rent-location-gate .gate-card{ margin:10vh 12px 0; padding:14px }
+  #rent-location-gate h3{ font-size:1.1rem }
+  #rent-location-gate .gate-note{ font-size:.9rem }
+  #rent-location-gate .gate-input{ height:2.4rem; font-size:.95rem }
+  #rent-location-gate .gate-btn{ padding:.5rem .8rem; font-size:.95rem }
+}
 
-  .empty{
-    padding:2rem;
-    text-align:center;
-  }
-
-  /* ===== شارات الخطط ===== */
-  .badge,
-  .badge--video{
-    z-index:4;
-  }
-
-  /* شارة عامة */
-  .badge{
-    max-width:60px;
-    text-align:center;
-    position:absolute;
-    inset-inline-start:10px;
-    top:10px;
-    background:#0f172a;
-    color:#fff;
-    border-radius:999px;
-    font-size:.72rem;
-    padding:.18rem .55rem;
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-weight:800;
-    letter-spacing:.2px;
-    box-shadow:0 4px 14px rgba(0,0,0,.12);
-  }
-
-  /* شارة فيديو */
-  .badge--video{
-    text-align:center;
-    inset-inline-start:auto;
-    inset-inline-end:10px;
-    background:#ef4444;
-    width:70px;
-    color:#fff;
-  }
-
-  /* ألوان الخطط */
-  .badge--Basic{ background:#64748b; }             /* رمادي مزرّق */
-  .badge--Premium{
-    background:#0ea5e9;
-    max-width:80px;
-    color:#fff;
-  }                                                /* سماوي */
-  .badge--VIP{
-    background:#0f172a;
-    color:#fff;
-  }                                                /* كحلي */
-  /* في الإيجار قررت تخفي Basic */
-  .badge--Basic{ display:none; }
-
-  /* ===== فلاتر (ديسكتوب) ===== */
-  .filter-dropdown summary{
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:.5rem;
-    font-weight:600;
-    user-select:none;
-  }
-  .filter-dropdown summary::after{
-    content:"▾";
-    transition:.2s;
-    font-size:.9rem;
-    opacity:.9;
-  }
-  .filter-dropdown[open] summary::after{
-    transform:rotate(180deg);
-  }
-  .filters-form{
-    padding:.75rem 0 0;
-  }
-  .filters-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:14px;
-  }
-  .field .label{
-    display:block;
-    margin:.2rem 0 .35rem;
-  }
-  .field input,
-  .field select{
-    height:2.6rem;
-    width:100%;
-    padding:.75rem .9rem;
-    border:1px solid #e2e8f0;
-    border-radius:12px;
-  }
-  .field--actions{
-    display:flex;
-    align-items:flex-end;
-  }
-  .btn.btn-primary{
-    background:#0f172a;
-    color:#fff;
-    border:none;
-    border-radius:10px;
-    padding:.55rem 1rem;
-  }
-
-  /* حالة إظهار/إخفاء المزيد */
-  .more-fields[hidden]{ display:none; }
-
-  .vip-swiper .swiper-slide{ height:auto; }
-
-  /* ===== ترتيب الهيرو على الموبايل (داخل البانر العلوي) ===== */
-  @media (max-width:640px){
-    .hero-top{
-      display:grid;
-      grid-template-columns:1fr 140px;
-      grid-template-areas:
-        "avatar actions"
-        "name   actions"
-        "spec   actions"
-        "region actions"
-        "rating actions"
-        "stats  stats";
-      align-items:center;
-      column-gap:.75rem;
-      row-gap:.25rem;
-      text-align:start;
-    }
-    .avatar--lg{ grid-area:avatar; justify-self:start; }
-    .hero-copy{ display:contents; }
-    .hero-copy .name{ grid-area:name; }
-    .hero-copy .specialization{ grid-area:spec; }
-    .hero-copy .region{ grid-area:region; }
-    .hero-rating{ grid-area:rating; justify-content:flex-start; }
-    .stats{ grid-area:stats; align-items:flex-start !important; }
-
-    .hero-actions{
-      grid-area:actions;
-      display:flex;
-      flex-direction:column;
-      gap:.5rem;
-      align-self:start;
-    }
-    .hero-actions .btn{ width:100%; }
-  }
-
-  /* ===== ضبط كروت الإيجار على الموبايل ===== */
-  @media (max-width:640px){
-    .farm-body{
-      padding:.6rem .6rem;
-      row-gap:.4rem;
-    }
-    .farm-title{
-      font-size:.95rem;
-      min-height:2.4em;
-    }
-    .farm-location{ font-size:.84rem; }
-    .farm-price{ font-size:.9rem; }
-    .farm-body .btn.btn-outline{
-      padding:.42rem .75rem;
-      font-size:.86rem;
-    }
-    .badge{
-      font-size:.68rem;
-      padding:.15rem .5rem;
-    }
-  }
-
-  /* ===== Filters · موبايل (ضغط الواجهة) ===== */
-  @media (max-width:640px){
-    #filters .filter-dropdown summary{
-      font-size:.95rem !important;
-      padding:.45rem 0 !important;
-    }
-    #filters .filters-form{
-      padding:.5rem 0 0 !important;
-    }
-    #filters .filters-grid{
-      grid-template-columns:repeat(2,minmax(140px,1fr)) !important;
-      gap:8px !important;
-    }
-    #filters .field .label{
-      margin:.1rem 0 .25rem !important;
-      font-size:.85rem !important;
-    }
-    #filters .field input,
-    #filters .field select{
-      height:2.1rem !important;
-      padding:.4rem .6rem !important;
-      font-size:.88rem !important;
-      border-radius:10px !important;
-    }
-    #filters #toggle-more.btn.btn-outline{
-      padding:.35rem .6rem !important;
-      font-size:.86rem !important;
-      border-radius:10px !important;
-      width:100%;
-    }
-    #filters #more-filters.filters-grid{
-      grid-template-columns:repeat(2,minmax(140px,1fr)) !important;
-      gap:8px !important;
-    }
-    #filters .field--actions .btn.btn-primary{
-      padding:.45rem .9rem !important;
-      font-size:.9rem !important;
-      border-radius:10px !important;
-    }
-  }
-
-  /* إخفاء عناصر من واجهة الفلاتر على الموبايل فقط */
-  @media (max-width:640px){
-    #filters .filter-dropdown > summary{
-      display:none !important;
-    }
-    #filters #toggle-more{
-      display:none !important;
-    }
-    #filters .field--actions{
-      display:none !important;
-    }
-    #filters .filters-form{
-      padding-top:0 !important;
-    }
-    #filters .filters-grid{
-      margin-top:0 !important;
-    }
-  }
-
-  /* ===== Rent Location Gate ===== */
-  #rent-location-gate{
-    position:fixed;
-    inset:0;
-    display:none;
-    z-index:1100;
-  }
-  #rent-location-gate[aria-hidden="false"]{ display:block; }
-  #rent-location-gate .gate-backdrop{
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    backdrop-filter:saturate(120%) blur(2px);
-  }
-  #rent-location-gate .gate-card{
-    position:relative;
-    margin:6vh auto 0;
-    max-width:560px;
-    background:#fff;
-    color:#0f172a;
-    border-radius:16px;
-    padding:16px;
-    box-shadow:0 10px 30px rgba(0,0,0,.22);
-    animation:gatePop .18s ease-out;
-  }
-  #rent-location-gate .gate-close{
-    position:absolute;
-    inset-inline-end:8px;
-    top:6px;
-    width:36px;
-    height:36px;
-    border:none;
-    border-radius:10px;
-    background:#f1f5f9;
-    cursor:pointer;
-    font-size:20px;
-    line-height:1;
-  }
-  #rent-location-gate h3{
-    margin:.25rem 0 .35rem;
-    font-size:1.25rem;
-    font-weight:900;
-  }
-  #rent-location-gate .gate-note{
-    margin:0 0 .6rem;
-    color:#64748b;
-    font-size:.95rem;
-  }
-  #rent-location-gate .gate-fields{
-    display:grid;
-    gap:10px;
-    margin:.5rem 0 .8rem;
-  }
-  #rent-location-gate .gate-label{
-    font-weight:700;
-    font-size:.9rem;
-  }
-  #rent-location-gate .gate-input{
-    width:100%;
-    height:2.6rem;
-    border:1px solid #e2e8f0;
-    border-radius:12px;
-    padding:.55rem .75rem;
-    font-size:1rem;
-  }
-  #rent-location-gate .gate-actions{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  #rent-location-gate .gate-btn{
-    border:1px solid #e2e8f0;
-    background:#fff;
-    color:#0f172a;
-    border-radius:12px;
-    padding:.6rem .9rem;
-    font-weight:800;
-    cursor:pointer;
-  }
-  #rent-location-gate .gate-primary{
-    background:#0f172a;
-    color:#fff;
-    border-color:#0f172a;
-  }
-  @keyframes gatePop{
-    from{opacity:0;transform:translateY(6px);}
-    to{opacity:1;transform:translateY(0);}
-  }
-  @media (max-width:640px){
-    #rent-location-gate .gate-card{margin:10vh 12px 0;padding:14px;}
-    #rent-location-gate h3{ font-size:1.1rem; }
-    #rent-location-gate .gate-note{ font-size:.9rem; }
-    #rent-location-gate .gate-input{height:2.4rem;font-size:.95rem;}
-    #rent-location-gate .gate-btn{ padding:.5rem .8rem;font-size:.95rem;}
-  }
-</style>
-
+  </style>
 </head>
 <body>
 <%

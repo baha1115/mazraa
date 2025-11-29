@@ -11,474 +11,231 @@
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
 
   <style>
-  /* ===== VIP Hero ===== */
-  .vip-hero-slide{
-    position:relative;
-    min-height:360px;
-    border-radius:16px;
-    overflow:hidden;
-    background:#f6faf6;
-  }
-  @media (min-width:1024px){
-    .vip-hero-slide{ min-height:520px; }
-  }
-  .vip-hero-img{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center;
-    filter:brightness(.85);
-  }
-  .vip-hero-overlay{
-    position:absolute;
-    inset:0;
-    background:linear-gradient(90deg,
-      rgba(0,0,0,.35),
-      rgba(0,0,0,.15) 40%,
-      rgba(0,0,0,0) 70%
-    );
-  }
-  .vip-hero-body{
-    position:absolute;
-    inset-inline:1.2rem;
-    inset-block-end:1.1rem;
-    color:#fff;
-    display:grid;
-    gap:.35rem;
-  }
-  .vip-hero-title{
-    font-size:clamp(20px,3vw,34px);
-    margin:.25rem 0 0;
-  }
-  .vip-hero-meta{
-    opacity:.95;
-    font-size:clamp(14px,1.5vw,16px);
-  }
-  .vip-hero-cta{
-    margin-top:.6rem;
-    display:inline-block;
-    padding:.5rem .9rem;
-    border-radius:10px;
-    background:#fff;
-    color:#0f172a;
-    text-decoration:none;
-    font-weight:600;
-    width:150px;
-    text-align:center;
-  }
-  .vip-badge{
-    position:absolute;
-    top:12px;
-    inset-inline-start:12px;
-    background:#0f172a;
-    color:#fff;
-    border-radius:999px;
-    font-size:.8rem;
-    padding:.2rem .6rem;
-    z-index:4;
-    box-shadow:0 2px 8px rgba(0,0,0,.25);
-  }
-  .vip-swiper .swiper-slide{ height:auto; }
+    .vip-hero-slide{position:relative;min-height:360px;border-radius:16px;overflow:hidden;background:#f6faf6;}
+    @media (min-width:1024px){.vip-hero-slide{min-height:520px;}}
+    .vip-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(.85);}
+    .vip-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,.35), rgba(0,0,0,.15) 40%, rgba(0,0,0,0) 70%);}
+    .vip-hero-body{position:absolute;inset-inline:1.2rem;inset-block-end:1.1rem;color:#fff;display:grid;gap:.35rem;text-align:flex-start;}
+    .vip-hero-title{font-size:clamp(20px,3vw,34px);margin:.25rem 0 0;}
+    .vip-hero-meta{opacity:.95;font-size:clamp(14px,1.5vw,16px);}
+    .vip-hero-cta{margin-top:.6rem;display:inline-block;padding:.5rem .9rem;border-radius:10px;background:#fff;color:#0f172a;text-decoration:none;font-weight:600;width:150px;text-align:center;}
+    .vip-badge{position:absolute;top:12px;inset-inline-start:12px;background:#0f172a;color:#fff;border-radius:999px;font-size:.8rem;padding:.2rem .6rem;z-index:4;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 
-  /* ===== Sale swiper & farm cards ===== */
-  .sale-swiper .swiper-slide{ height:auto; }
+    /* بطاقات العادية داخل سويبر */
+    .sale-swiper .swiper-slide{height:auto;}
+    .farm-card{display:block;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff}
+    .farm-card img{width:100%;height:220px;object-fit:cover}
+    .farm-body{padding:.8rem}
+    .farm-title{margin:.2rem 0 .4rem;font-size:1.05rem}
+    .farm-location,.farm-price{margin:0 0 .25rem;color:#475569}
+    .btn.btn-outline{width:80%; display:inline-block;border:1px solid #0f172a;text-align: center; border-radius:10px;padding:.35rem .7rem;text-decoration:none}
+    .badge{text-align: center;max-width: 50px; position:absolute;top:10px;inset-inline-start:10px;background:#0f172a;color:#fff;border-radius:999px;font-size:.75rem;padding:.15rem .5rem}
+    .badge--video{text-align:center; inset-inline-start:auto;inset-inline-end:60px;background:#ef4444}
+    .badge, .badge--video { z-index: 4;}
+    /* فلاتر */
+    .filter-dropdown summary{cursor:pointer;display:flex;align-items:center;gap:.5rem;font-weight:600;user-select:none;}
+    .filter-dropdown summary::after{content:"▾";transition:.2s;font-size:.9rem;opacity:.9;}
+    .filter-dropdown[open] summary::after{transform:rotate(180deg);}
+    .filters-form{padding:.75rem 0 0;}
+    .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+    .field .label{display:block;margin:.2rem 0 .35rem}
+    .field input,.field select{height:2.6rem;width:100%;padding:.75rem .9rem;border:1px solid #e2e8f0;border-radius:12px;}
+    .field--actions{display:flex;align-items:flex-end}
+    .btn.btn-primary{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:.55rem 1rem}
 
-  .farm-card{
-    display:block;
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    overflow:hidden;
-    background:#fff;
-    box-shadow:0 2px 10px rgba(2,6,23,.05);
-    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  }
-  .farm-card:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 24px rgba(2,6,23,.08);
-    border-color:#e2e8f0;
-  }
-
-  .farm-media{
-    position:relative;
-    aspect-ratio:4/3;
-    background:#f5f7f8;
-  }
-  .farm-card img{
-    width:100% !important;
-    height:100% !important;
-    object-fit:cover !important;
-    display:block;
-  }
-
-  .farm-body{
-    padding:.7rem .75rem;
-    display:grid;
-    row-gap:.45rem;
-  }
-
-  .farm-title{
-    margin:0;
-    font-size:1rem;
-    font-weight:900;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    min-height:2.6em;
-  }
-
-  .farm-location{
-    margin:0;
-    color:#64748b;
-    font-size:.9rem;
-  }
-  .farm-price{
-    margin:0;
-    color:#64748b;
-    font-weight:900;
-    letter-spacing:.2px;
-  }
-
-  .meta-views{
-    color:#fff;
-    padding:.15rem .5rem;
-    font-size:.75rem;
-    z-index:4;
-  }
-  .farm-body .meta-views{
-    margin-inline-start:auto;
-    font-size:.85rem;
-    color:#475569 !important;
-  }
-
+    .empty{padding:2rem;text-align:center}
+    .badge{text-align: center; position:absolute;top:10px;inset-inline-start:10px;background:#0f172a;color:#fff;border-radius:999px;font-size:.75rem;padding:.15rem .5rem}
+.badge--vip{background:#0f172a;}
+.badge--premium{background:#8b5cf6;max-width: 80px;} /* بنفسجي */
+.badge--basic{background:#64748b;}   /* رمادي */
+    .badge--video{text-align:center; inset-inline-start:auto;inset-inline-end:70px;background:#ef4444;max-width:100px;}
+.badge, .badge--video { z-index: 4;}
+.meta-views{color:#fff;padding:.15rem .5rem;font-size:.75rem;z-index:4}
+/* إعدادات زر “المزيد/أقل” والطي */
   .btn.btn-outline{
-    width:80%;
-    display:inline-block;
-    border:1px solid #0f172a;
-    text-align:center;
-    border-radius:10px;
-    padding:.55rem 1rem;
-    text-decoration:none;
-    background:#fff;
-    color:#0f172a;
+    background:#fff;border:1px solid #0f172a;color:#0f172a;border-radius:10px;padding:.55rem 1rem
   }
-  .farm-body .btn.btn-outline{
-    width:100%;
-    padding:.48rem .85rem;
-    font-weight:700;
-  }
-
-  .empty{
-    padding:2rem;
-    text-align:center;
-  }
-
-  /* ===== Badges ===== */
-  .badge,
-  .badge--video{
-    z-index:4;
-  }
-
-  .badge{
-    text-align:center;
-    max-width:50px;
-    position:absolute;
-    inset-inline-start:10px;
-    top:10px;
-    background:#0f172a;
-    color:#fff;
-    border-radius:999px;
-    font-size:.72rem;
-    padding:.18rem .55rem;
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-weight:800;
-    letter-spacing:.2px;
-    box-shadow:0 4px 14px rgba(0,0,0,.12);
-  }
-  .badge--vip{ background:#0f172a; }
-  .badge--premium{
-    background:#8b5cf6;
-    color:#fff;
-    max-width:80px;
-  }
-  .badge--basic{ background:#64748b; }
-  .badge--video{
-    text-align:center;
-    inset-inline-start:auto;
-    inset-inline-end:10px;
-    background:#ef4444;
-    max-width:100px;
-    color:#fff;
-  }
-
-  /* ===== Filters (desktop base) ===== */
-  .filter-dropdown summary{
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:.5rem;
-    font-weight:600;
-    user-select:none;
-  }
-  .filter-dropdown summary::after{
-    content:"▾";
-    transition:.2s;
-    font-size:.9rem;
-    opacity:.9;
-  }
-  .filter-dropdown[open] summary::after{
-    transform:rotate(180deg);
-  }
-  .filters-form{ padding:.75rem 0 0; }
-  .filters-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:14px;
-  }
-  .field .label{
-    display:block;
-    margin:.2rem 0 .35rem;
-  }
-  .field input,
-  .field select{
-    height:2.6rem;
-    width:100%;
-    padding:.75rem .9rem;
-    border:1px solid #e2e8f0;
-    border-radius:12px;
-  }
-  .field--actions{
-    display:flex;
-    align-items:flex-end;
-  }
-  .btn.btn-primary{
-    background:#0f172a;
-    color:#fff;
-    border:none;
-    border-radius:10px;
-    padding:.55rem 1rem;
-  }
-
   .advanced-fields[hidden]{ display:none !important; }
-  .advanced-fields.fade-in{ animation:fadeIn .18s ease-in; }
-  @keyframes fadeIn{
-    from{opacity:0;transform:translateY(-4px);}
-    to{opacity:1;transform:translateY(0);}
+  /* تأثير لطيف عند الفتح (اختياري) */
+  .advanced-fields.fade-in{ animation: fadeIn .18s ease-in; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .vip-swiper .swiper-slide{ height:auto; }
+.farm-title{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* ===== Sale cards · two-up on phones ===== */
+@media (max-width: 640px){
+  .sale-swiper .farm-card{
+    border-radius: 12px !important;
+  }
+  .sale-swiper .farm-card img{
+    height: 140px !important;        /* ↓ أقل من 220px */
+    object-fit: cover !important;
+  }
+  .sale-swiper .farm-body{ padding: .55rem !important; }
+  .sale-swiper .farm-title{ font-size: .95rem !important; margin: .15rem 0 .3rem !important; }
+  .sale-swiper .farm-location,
+  .sale-swiper .farm-price{ font-size: .82rem !important; margin: 0 0 .2rem !important; }
+  .sale-swiper .btn.btn-outline{ padding: .4rem .7rem !important; font-size: .85rem !important; }
+}
+/* ===== Polish sale cards (mobile-first, two-up stays) ===== */
+
+/* بطاقة أنظف بظل وانتقال خفيف */
+.farm-card{
+  border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden;
+  box-shadow:0 2px 10px rgba(2,6,23,.05); transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.farm-card:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(2,6,23,.08); border-color:#e2e8f0; }
+
+/* صورة بنسبة 4:3 بدل ارتفاع ثابت */
+.farm-media{ position:relative; aspect-ratio: 4 / 3; background:#f5f7f8; }
+.farm-card img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block; }
+
+/* بادجات متناسقة لا تتصادم */
+.badge{ position:absolute; inset-inline-start:10px; top:10px; z-index:4;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:.18rem .55rem; border-radius:999px; font-size:.72rem; font-weight:800; letter-spacing:.2px;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);
+}
+.badge--premium{ background:#8b5cf6; color:#fff; }
+.badge--vip{ background:#0f172a; color:#fff; }
+.badge--video{ inset-inline-end:10px; inset-inline-start:auto; background:#ef4444; color:#fff; }
+
+/* جسم البطاقة شبكة بسيطة */
+.farm-body{
+  display:grid; row-gap:.45rem; padding:.7rem .75rem;
+}
+.farm-title{
+  margin:0; font-size:1rem; font-weight:900;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em;
+}
+.farm-location{ margin:0; color:#64748b; font-size:.9rem; }
+.farm-price{ margin:0; font-weight:900; letter-spacing:.2px; }
+
+/* صف سفلي مرتب: السعر يمين، المشاهدات يسار */
+.farm-body .meta-views{ margin-inline-start:auto; font-size:.85rem; color:#475569 !important; }
+
+/* زر التفاصيل بعرض كامل ولمسة أنيقة */
+.farm-body .btn.btn-outline{
+  width:100%; text-align:center; border:1px solid #0f172a; color:#0f172a;
+  border-radius:10px; padding:.48rem .85rem; font-weight:700;
+}
+
+/* ===== Mobile fine-tuning ===== */
+@media (max-width:640px){
+  /* نحافظ على كرتين لكل شاشة كما ضبطت سابقًا */
+  .sale-swiper .swiper-slide{ height:auto; }
+  .farm-body{ padding:.6rem .6rem; row-gap:.4rem; }
+  .farm-title{ font-size:.95rem; min-height:2.4em; }
+  .farm-location{ font-size:.84rem; }
+  .farm-price{ font-size:.9rem; }
+  .farm-body .btn.btn-outline{ padding:.42rem .75rem; font-size:.86rem; }
+  .badge{ font-size:.68rem; padding:.15rem .5rem; }
+}
+
+/* ===== Tablet/Desktop touch-ups (تبقى نظيفة على الكبير) ===== */
+@media (min-width:641px){
+  .farm-card{ border-radius:16px; }
+  .farm-body{ padding:.8rem .85rem; }
+  .farm-title{ font-size:1.05rem; }
+}
+/* ===== Filters · compact on phones (sale page) ===== */
+@media (max-width:640px){
+  /* عنوان صندوق التصفية */
+  #filters .filter-dropdown summary{
+    font-size: .95rem !important;
+    padding: .45rem 0 !important;
+  }
+  #filters .filters-form{ padding: .5rem 0 0 !important; }
+
+  /* شبكة الحقول: عمودان صغيران */
+  #filters .filters-grid{
+    grid-template-columns: repeat(2, minmax(130px, 1fr)) !important;
+    gap: 8px !important;
   }
 
-  /* ===== Sale cards · two-up on phones ===== */
-  @media (max-width:640px){
-    .sale-swiper .farm-card{
-      border-radius:12px !important;
-    }
-    .sale-swiper .farm-card img{
-      height:140px !important;
-      object-fit:cover !important;
-    }
-    .sale-swiper .farm-body{ padding:.55rem !important; }
-    .sale-swiper .farm-title{
-      font-size:.95rem !important;
-      margin:.15rem 0 .3rem !important;
-    }
-    .sale-swiper .farm-location,
-    .sale-swiper .farm-price{
-      font-size:.82rem !important;
-      margin:0 0 .2rem !important;
-    }
-    .sale-swiper .btn.btn-outline{
-      padding:.4rem .7rem !important;
-      font-size:.85rem !important;
-    }
+  /* الحقول نفسها أصغر */
+  #filters .field .label{
+    margin: .1rem 0 .25rem !important;
+    font-size: .85rem !important;
+  }
+  #filters .field input,
+  #filters .field select{
+    height: 2.1rem !important;          /* كان ~2.6rem */
+    padding: .35rem .55rem !important;
+    font-size: .88rem !important;
+    border-radius: 10px !important;
   }
 
-  /* ===== Mobile fine-tuning + filters (نفس الـ breakpoint) ===== */
-  @media (max-width:640px){
-    .sale-swiper .swiper-slide{ height:auto; }
-    .farm-body{
-      padding:.6rem .6rem;
-      row-gap:.4rem;
-    }
-    .farm-title{
-      font-size:.95rem;
-      min-height:2.4em;
-    }
-    .farm-location{ font-size:.84rem; }
-    .farm-price{ font-size:.9rem; }
-    .farm-body .btn.btn-outline{
-      padding:.42rem .75rem;
-      font-size:.86rem;
-    }
-    .badge{
-      font-size:.68rem;
-      padding:.15rem .5rem;
-    }
-
-    /* فلاتر مضغوطة + إخفاء بعض العناصر على الموبايل */
-    #filters .filter-dropdown summary{
-      font-size:.95rem !important;
-      padding:.45rem 0 !important;
-      display:none !important;          /* إخفاء عنوان "تصفية النتائج" */
-    }
-    #filters .filters-form{
-      padding:.5rem 0 0 !important;
-    }
-    #filters .filters-grid{
-      grid-template-columns:repeat(2,minmax(130px,1fr)) !important;
-      gap:8px !important;
-      margin-top:0 !important;
-    }
-    #filters .field .label{
-      margin:.1rem 0 .25rem !important;
-      font-size:.85rem !important;
-    }
-    #filters .field input,
-    #filters .field select{
-      height:2.1rem !important;
-      padding:.35rem .55rem !important;
-      font-size:.88rem !important;
-      border-radius:10px !important;
-    }
-    #filters .field--actions{
-      gap:6px !important;
-      display:none !important;          /* إخفاء "المزيد" و"تطبيق" */
-    }
-    #filters .field--actions .btn.btn-outline{
-      padding:.35rem .6rem !important;
-      font-size:.86rem !important;
-      border-radius:10px !important;
-    }
-    #filters .field--actions .btn.btn-primary{
-      padding:.42rem .8rem !important;
-      font-size:.9rem !important;
-      border-radius:10px !important;
-    }
-    #filters #advanced-fields.filters-grid{
-      grid-template-columns:repeat(2,minmax(130px,1fr)) !important;
-      gap:8px !important;
-      margin-top:.35rem !important;
-    }
+  /* أزرار: "المزيد" و"تطبيق" */
+  #filters .field--actions{ gap: 6px !important; }
+  #filters .field--actions .btn.btn-outline{
+    padding: .35rem .6rem !important;
+    font-size: .86rem !important;
+    border-radius: 10px !important;
+  }
+  #filters .field--actions .btn.btn-primary{
+    padding: .42rem .8rem !important;
+    font-size: .9rem !important;
+    border-radius: 10px !important;
   }
 
-  /* ===== Tablet/Desktop touch-ups ===== */
-  @media (min-width:641px){
-    .farm-card{ border-radius:16px; }
-    .farm-body{ padding:.8rem .85rem; }
-    .farm-title{ font-size:1.05rem; }
+  /* الحقول المتقدمة عند الفتح بنفس التخطيط المصغّر */
+  #filters #advanced-fields.filters-grid{
+    grid-template-columns: repeat(2, minmax(130px, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: .35rem !important;
   }
+}
+/* إخفاء عنوان "تصفية النتائج" وزري "المزيد" و"تطبيق" على الهاتف فقط */
+@media (max-width:640px){
+  /* أخفِ العنوان داخل الـ summary */
+  #filters .filter-dropdown > summary{
+    display: none !important;
+  }
+  /* أخفِ حاوية الأزرار التي تحتوي "المزيد" و"تطبيق" */
+  #filters .field--actions{
+    display: none !important;
+  }
+  /* تلميع المسافات بعد الإخفاء */
+  #filters .filters-form{ padding-top: 0 !important; }
+  #filters .filters-grid{ margin-top: 0 !important; }
+}
+/* ===== Location Gate (بوابة الموقع) ===== */
+#location-gate{position:fixed;inset:0;display:none;z-index:1100}
+#location-gate[aria-hidden="false"]{display:block}
+#location-gate .gate-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px)}
+#location-gate .gate-card{
+  position:relative; margin:6vh auto 0; max-width:560px; background:#fff; color:#0f172a;
+  border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.22); animation: gatePop .18s ease-out
+}
+#location-gate .gate-close{position:absolute; inset-inline-end:8px; top:6px; width:36px;height:36px;
+  border:none;border-radius:10px;background:#f1f5f9;cursor:pointer;font-size:20px;line-height:1}
+#location-gate h3{margin:.25rem 0 .35rem; font-size:1.25rem; font-weight:900}
+#location-gate .gate-note{margin:0 0 .6rem; color:#64748b; font-size:.95rem}
+#location-gate .gate-fields{display:grid; gap:10px; margin:.5rem 0 .8rem}
+#location-gate .gate-label{font-weight:700; font-size:.9rem}
+#location-gate .gate-input{
+  width:100%; height:2.6rem; border:1px solid #e2e8f0; border-radius:12px; padding:.55rem .75rem; font-size:1rem
+}
+#location-gate .gate-actions{display:flex; gap:8px; align-items:center; justify-content:flex-start}
+#location-gate .gate-btn{
+  border:1px solid #e2e8f0; background:#fff; color:#0f172a; border-radius:12px; padding:.6rem .9rem; font-weight:800; cursor:pointer
+}
+#location-gate .gate-primary{ background:#0f172a; color:#fff; border-color:#0f172a }
+@keyframes gatePop{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
 
-  /* ===== Location Gate (بوابة الموقع) ===== */
-  #location-gate{
-    position:fixed;
-    inset:0;
-    display:none;
-    z-index:1100;
-  }
-  #location-gate[aria-hidden="false"]{ display:block; }
-  #location-gate .gate-backdrop{
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    backdrop-filter:saturate(120%) blur(2px);
-  }
-  #location-gate .gate-card{
-    position:relative;
-    margin:6vh auto 0;
-    max-width:560px;
-    background:#fff;
-    color:#0f172a;
-    border-radius:16px;
-    padding:16px;
-    box-shadow:0 10px 30px rgba(0,0,0,.22);
-    animation:gatePop .18s ease-out;
-  }
-  #location-gate .gate-close{
-    position:absolute;
-    inset-inline-end:8px;
-    top:6px;
-    width:36px;
-    height:36px;
-    border:none;
-    border-radius:10px;
-    background:#f1f5f9;
-    cursor:pointer;
-    font-size:20px;
-    line-height:1;
-  }
-  #location-gate h3{
-    margin:.25rem 0 .35rem;
-    font-size:1.25rem;
-    font-weight:900;
-  }
-  #location-gate .gate-note{
-    margin:0 0 .6rem;
-    color:#64748b;
-    font-size:.95rem;
-  }
-  #location-gate .gate-fields{
-    display:grid;
-    gap:10px;
-    margin:.5rem 0 .8rem;
-  }
-  #location-gate .gate-label{
-    font-weight:700;
-    font-size:.9rem;
-  }
-  #location-gate .gate-input{
-    width:100%;
-    height:2.6rem;
-    border:1px solid #e2e8f0;
-    border-radius:12px;
-    padding:.55rem .75rem;
-    font-size:1rem;
-  }
-  #location-gate .gate-actions{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  #location-gate .gate-btn{
-    border:1px solid #e2e8f0;
-    background:#fff;
-    color:#0f172a;
-    border-radius:12px;
-    padding:.6rem .9rem;
-    font-weight:800;
-    cursor:pointer;
-  }
-  #location-gate .gate-primary{
-    background:#0f172a;
-    color:#fff;
-    border-color:#0f172a;
-  }
-  @keyframes gatePop{
-    from{opacity:0;transform:translateY(6px);}
-    to{opacity:1;transform:translateY(0);}
-  }
-  @media (max-width:640px){
-    #location-gate .gate-card{
-      margin:10vh 12px 0;
-      padding:14px;
-    }
-    #location-gate h3{ font-size:1.1rem; }
-    #location-gate .gate-note{ font-size:.9rem; }
-    #location-gate .gate-input{
-      height:2.4rem;
-      font-size:.95rem;
-    }
-    #location-gate .gate-btn{
-      padding:.5rem .8rem;
-      font-size:.95rem;
-    }
-  }
-</style>
+@media (max-width:640px){
+  #location-gate .gate-card{ margin:10vh 12px 0; padding:14px }
+  #location-gate h3{ font-size:1.1rem }
+  #location-gate .gate-note{ font-size:.9rem }
+  #location-gate .gate-input{ height:2.4rem; font-size:.95rem }
+  #location-gate .gate-btn{ padding:.5rem .8rem; font-size:.95rem }
+}
 
+  </style>
 </head>
 <body>
 <%

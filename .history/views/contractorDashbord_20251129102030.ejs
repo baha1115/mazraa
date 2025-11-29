@@ -524,43 +524,26 @@
   });
 
   /* ============== حفظ الملف (POST أو PATCH) ============== */
-    /* ============== حفظ الملف (POST أو PATCH) ============== */
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-
-    // أولاً: التحقق من حجم الصور (كما هو موجود عندك)
-    const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
+     const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
     if (totalB64 > MAX_TOTAL_BYTES) {
+      e.preventDefault();
       return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
     }
-
-    const fd      = new FormData(form);
-    const service = (fd.get('services')||'').toString().trim();
-    const city    = (fd.get('city')||'').toString().trim();
-    const region  = (fd.get('region')||'').toString().trim();
-
-    // ✅ تحقق يدوي قبل الإرسال
-    if (!city){
-      return toast('اختر المحافظة','warn');
-    }
-    if (!region){
-      return toast('اكتب المنطقة','warn');
-    }
-    if (!service){
-      return toast('اختر التخصص / الخدمة','warn');
-    }
-
+    const fd = new FormData(form);
+     const service = (fd.get('services')||'').toString().trim();
     const payload = {
       name:        (fd.get('name')||'').toString().trim(),
       email:       (fd.get('email')||'').toString().trim(),
       phone:       (fd.get('phone')||'').toString().trim(),
-      region,                                  // استخدم المتغير
+      region:      (fd.get('region')||'').toString().trim(),
       bio:         (fd.get('bio')||'').toString().trim(),
       companyName: (fd.get('companyName')||'').toString().trim(),
-      services:    service ? [service] : [],   // قائمة فيها عنصر واحد
-      city,                                    // استخدم المتغير
+      services: service ? [service] : [],
+      city:        (fd.get('city')||'').toString().trim(),
       description: (fd.get('description')||'').toString().trim(),
-      videoUrl:    (fd.get('videoUrl')||'').toString().trim(),
+      videoUrl: (fd.get('videoUrl')||'').toString().trim(),   // ← أضِف هذا السطر
       avatar,
       photos,
       submitForReview: true
@@ -570,11 +553,7 @@
     const method = editingId ? 'PATCH' : 'POST';
 
     try{
-      const res  = await fetch(url, {
-        method,
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res  = await fetch(url, { method, headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
       const json = await res.json().catch(()=>({ok:false}));
       if (json && json.ok){
         toast(editingId ? 'تم تعديل الطلب وإرساله للمراجعة' : 'تم الحفظ وإرسال التعديلات للمراجعة','ok');
@@ -584,8 +563,7 @@
         toast(json.msg || 'تعذر الحفظ','warn');
       }
     }catch(err){
-      console.error(err);
-      toast('خطأ في الاتصال','warn');
+      console.error(err); toast('خطأ في الاتصال','warn');
     }
   });
 

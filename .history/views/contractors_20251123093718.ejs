@@ -11,122 +11,135 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 
   <style>
-   /* ==== VIP hero ==== */
-.vip-hero-slide{position:relative;min-height:360px;border-radius:16px;overflow:hidden;background:#f6faf6;}
-@media (min-width:1024px){.vip-hero-slide{min-height:520px;}}
-.vip-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.85);}
-.vip-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.15) 40%,rgba(0,0,0,0) 70%);}
-.vip-hero-body{position:absolute;inset-inline:1.2rem;inset-block-end:1.1rem;color:#fff;display:grid;gap:.35rem;}
-.vip-hero-title{font-size:clamp(20px,3vw,34px);margin:.25rem 0 0;}
-.vip-hero-meta{opacity:.95;font-size:clamp(14px,1.5vw,16px);}
-.vip-hero-cta{margin-top:.6rem;display:inline-block;padding:.5rem .9rem;border-radius:10px;background:#fff;color:#0f172a;text-decoration:none;font-weight:600;width:150px;text-align:center;}
-.vip-badge{position:absolute;top:12px;inset-inline-start:12px;background:#0f172a;color:#fff;border-radius:999px;font-size:.8rem;padding:.18rem .6rem;z-index:2}
+    /* ==== VIP hero ==== */
+    .vip-hero-slide{position:relative;min-height:360px;border-radius:16px;overflow:hidden;background:#f6faf6;}
+    @media (min-width:1024px){.vip-hero-slide{min-height:520px;}}
+    .vip-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.85);}
+    .vip-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.15) 40%,rgba(0,0,0,0) 70%);}
+    .vip-hero-body{position:absolute;inset-inline:1.2rem;inset-block-end:1.1rem;color:#fff;display:grid;gap:.35rem;}
+    .vip-hero-title{font-size:clamp(20px,3vw,34px);margin:.25rem 0 0;}
+    .vip-hero-meta{opacity:.95;font-size:clamp(14px,1.5vw,16px);}
+    .vip-hero-cta{margin-top:.6rem;display:inline-block;padding:.5rem .9rem;border-radius:10px;background:#fff;color:#0f172a;text-decoration:none;font-weight:600;width:150px;text-align:center;}
+    .vip-badge{position:absolute;top:12px;inset-inline-start:12px;background:#0f172a;color:#fff;border-radius:999px;font-size:.8rem;padding:.18rem .6rem;z-index:2}
 
-/* ==== بطاقات المقاولين ==== */
-.contractor-swiper .swiper-slide{height:auto;}
-.contractor-card{
-  position:relative;border:1px solid #e2e8f0;background:#fff;border-radius:16px;overflow:hidden;
-  display:flex;flex-direction:column;gap:20px;padding:16px 14px;height:300px;padding-top:40px;
-}
-.tier-badge{
-  position:absolute;top:10px;inset-inline-end:10px;
-  background:#0f172a;color:#fff;border-radius:999px;font-size:13px;padding:.2rem .6rem;line-height:1;
-}
-.card-row{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;}
-.avatar{width:82px;height:82px;border-radius:999px;overflow:hidden;border:3px solid #eef2f7;justify-self:end;}
-.avatar img{width:100%;height:100%;object-fit:cover;}
-.info-stack{display:flex;flex-direction:column;gap:4px;}
-.name{font-weight:800;font-size:22px;margin:0;}
-.specialization,.region{margin:0;color:#475569;}
-.rating{display:flex;align-items:center;gap:.35rem;color:#111827;font-weight:700;justify-content:flex-start;}
-.rating small{color:#6b7280;font-weight:600;}
-.card-cta{
-  margin-top:50px;width:100%;text-align:center;border:1px solid #0f172a;border-radius:12px;
-  padding:.6rem .9rem;text-decoration:none;color:#0f172a;font-weight:600;display:inline-block;
-}
+    /* ==== بطاقات المقاولين (مطابقة لشكل الصورة) ==== */
+    .contractor-swiper .swiper-slide{height:auto;}
+    .contractor-card{
+      position:relative;border:1px solid #e2e8f0;background:#fff;border-radius:16px;overflow:hidden;
+      display:flex;flex-direction:column;gap:20px;padding:16px 14px;height: 300px;padding-top: 40px;
+    }
+    /* شارة الباقة في أقصى اليسار أعلى البطاقة */
+    .tier-badge{
+      position:absolute;top:10px;inset-inline-end:10px;
+      background:#0f172a;color:#fff;border-radius:999px;font-size:13px;padding:.2rem .6rem;line-height:1
+    }
 
-/* أسهم السويبر (العام و VIP) */
-.contractor-swiper .swiper-button-prev,
-.contractor-swiper .swiper-button-next,
-.vip-swiper .swiper-button-prev,
-.vip-swiper .swiper-button-next{
-  color:#2563eb;
-}
+    /* السطر العلوي: الصورة الدائرية يمين + الاسم/الخانات يسارها عمودياً */
+    .card-row{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;}
+    .avatar{width:82px;height:82px;border-radius:999px;overflow:hidden;border:3px solid #eef2f7;justify-self:end}
+    .avatar img{width:100%;height:100%;object-fit:cover}
 
+    .info-stack{display:flex;flex-direction:column;gap:4px}
+    .name{font-weight:800;font-size:22px;margin:0}
+    .specialization,.region{margin:0;color:#475569}
+
+    /* سطر التقييم تحتهم بمحاذاة اليمين */
+    .rating{display:flex;align-items:center;gap:.35rem;color:#111827;font-weight:700;justify-content:flex-start}
+    .rating small{color:#6b7280;font-weight:600}
+
+    /* زر أسفل الكرت */
+    .card-cta{margin-top:50px;width:100%;text-align:center;border:1px solid #0f172a;border-radius:12px;padding:.6rem .9rem;text-decoration:none;color:#0f172a;font-weight:600;display:inline-block}
+
+    /* أزرار السويبر */
+    .contractor-swiper .swiper-button-prev,
+    .contractor-swiper .swiper-button-next{color:#2563eb}
+
+    /* وقاية من قواعد عامة قد تؤثر على الصور */
+.contractor-card img{margin-top:0!important;border-radius:0}
 /* ليأخذ ارتفاع البطاقة تلقائيًا مثل السويبر العام */
-.vip-swiper .swiper-slide{height:auto;}
+.vip-swiper .swiper-slide{ height:auto; }
 
+/* نفس لون الأسهم كالسويبر العام */
+.vip-swiper .swiper-button-prev,
+.vip-swiper .swiper-button-next{ color:#2563eb; }
 /* ===== Contractors cards · compact on phones ===== */
-@media (max-width:640px){
+@media (max-width: 640px){
+  .contractor-swiper .swiper-slide{ height:auto; }
+
   .contractor-card{
-    padding:12px 10px !important;
-    gap:12px !important;
-    height:auto !important;
-    border-radius:12px !important;
+    padding: 12px 10px !important;
+    gap: 12px !important;
+    height: auto !important;          /* لا نجبر الارتفاع */
+    border-radius: 12px !important;
   }
-  .card-row{gap:10px !important;}
-  .avatar{width:56px !important;height:56px !important;border-width:2px !important;}
-  .name{font-size:1rem !important;}
-  .specialization,.region{font-size:.85rem !important;}
-  .rating{font-size:.9rem !important;gap:.3rem !important;}
-  .rating small{font-size:.82rem !important;}
+
+  .card-row{ gap: 10px !important; }
+  .avatar{ width: 56px !important; height: 56px !important; border-width: 2px !important; }
+  .name{ font-size: 1rem !important; }
+  .specialization, .region{ font-size: .85rem !important; }
+
+  .rating{ font-size: .9rem !important; gap: .3rem !important; }
+  .rating small{ font-size: .82rem !important; }
+
   .card-cta{
-    padding:.42rem .7rem !important;
-    font-size:.88rem !important;
-    border-radius:10px !important;
-    margin-top:6px !important;
+    padding: .42rem .7rem !important;
+    font-size: .88rem !important;
+    border-radius: 10px !important;
+    margin-top: 6px !important;       /* أقل فراغ سفلي */
   }
+
   .tier-badge{
-    font-size:.72rem !important;
-    padding:.16rem .5rem !important;
-    top:8px !important;inset-inline-end:8px !important;
+    font-size: .72rem !important;
+    padding: .16rem .5rem !important;
+    top: 8px !important; inset-inline-end: 8px !important;
   }
 }
-
 /* إخفاء عناصر الفلاتر على الهاتف فقط */
 @media (max-width:640px){
-  #filters .filter-dropdown > summary{display:none !important;}
-  #filters .filters-form button[type="submit"]{display:none !important;}
-  #filters #toggle-more{display:none !important;}
-  #filters .filters-form{padding-top:0 !important;}
-  #filters .filters-grid{margin-top:0 !important;}
-}
+  /* أخفِ عنوان "فلترة المقاولين" داخل الـsummary */
+  #filters .filter-dropdown > summary{
+    display: none !important;
+  }
 
-/* ===== أسلوب الحارس ===== */
-#contractor-gate{position:fixed;inset:0;display:none;z-index:1100;}
-#contractor-gate[aria-hidden="false"]{display:block;}
-#contractor-gate .gate-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px);}
-#contractor-gate .gate-card{
-  position:relative;margin:6vh auto 0;max-width:560px;background:#fff;color:#0f172a;
-  border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.22);animation:gatePop .18s ease-out;
-}
-#contractor-gate .gate-close{
-  position:absolute;inset-inline-end:8px;top:6px;width:36px;height:36px;border:none;border-radius:10px;
-  background:#f1f5f9;cursor:pointer;font-size:20px;line-height:1;
-}
-#contractor-gate h3{margin:.25rem 0 .35rem;font-size:1.25rem;font-weight:900;}
-#contractor-gate .gate-note{margin:0 0 .6rem;color:#64748b;font-size:.95rem;}
-#contractor-gate .gate-fields{display:grid;gap:10px;margin:.5rem 0 .8rem;}
-#contractor-gate .gate-label{font-weight:700;font-size:.9rem;}
-#contractor-gate .gate-input{
-  width:100%;height:2.6rem;border:1px solid #e2e8f0;border-radius:12px;
-  padding:.55rem .75rem;font-size:1rem;
-}
-#contractor-gate .gate-actions{display:flex;gap:8px;align-items:center;justify-content:flex-start;}
-#contractor-gate .gate-btn{
-  border:1px solid #e2e8f0;background:#fff;color:#0f172a;border-radius:12px;
-  padding:.6rem .9rem;font-weight:800;cursor:pointer;
-}
-#contractor-gate .gate-primary{background:#0f172a;color:#fff;border-color:#0f172a;}
-@keyframes gatePop{from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)}}
-@media (max-width:640px){
-  #contractor-gate .gate-card{margin:10vh 12px 0;padding:14px;}
-  #contractor-gate h3{font-size:1.1rem;}
-  #contractor-gate .gate-note{font-size:.9rem;}
-  #contractor-gate .gate-input{height:2.4rem;font-size:.95rem;}
-  #contractor-gate .gate-btn{padding:.5rem .8rem;font-size:.95rem;}
-}
+  /* أخفِ زر "تطبيق" في أسفل نموذج الفلاتر */
+  #filters .filters-form button[type="submit"]{
+    display: none !important;
+  }
 
+  /* (اختياري) لو كان لديك زر "مزيد" بصفحات أخرى */
+  #filters #toggle-more{
+    display: none !important;
+  }
+
+  /* تلميع المسافات بعد الإخفاء */
+  #filters .filters-form{ padding-top: 0 !important; }
+  #filters .filters-grid{ margin-top: 0 !important; }
+}
+/* ===== أسلوب الحارس (خفيف ومتناسق مع أسلوبك) ===== */
+  #contractor-gate{position:fixed;inset:0;display:none;z-index:1100}
+  #contractor-gate[aria-hidden="false"]{display:block}
+  #contractor-gate .gate-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px)}
+  #contractor-gate .gate-card{
+    position:relative;margin:6vh auto 0;max-width:560px;background:#fff;color:#0f172a;
+    border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.22);animation: gatePop .18s ease-out
+  }
+  #contractor-gate .gate-close{position:absolute;inset-inline-end:8px;top:6px;width:36px;height:36px;border:none;border-radius:10px;background:#f1f5f9;cursor:pointer;font-size:20px;line-height:1}
+  #contractor-gate h3{margin:.25rem 0 .35rem;font-size:1.25rem;font-weight:900}
+  #contractor-gate .gate-note{margin:0 0 .6rem;color:#64748b;font-size:.95rem}
+  #contractor-gate .gate-fields{display:grid;gap:10px;margin:.5rem 0 .8rem}
+  #contractor-gate .gate-label{font-weight:700;font-size:.9rem}
+  #contractor-gate .gate-input{width:100%;height:2.6rem;border:1px solid #e2e8f0;border-radius:12px;padding:.55rem .75rem;font-size:1rem}
+  #contractor-gate .gate-actions{display:flex;gap:8px;align-items:center;justify-content:flex-start}
+  #contractor-gate .gate-btn{border:1px solid #e2e8f0;background:#fff;color:#0f172a;border-radius:12px;padding:.6rem .9rem;font-weight:800;cursor:pointer}
+  #contractor-gate .gate-primary{background:#0f172a;color:#fff;border-color:#0f172a}
+  @keyframes gatePop{from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)}}
+  @media (max-width:640px){
+    #contractor-gate .gate-card{margin:10vh 12px 0;padding:14px}
+    #contractor-gate h3{font-size:1.1rem}
+    #contractor-gate .gate-note{font-size:.9rem}
+    #contractor-gate .gate-input{height:2.4rem;font-size:.95rem}
+    #contractor-gate .gate-btn{padding:.5rem .8rem;font-size:.95rem}
+  }
   </style>
 </head>
 <body>
