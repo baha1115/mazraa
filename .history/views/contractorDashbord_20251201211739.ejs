@@ -581,50 +581,40 @@
     if (totalB64 > MAX_TOTAL_BYTES) {
       return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
     }
-  const fd          = new FormData(form);
-  const service     = (fd.get('services')||'').toString().trim();
-  const city        = (fd.get('city')||'').toString().trim();
-  const region      = (fd.get('region')||'').toString().trim();
-  const companyName = (fd.get('companyName')||'').toString().trim();
-  const phone       = (fd.get('phone')||'').toString().trim();
-  const phoneClean  = phone.replace(/\s+/g, ''); // إزالة المسافات
 
-  // 🔢  رقم الهاتف السوري: +963 متبوعة بـ 9 أرقام
-  if (!phoneClean){
-    return toast('اكتب رقم الهاتف','warn');
-  }
-  if (!/^\+963\d{9}$/.test(phoneClean)){
-    return toast('رقم الهاتف يجب أن يكون بصيغة ‎+963XXXXXXXXX (٩ أرقام بعد 963)','warn');
-  }
+    const fd          = new FormData(form);
+    const service     = (fd.get('services')||'').toString().trim();
+    const city        = (fd.get('city')||'').toString().trim();
+    const region      = (fd.get('region')||'').toString().trim();
+    const companyName = (fd.get('companyName')||'').toString().trim();
 
-  // 2) تحقق يدوي من الحقول الإلزامية قبل أي إرسال
-  if (!companyName){
-    return toast('اكتب اسم المؤسسة أو الشركة','warn');
-  }
-  if (!city){
-    return toast('اختر المحافظة','warn');
-  }
-  if (!region){
-    return toast('اكتب المنطقة','warn');
-  }
-  if (!service){
-    return toast('اختر التخصص / الخدمة','warn');
-  }
+    // 2) تحقق يدوي من الحقول الإلزامية قبل أي إرسال
+    if (!companyName){
+      return toast('اكتب اسم المؤسسة أو الشركة','warn');
+    }
+    if (!city){
+      return toast('اختر المحافظة','warn');
+    }
+    if (!region){
+      return toast('اكتب المنطقة','warn');
+    }
+    if (!service){
+      return toast('اختر التخصص / الخدمة','warn');
+    }
 
-  // 3) الصورة الشخصية / الشعار إلزامية
-  if (!avatar || !avatar.toString().trim()){
-    return toast('أضِف صورة شخصية أو شعار للمقاول قبل الإرسال','warn');
-  }
+    // 3) الصورة الشخصية / الشعار إلزامية
+    if (!avatar || !avatar.toString().trim()){
+      return toast('أضِف صورة شخصية أو شعار للمقاول قبل الإرسال','warn');
+    }
 
-  // 👈 من هنا نبدأ حالة "جارٍ الحفظ"
-  setSubmitState(true, 'جارٍ الحفظ…');
+    // 👈 من هنا نبدأ حالة "جارٍ الحفظ"
+    setSubmitState(true, 'جارٍ الحفظ…');
 
     // 4) تجهيز البيانات للإرسال
     const payload = {
       name:        (fd.get('name')||'').toString().trim(),
       email:       (fd.get('email')||'').toString().trim(),
-        phone:       phoneClean,
-
+      phone:       (fd.get('phone')||'').toString().trim(),
       region,
       bio:         (fd.get('bio')||'').toString().trim(),
       companyName,

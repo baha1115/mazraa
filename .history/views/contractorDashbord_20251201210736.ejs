@@ -90,28 +90,6 @@
     @media (max-width:640px){
       .thumbs{grid-template-columns:repeat(2,1fr)}
     }
-    /* حالة التحميل للزر */
-.btn--loading{
-  opacity:.85;
-  cursor:wait;
-}
-
-/* سبِنّر بسيط قبل النص */
-.btn--loading::before{
-  content:"";
-  width:16px;
-  height:16px;
-  border-radius:999px;
-  border:2px solid rgba(255,255,255,.5);
-  border-top-color:rgba(15,23,42,.95); /* لون أغمق شوية */
-  animation:btn-spin .6s linear infinite;
-}
-
-/* حركة الدوران */
-@keyframes btn-spin{
-  to{ transform:rotate(1turn); }
-}
-
   </style>
 </head>
 <body>
@@ -168,17 +146,9 @@
           </label>
 
           <label class="field">
-  <span class="label">الهاتف</span>
-  <input
-    type="tel"
-    name="phone"
-    class="input"
-    placeholder="+963XXXXXXXXX"
-    maxlength="13"
-    pattern="^\+963\d{9}$"
-    value="<%= safeProfile.phone || '' %>" />
-</label>
-
+            <span class="label">الهاتف</span>
+            <input type="tel" name="phone" class="input" placeholder="+963XXXXXXXXX" value="<%= safeProfile.phone || '' %>" />
+          </label>
 
     <label class="field">
   <span class="label">المحافظة</span>
@@ -422,7 +392,7 @@
   const photos = JSON.parse((qs('#initial-photos')?.textContent || '[]'));
   let   avatar = JSON.parse((qs('#initial-avatar')?.textContent || '""'));
   // زر الحفظ في نموذج المقاول
-    const submitBtn = form?.querySelector('button[type="submit"]');
+  const submitBtn = form?.querySelector('button[type="submit"]');
   const defaultSubmitLabel = submitBtn?.textContent || 'حفظ وإرسال للمراجعة';
   let isProfileSubmitting = false;
 
@@ -430,13 +400,8 @@
     if (!submitBtn) return;
     isProfileSubmitting = state;
     submitBtn.disabled = state;
-
-    // تفعيل / إلغاء حالة التحميل بصريًا
-    submitBtn.classList.toggle('btn--loading', state);
-
     if (label) submitBtn.textContent = label;
   }
-
 
   // معرف الطلب الجاري تعديله (إن وجد)
   let editingId = null;
@@ -581,50 +546,40 @@
     if (totalB64 > MAX_TOTAL_BYTES) {
       return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
     }
-  const fd          = new FormData(form);
-  const service     = (fd.get('services')||'').toString().trim();
-  const city        = (fd.get('city')||'').toString().trim();
-  const region      = (fd.get('region')||'').toString().trim();
-  const companyName = (fd.get('companyName')||'').toString().trim();
-  const phone       = (fd.get('phone')||'').toString().trim();
-  const phoneClean  = phone.replace(/\s+/g, ''); // إزالة المسافات
 
-  // 🔢  رقم الهاتف السوري: +963 متبوعة بـ 9 أرقام
-  if (!phoneClean){
-    return toast('اكتب رقم الهاتف','warn');
-  }
-  if (!/^\+963\d{9}$/.test(phoneClean)){
-    return toast('رقم الهاتف يجب أن يكون بصيغة ‎+963XXXXXXXXX (٩ أرقام بعد 963)','warn');
-  }
+    const fd          = new FormData(form);
+    const service     = (fd.get('services')||'').toString().trim();
+    const city        = (fd.get('city')||'').toString().trim();
+    const region      = (fd.get('region')||'').toString().trim();
+    const companyName = (fd.get('companyName')||'').toString().trim();
 
-  // 2) تحقق يدوي من الحقول الإلزامية قبل أي إرسال
-  if (!companyName){
-    return toast('اكتب اسم المؤسسة أو الشركة','warn');
-  }
-  if (!city){
-    return toast('اختر المحافظة','warn');
-  }
-  if (!region){
-    return toast('اكتب المنطقة','warn');
-  }
-  if (!service){
-    return toast('اختر التخصص / الخدمة','warn');
-  }
+    // 2) تحقق يدوي من الحقول الإلزامية قبل أي إرسال
+    if (!companyName){
+      return toast('اكتب اسم المؤسسة أو الشركة','warn');
+    }
+    if (!city){
+      return toast('اختر المحافظة','warn');
+    }
+    if (!region){
+      return toast('اكتب المنطقة','warn');
+    }
+    if (!service){
+      return toast('اختر التخصص / الخدمة','warn');
+    }
 
-  // 3) الصورة الشخصية / الشعار إلزامية
-  if (!avatar || !avatar.toString().trim()){
-    return toast('أضِف صورة شخصية أو شعار للمقاول قبل الإرسال','warn');
-  }
+    // 3) الصورة الشخصية / الشعار إلزامية
+    if (!avatar || !avatar.toString().trim()){
+      return toast('أضِف صورة شخصية أو شعار للمقاول قبل الإرسال','warn');
+    }
 
-  // 👈 من هنا نبدأ حالة "جارٍ الحفظ"
-  setSubmitState(true, 'جارٍ الحفظ…');
+    // 👈 من هنا نبدأ حالة "جارٍ الحفظ"
+    setSubmitState(true, 'جارٍ الحفظ…');
 
     // 4) تجهيز البيانات للإرسال
     const payload = {
       name:        (fd.get('name')||'').toString().trim(),
       email:       (fd.get('email')||'').toString().trim(),
-        phone:       phoneClean,
-
+      phone:       (fd.get('phone')||'').toString().trim(),
       region,
       bio:         (fd.get('bio')||'').toString().trim(),
       companyName,

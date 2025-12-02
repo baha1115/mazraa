@@ -762,8 +762,7 @@ if (!isEdit) {
     area: (fd.get('area')||'').toString().trim(),
     city: (fd.get('city')||'').toString().trim(),
     size: parseInt(fd.get('size')||0,10),
-        price: priceNum,
-
+    price: parseInt(fd.get('price')||0,10),
     currency: (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
       rentPeriod: (fd.get('rentPeriod') || '').toString(),
 

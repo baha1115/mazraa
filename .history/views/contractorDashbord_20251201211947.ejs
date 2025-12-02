@@ -623,8 +623,7 @@
     const payload = {
       name:        (fd.get('name')||'').toString().trim(),
       email:       (fd.get('email')||'').toString().trim(),
-        phone:       phoneClean,
-
+      phone:       (fd.get('phone')||'').toString().trim(),
       region,
       bio:         (fd.get('bio')||'').toString().trim(),
       companyName,
