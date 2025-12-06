@@ -717,7 +717,6 @@ if (kindSelect) {
 }
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
-   
   if (!landForm || !submitBtnPrimary) return;
 
   // لا نسمح بالضغط المتكرر أثناء الإرسال
@@ -729,39 +728,14 @@ landForm.addEventListener('submit', async (e)=>{
     toast('إجمالي حجم الصور يتجاوز 5MB. قلّل عدد/حجم الصور.', 'warn');
     return;
   }
-  const fd = new FormData(landForm);
-
-  const idForEdit = (fd.get('id') || '').toString().trim();
-  const isEdit    = !!idForEdit;
-  // قراءة الحقول المطلوبة
-  const area    = (fd.get('area') || '').toString().trim();   // المنطقة
-  const city    = (fd.get('city') || '').toString().trim();   // المحافظة
-  const sizeStr = (fd.get('size') || '').toString().trim();   // المساحة كنص
-  const sizeNum = Number(sizeStr);                            // المساحة كرقم
-  // ✅ المنطقة إجباري
-  if (!area){
-    toast('اكتب اسم المنطقة','warn');
-    return;
-  }
-
-  // ✅ المحافظة إجبارية
-  if (!city){
-    toast('اختر المحافظة','warn');
-    return;
-  }
-
-  // ✅ المساحة إجبارية (> 0)
-  if (!sizeStr || !Number.isFinite(sizeNum) || sizeNum <= 0){
-    toast('المساحة إجبارية — أدخل مساحة أكبر من صفر بالمتر المربع','warn');
-    return;
-  }
 
   // 2) التحقق من الحصّة (للإضافة الجديدة فقط، التعديل مسموح دائماً)
-  if (!isEdit && !_quotaReady){
+  if (!_quotaReady){
     toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
     return;
   }
 
+  const fd = new FormData(landForm);
 
   // ✅ السعر إجباري (> 0)
   const rawPrice = (fd.get('price') || '').toString().trim();
@@ -778,7 +752,8 @@ landForm.addEventListener('submit', async (e)=>{
     return;
   }
 
- 
+  const idForEdit = (fd.get('id') || '').toString().trim();
+  const isEdit    = !!idForEdit;
 
   // ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
   if (!isEdit) {
@@ -808,7 +783,7 @@ landForm.addEventListener('submit', async (e)=>{
     kind:          fd.get('kind') || 'sale',
     area:          (fd.get('area') || '').toString().trim(),
     city:          (fd.get('city') || '').toString().trim(),
-    size:          sizeNum,
+    size:          parseInt(fd.get('size') || 0,10),
     price:         priceNum,
     currency:      (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
     rentPeriod:    (fd.get('rentPeriod') || '').toString(),
@@ -960,7 +935,12 @@ try {
       }
 
       // لغة/اتجاه
-     
+      qs('#langToggle').addEventListener('click', ()=>{
+        const rtl = document.documentElement.getAttribute('dir')==='rtl';
+        document.documentElement.setAttribute('dir', rtl?'ltr':'rtl');
+        qs('#langToggle').textContent = rtl ? 'العربية' : 'English';
+        setTimeout(()=> map.invalidateSize(), 100);
+      });
 
  // === الحصة وحدود النشر ===
 async function refreshQuota(){
@@ -1002,30 +982,26 @@ async function refreshQuota(){
     </span>
   `;
 _quotaReady = true;
-if (submitBtn) {
-  // ✅ دائماً خلي الزر مفعّل، لأننا سنمنع "الإضافة" فقط من داخل الـ submit
-  submitBtn.disabled = false;
-
-  if (!unlimited && leftNum <= 0) {
-    // رسالة توضيح فقط: لا تمنع التعديل
-    submitBtn.title = 'بلغت حد النشر المسموح به في خطتك — يمكنك تعديل إعلاناتك الحالية فقط';
-  } else {
-    submitBtn.title = '';
+  if (submitBtn) {
+    if (!unlimited && leftNum <= 0) {
+      submitBtn.disabled = true;
+      submitBtn.title = 'بلغتَ حد النشر المسموح به في خطتك';
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.title = '';
+    }
   }
-}
 
 }catch(e){
   console.warn(e);
-  info.innerHTML = `<span class="muted">تعذّر جلب معلومات الحصّة — سيتم السماح بالنشر مؤقتاً.</span>`;
-
-  // نسمح بالإرسال حتى لو ما قدرنا نجلب الحصّة
-  _quotaReady = true;
-  if (submitBtn) {
-    submitBtn.disabled = false;
-    submitBtn.title = '';
-  }
+  info.innerHTML = `<span class="muted">تعذّر جلب معلومات الحصّة.</span>`;
+    // في catch:
+_quotaReady = false;
+if (submitBtn) {
+  submitBtn.disabled = true;
+  submitBtn.title = 'تعذّر جلب الحصّة';
 }
-
+}
 
 }
 

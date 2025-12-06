@@ -869,22 +869,11 @@ if (svcEl) {
 
   const ADMIN_WA_PREMIUM = '+21620353915';
   const ADMIN_WA_VIP     = '+21620353915';
-  // تحويل الأرقام العربية/الهندية إلى أرقام إنجليزية 0-9
-  function normalizeDigits(str){
-    const map = {
-      '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
-      '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
-      '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4',
-      '۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
-    };
-    return (str || '').replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => map[d] || d);
-  }
 
   function isValidWa(num){
-    const n = normalizeDigits(num).toString().trim().replace(/\s+/g,'');
+    const n = (num||'').toString().trim().replace(/\s+/g,'');
     return /^\+?\d{6,15}$/.test(n);
   }
-
   function waLink(to, text){
     const num = to.replace(/\D/g,'');
     return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
@@ -897,9 +886,7 @@ if (svcEl) {
     const fd    = new FormData(form);
     const plan  = (fd.get('plan')||'Premium').toString();
     const name  = (fd.get('name')||'').toString().trim();
-      const rawWa = (fd.get('whatsapp')||'').toString().trim();
-  const wa    = normalizeDigits(rawWa).replace(/\s+/g,'');  // ← رقم منظَّف
-
+    const wa    = (fd.get('whatsapp')||'').toString().trim();
     const notes = (fd.get('notes')||'').toString().trim();
 
     if (!name){ return toastWarn('املأ الاسم'); }

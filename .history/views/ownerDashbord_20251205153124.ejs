@@ -75,6 +75,8 @@
     @media (max-width:1100px){.thumbs{grid-template-columns:repeat(4,1fr)}}
     @media (max-width:900px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.thumbs{grid-template-columns:repeat(3,1fr)}#map{height:300px}}
     :focus-visible{outline:none;box-shadow:var(--ring);border-radius:10px}
+    #map { cursor: crosshair; }
+
   </style>
 </head>
 <body>
@@ -116,9 +118,42 @@
             <select name="kind" class="input"><option value="sale">بيع</option><option value="rent">إيجار</option></select>
           </label>
           <label class="field"><span class="label">المنطقة</span><input name="area" class="input" required/></label>
-          <label class="field"><span class="label">المحافظة</span><input name="city" class="input"/></label>
+          <label class="field">
+  <span class="label">المحافظة</span>
+  <select name="city" class="input" required>
+    <option value="">اختر المحافظة…</option>
+    <option>دمشق</option>
+    <option>ريف دمشق</option>
+    <option>حلب</option>
+    <option>حمص</option>
+    <option>حماة</option>
+    <option>اللاذقية</option>
+    <option>طرطوس</option>
+    <option>إدلب</option>
+    <option>دير الزور</option>
+    <option>الحسكة</option>
+    <option>الرقة</option>
+    <option>درعا</option>
+    <option>القنيطرة</option>
+    <option>السويداء</option>
+  </select>
+</label>
           <label class="field"><span class="label">المساحة (م²)</span><input name="size" type="number" class="input" min="0" required/></label>
           <label class="field"><span class="label">السعر</span><input name="price" type="number" class="input" min="0" required/></label>
+<label class="field">
+  <span class="label">العملة</span>
+  <select name="currency" class="input" required>
+    <option value="USD">$ دولار</option>
+    <option value="SYP">ل.س الليرة السورية</option>
+  </select>
+</label>
+<label class="field" id="rentPeriodField" style="display:none">
+  <span class="label">نوع الإيجار</span>
+  <select name="rentPeriod" class="input">
+    <option value="monthly">إيجار شهري</option>
+    <option value="daily">إيجار يومي</option>
+  </select>
+</label>
 
           <!-- رفع الصور بالسحب والإفلات -->
           <div class="field field--full">
@@ -208,7 +243,7 @@
 
           <label class="field">
             <span class="label">رقم واتساب للتواصل</span>
-            <input class="input" name="ownerWhatsapp" placeholder="+9665... أو +9639..." required>
+            <input class="input" name="ownerWhatsapp" placeholder="+963XXXXXXXXXX" required>
             <small class="muted">سنضمّن هذا الرقم في الرسالة لسهولة الردّ عليك.</small>
           </label>
 
@@ -273,7 +308,7 @@
       await refreshQuota();                   // انتظر تحميل الحصّة
       setTimeout(()=> map?.invalidateSize(), 100);
     }
-          if (t==='subscribe') prefillSubscribe();
+          //if (t==='subscribe') prefillSubscribe();
         });
       });
 
@@ -283,19 +318,8 @@
       function load(){ try{const x=localStorage.getItem(LS_KEY); return x?JSON.parse(x):null;}catch{return null} }
       function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
       function seed(){
-        return {
-          lands: [
-            {id:'L-1',
-             owner:{first:'أحمد', last:'ندّاف', whatsapp:'+963900000000'},
-             title:'أرض زيتون — ريف دمشق', kind:'sale', area:'ريف دمشق', city:'قدسيا',
-             size:22000, price:75000,
-             photos:['https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800'],
-             desc:'طريق معبّد وبئر.', status:'approved',
-             location:{lat:33.55, lng:36.28, address:'Qudsaya, Rif Dimashq'} }
-          ]
-        };
-      }
-
+  return { lands: [] };
+ }
       // عرض قائمة الأراضي
     
      // عناصر القائمة (قد تكون موجودة عندك — لا مشكلة لو كانت مكررة)
@@ -314,16 +338,28 @@
 
   // ⬅️ استبدل دالة renderLands القديمة بهذه النسخة
   async function renderLands(){
+    
     list.innerHTML = '';
     let rows = [];
     try { rows = await fetchMyLands(); } catch { rows = []; }
-
+window.__myLands = rows; // ← نخزّن آخر بيانات حقيقية للمالك
     if (!rows.length){ empty.hidden = false; return; }
     empty.hidden = true;
 
     rows.forEach(l=>{
       const cover = (Array.isArray(l.photos) && l.photos[0]) || 'https://images.unsplash.com/photo-1613336026275-d6d0d43688ff?w=800';
       const kindText = l.kind === 'rent' ? 'إيجار' : 'بيع';
+const symbol   = (l.currency === 'SYP') ? 'ل.س' : '$';
+
+// حدّد النص حسب rentPeriod
+let periodText = '';
+if (l.kind === 'rent') {
+  periodText = (l.rentPeriod === 'daily') ? '/يوم' : '/شهر';
+}
+
+const priceText = (l.kind === 'rent')
+  ? `${symbol}${fmt(l.price)}${periodText}`
+  : `${symbol}${fmt(l.price)}`;
 
       const loc = l.location
         ? ` • 📍 ${esc(l.location.address || ((l.location.lat||'')+', '+(l.location.lng||'')))}`
@@ -353,8 +389,7 @@ card.innerHTML = `
     <div class="muted">
       ${kindText} • ${esc(l.area||'')} — ${esc(l.city||'')}
       ${loc}${owner}${wa}
-      • ${l.kind==='rent' ? '$'+fmt(l.price)+'/شهر' : '$'+fmt(l.price)}
-      • ${fmt(l.size)} م²
+      • ${priceText} • ${fmt(l.size)} م²
     </div>
     <div style="margin-top:.35rem">${statusBadge}</div>
     ${reason}
@@ -402,15 +437,22 @@ list.addEventListener('click', async (e)=>{
       form.querySelector('[name="city"]').value          = l.city || '';
       form.querySelector('[name="size"]').value          = Number(l.size || 0);
       form.querySelector('[name="price"]').value         = Number(l.price || 0);
+      form.querySelector('[name="currency"]').value = (l.currency === 'SYP' ? 'SYP' : 'USD');
+ const rentSel = form.querySelector('[name="rentPeriod"]');
+if (rentSel) {
+  rentSel.value = (l.rentPeriod === 'daily' ? 'daily' : 'monthly');
+}
+
       form.querySelector('[name="desc"]').value          = l.description || '';
       form.querySelector('[name="videoUrl"]').value      = l.videoUrl || '';
       form.querySelector('[name="poolDesc"]').value      = l.poolDesc || '';
       form.querySelector('[name="amenitiesDesc"]').value = l.amenitiesDesc || '';
-      form.querySelector('[name="buildingDesc"]').value  = l.buildingDesc || ''
+      form.querySelector('[name="buildingDesc"]').value  = l.buildingDesc || '';
 
       // الصور
       pendingPhotos = Array.isArray(l.photos) ? [...l.photos] : [];
       renderThumbs?.();
+      toggleRentPeriod?.();
 
       // الموقع
       const lat = Number(l?.location?.lat);
@@ -475,6 +517,14 @@ if (ft1) ft1.textContent = 'تعديل أرض';
 
       let marker = L.marker([33.5138,36.2765], {draggable:true}).addTo(map);
       marker.setOpacity(0); // مخفي إلى أن يختار المستخدم مكانًا
+     // عند الضغط على الخريطة: ثبّت العلامة واملأ الحقول
+map.on('click', async (e) => {
+  const { lat, lng } = e.latlng;
+  // حاول نجيب عنوان بنقطة عكسية (إن فشل، نخليها فاضية)
+  let addr = '';
+  try { addr = await reverseGeocode(lat, lng); } catch {}
+  setLocation(lat, lng, addr, true); // هذه الدالة موجودة عندك وتتعامل مع الحقول + marker
+});
 
       const latInput = qs('input[name="lat"]');
       const lngInput = qs('input[name="lng"]');
@@ -554,6 +604,21 @@ if (ft1) ft1.textContent = 'تعديل أرض';
       const thumbs = qs('#thumbs');
       // مخزن مؤقت لصور النموذج الحالي (Base64 DataURLs)
       let pendingPhotos = [];
+      const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // 5MB
+
+function dataUrlBytes(src){
+  if (typeof src !== 'string') return 0;
+
+  // ✅ لو ليست data:image (يعني رابط https قديم جاهز) نعتبرها 0
+  if (!src.startsWith('data:image')) return 0;
+
+  const i = src.indexOf(',');
+  if (i < 0) return 0;
+
+  const b64 = src.slice(i + 1);
+  const pad = b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0;
+  return Math.max(0, Math.floor(b64.length * 3 / 4) - pad);
+}
 
       pickBtn.addEventListener('click', ()=> fileInput.click());
       fileInput.addEventListener('change', (e)=> handleFiles(e.target.files));
@@ -577,17 +642,30 @@ if (ft1) ft1.textContent = 'تعديل أرض';
       });
 
       function handleFiles(files){
-        const arr = Array.from(files).filter(f=>f.type.startsWith('image/'));
-        if (!arr.length){ toast('الرجاء اختيار صور فقط','warn'); return; }
-        arr.forEach(file=>{
-          const reader = new FileReader();
-          reader.onload = ()=> {
-            pendingPhotos.push(reader.result); // DataURL
-            renderThumbs();
-          };
-          reader.readAsDataURL(file);
-        });
-      }
+  const arr = Array.from(files).filter(f=> f.type.startsWith('image/'));
+  if (!arr.length){ toast('الرجاء اختيار صور فقط','warn'); return; }
+
+  // حجم الصور الموجودة حالياً (محفوظة كـ DataURL)
+  const existingBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
+  // حجم الملفات الجديدة قبل التحويل
+  const newBytes = arr.reduce((s,f)=> s + (f.size||0), 0);
+
+  if (existingBytes + newBytes > MAX_TOTAL_BYTES){
+    toast('إجمالي حجم الصور يتجاوز 5MB. رجاءً قلّل عدد/حجم الصور.', 'warn');
+    return;
+  }
+
+  // لو الحد ممتاز، حوّل وأضِف
+  arr.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      pendingPhotos.push(reader.result); // DataURL
+      renderThumbs();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 
       function renderThumbs(){
         thumbs.innerHTML = '';
@@ -607,34 +685,92 @@ if (ft1) ft1.textContent = 'تعديل أرض';
 
       // حفظ نموذج الأرض
 const landForm = qs('#landForm');
-const submitBtnPrimary = landForm.querySelector('button[type="submit"]');
+const submitBtnPrimary = landForm?.querySelector('button[type="submit"]');
+const defaultLandLabel = submitBtnPrimary?.textContent || 'حفظ وارسال';
+let isLandSubmitting = false;
+
 if (submitBtnPrimary) {
   submitBtnPrimary.disabled = true;            // زر مغلق إلى أن نجلب الحصّة
   submitBtnPrimary.title = 'جارِ التحقق من حصتك…';
 }
 
 
-landForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-if (!_quotaReady) {
-    toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
-    return; // منع الإرسال حتى تُحمّل الحصّة
-  }
-  const fd = new FormData(landForm);
-const idForEdit = (fd.get('id') || '').toString().trim();
-const isEdit = !!idForEdit;
-// ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
-if (!isEdit) {
-  const left = _quotaState?.left;
-  const unlimited = _quotaState?.unlimited === true || left === Infinity;
-  if (!unlimited && Number(left) <= 0) {
-    toast('بلغت حد النشر المسموح به في خطتك. قم بالترقية للنشر أكثر.', 'warn');
-    return; // ← ← ← إيقاف الإرسال نهائيًا
+// إظهار/إخفاء نوع الإيجار حسب kind
+const kindSelect       = landForm.querySelector('[name="kind"]');
+const rentPeriodField  = landForm.querySelector('#rentPeriodField');
+
+function toggleRentPeriod() {
+  if (!kindSelect || !rentPeriodField) return;
+  if (kindSelect.value === 'rent') {
+    rentPeriodField.style.display = '';
+  } else {
+    rentPeriodField.style.display = 'none';
   }
 }
-  // فحص الواتساب
+
+// أول تحميل
+toggleRentPeriod();
+
+// عند تغيير النوع
+if (kindSelect) {
+  kindSelect.addEventListener('change', toggleRentPeriod);
+}
+landForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if (!landForm || !submitBtnPrimary) return;
+
+  // لا نسمح بالضغط المتكرر أثناء الإرسال
+  if (isLandSubmitting) return;
+
+  // 1) فحص إجمالي حجم الصور (DataURL فقط)
+  const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
+  if (totalBytes > MAX_TOTAL_BYTES){
+    toast('إجمالي حجم الصور يتجاوز 5MB. قلّل عدد/حجم الصور.', 'warn');
+    return;
+  }
+
+  // 2) التحقق من الحصّة (للإضافة الجديدة فقط، التعديل مسموح دائماً)
+  if (!_quotaReady){
+    toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
+    return;
+  }
+
+  const fd = new FormData(landForm);
+
+  // ✅ السعر إجباري (> 0)
+  const rawPrice = (fd.get('price') || '').toString().trim();
+  const priceNum = Number(rawPrice);
+
+  if (!rawPrice || !Number.isFinite(priceNum) || priceNum <= 0){
+    toast('السعر إجباري — أدخل قيمة أكبر من صفر', 'warn');
+    return;
+  }
+
+  // ✅ يجب وجود صورة واحدة على الأقل
+  if (!pendingPhotos || pendingPhotos.length === 0){
+    toast('يجب إضافة صورة واحدة على الأقل للإعلان قبل الحفظ', 'warn');
+    return;
+  }
+
+  const idForEdit = (fd.get('id') || '').toString().trim();
+  const isEdit    = !!idForEdit;
+
+  // ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
+  if (!isEdit) {
+    const left      = _quotaState?.left;
+    const unlimited = _quotaState?.unlimited === true || left === Infinity;
+    if (!unlimited && Number(left) <= 0) {
+      toast('بلغت حد النشر المسموح به في خطتك. قم بالترقية للنشر أكثر.', 'warn');
+      return;
+    }
+  }
+
+  // فحص الواتساب (اختياري)
   const wa = (fd.get('ownerWhatsapp')||'').toString().trim().replace(/\s+/g,'');
-  if (wa && !/^\+?\d{6,15}$/.test(wa)){ toast('رقم واتساب غير صحيح','warn'); return; }
+  if (wa && !/^\+?\d{6,15}$/.test(wa)){
+    toast('رقم واتساب غير صحيح','warn');
+    return;
+  }
 
   const lat = parseFloat(fd.get('lat'));
   const lng = parseFloat(fd.get('lng'));
@@ -643,52 +779,62 @@ if (!isEdit) {
     ownerFirst:    (fd.get('ownerFirst')    || '').toString().trim(),
     ownerLast:     (fd.get('ownerLast')     || '').toString().trim(),
     ownerWhatsapp: (fd.get('ownerWhatsapp') || '').toString().trim(),
-    title: (fd.get('title')||'').toString().trim(),
-    kind: fd.get('kind') || 'sale',
-    area: (fd.get('area')||'').toString().trim(),
-    city: (fd.get('city')||'').toString().trim(),
-    size: parseInt(fd.get('size')||0,10),
-    price: parseInt(fd.get('price')||0,10),
-    photos: [...pendingPhotos],
-      poolDesc:      (fd.get('poolDesc')      || '').toString().trim(),
-  amenitiesDesc: (fd.get('amenitiesDesc') || '').toString().trim(),
-  buildingDesc:  (fd.get('buildingDesc')  || '').toString().trim(),
-    description: (fd.get('desc')||'').toString().trim(),
-    videoUrl: (fd.get('videoUrl') || '').toString().trim(),
+    title:         (fd.get('title')         || '').toString().trim(),
+    kind:          fd.get('kind') || 'sale',
+    area:          (fd.get('area') || '').toString().trim(),
+    city:          (fd.get('city') || '').toString().trim(),
+    size:          parseInt(fd.get('size') || 0,10),
+    price:         priceNum,
+    currency:      (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
+    rentPeriod:    (fd.get('rentPeriod') || '').toString(),
+    photos:        [...pendingPhotos], // مزيج من روابط قديمة + صور جديدة
+    poolDesc:      (fd.get('poolDesc')      || '').toString().trim(),
+    amenitiesDesc: (fd.get('amenitiesDesc') || '').toString().trim(),
+    buildingDesc:  (fd.get('buildingDesc')  || '').toString().trim(),
+    description:   (fd.get('desc')          || '').toString().trim(),
+    videoUrl:      (fd.get('videoUrl')      || '').toString().trim(),
     location: (Number.isFinite(lat)&&Number.isFinite(lng))
       ? {lat,lng,address:(fd.get('address')||'').toString()}
       : null
   };
 
-  const url = isEdit ? `/owner/lands/${idForEdit}` : '/owner/lands';
+  const url    = isEdit ? `/owner/lands/${idForEdit}` : '/owner/lands';
   const method = isEdit ? 'PATCH' : 'POST';
 
+  // 👈 من هنا يبدأ "جارِ الإرسال" فعلياً
+  isLandSubmitting = true;
   submitBtnPrimary.disabled = true;
   submitBtnPrimary.textContent = 'جارِ الإرسال…';
 
   try{
-    const res = await fetch(url, {
+    const res  = await fetch(url, {
       method,
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
 
-    if (!data.ok) {
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = { ok:false, msg:'رد غير صالح من الخادم' };
+    }
+
+    if (!data.ok){
       toast(data.msg || 'تعذّر الإرسال', 'warn');
       return;
     }
 
     toast(isEdit ? 'تم التعديل وإرسال الإعلان للمراجعة' : 'تم الإرسال للمراجعة','ok');
 
-    // إعادة الوضع لإضافة جديدة
- const ft2 = document.getElementById('formTitle');
-if (ft2) ft2.textContent = 'إضافة أرض';
-
+    // إعادة النموذج لوضع إضافة جديدة
+    const ft2 = document.getElementById('formTitle');
+    if (ft2) ft2.textContent = 'إضافة أرض';
 
     landForm.querySelector('[name="id"]').value = '';
     landForm.reset();
-    pendingPhotos = []; renderThumbs?.();
+    pendingPhotos = [];
+    renderThumbs?.();
     marker?.setOpacity?.(0);
 
     // حدّث القائمة والحصّة
@@ -697,12 +843,14 @@ if (ft2) ft2.textContent = 'إضافة أرض';
 
   }catch(err){
     console.error(err);
-    toast('خطأ بالشبكة','warn');
+    toast('خطأ بالشبكة أو في الخادم','warn');
   }finally{
+    isLandSubmitting = false;
     submitBtnPrimary.disabled = false;
-    submitBtnPrimary.textContent = 'حفظ وارسال';
+    submitBtnPrimary.textContent = defaultLandLabel;
   }
 });
+
 
       // ====== طلب ترقية الاشتراك عبر واتساب ======
       // عدّل الأرقام التالية حسب نظامك
@@ -714,20 +862,19 @@ if (ft2) ft2.textContent = 'إضافة أرض';
         return /^\+?\d{6,15}$/.test(n);
       }
 
-      function prefillSubscribe(){
-        const f = document.getElementById('subscribeForm');
-        if (!f) return;
-        try{
-          const last = (state.lands||[])[0];
-          if (last?.owner){
-            if (!f.ownerFirst.value)   f.ownerFirst.value   = last.owner.first || '';
-            if (!f.ownerLast.value)    f.ownerLast.value    = last.owner.last  || '';
-            if (!f.ownerWhatsapp.value)f.ownerWhatsapp.value= last.owner.whatsapp || '';
-          }
-        }catch{}
-        if (!f.plan.value) f.plan.value = 'Premium';
-      }
-
+     function prefillSubscribe(){
+   const f = document.getElementById('subscribeForm');
+   if (!f) return;
+   try{
+     // جرّب آخر إعلان حقيقي جلبناه من السيرفر
+     const src = (window.__myLands || []).find(x => x?.ownerInfo) || null;
+     const o   = src?.ownerInfo || {};
+     if (!f.ownerFirst.value)    f.ownerFirst.value    = o.first    || '';
+     if (!f.ownerLast.value)     f.ownerLast.value     = o.last     || '';
+     if (!f.ownerWhatsapp.value) f.ownerWhatsapp.value = o.whatsapp || '';
+   }catch{}
+   if (!f.plan.value) f.plan.value = 'Premium';
+ }
       function makeWaLink({to, text}){
         const num = to.replace(/\D/g,'');
         return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
@@ -788,12 +935,16 @@ try {
       }
 
       // لغة/اتجاه
-      qs('#langToggle').addEventListener('click', ()=>{
-        const rtl = document.documentElement.getAttribute('dir')==='rtl';
-        document.documentElement.setAttribute('dir', rtl?'ltr':'rtl');
-        qs('#langToggle').textContent = rtl ? 'العربية' : 'English';
-        setTimeout(()=> map.invalidateSize(), 100);
-      });
+     const langToggle = qs('#langToggle');
+if (langToggle) {
+  langToggle.addEventListener('click', ()=> {
+    const rtl = document.documentElement.getAttribute('dir') === 'rtl';
+    document.documentElement.setAttribute('dir', rtl ? 'ltr' : 'rtl');
+    langToggle.textContent = rtl ? 'العربية' : 'English';
+    setTimeout(()=> map.invalidateSize(), 100);
+  });
+}
+
 
  // === الحصة وحدود النشر ===
 async function refreshQuota(){
@@ -863,5 +1014,6 @@ refreshQuota();
 
     })();
   </script>
+ 
 </body>
 </html>

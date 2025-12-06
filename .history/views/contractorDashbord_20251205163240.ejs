@@ -90,6 +90,28 @@
     @media (max-width:640px){
       .thumbs{grid-template-columns:repeat(2,1fr)}
     }
+    /* حالة التحميل للزر */
+.btn--loading{
+  opacity:.85;
+  cursor:wait;
+}
+
+/* سبِنّر بسيط قبل النص */
+.btn--loading::before{
+  content:"";
+  width:16px;
+  height:16px;
+  border-radius:999px;
+  border:2px solid rgba(255,255,255,.5);
+  border-top-color:rgba(15,23,42,.95); /* لون أغمق شوية */
+  animation:btn-spin .6s linear infinite;
+}
+
+/* حركة الدوران */
+@keyframes btn-spin{
+  to{ transform:rotate(1turn); }
+}
+
   </style>
 </head>
 <body>
@@ -131,7 +153,8 @@
       <section class="panel is-visible" id="view-profile">
         <header class="panel__head"><h2>الملف الشخصي</h2></header>
 
-        <form id="formProfile" class="form grid2" novalidate>
+        <form id="formProfile" class="form grid2" novalidate autocomplete="off">
+
           <!-- بيانات المستخدم الأساسية -->
           <label class="field">
             <span class="label">الاسم الكامل</span>
@@ -146,9 +169,17 @@
           </label>
 
           <label class="field">
-            <span class="label">الهاتف</span>
-            <input type="tel" name="phone" class="input" placeholder="+963XXXXXXXXX" value="<%= safeProfile.phone || '' %>" />
-          </label>
+  <span class="label">الهاتف</span>
+  <input
+    type="tel"
+    name="phone"
+    class="input"
+    placeholder="+963XXXXXXXXX"
+    maxlength="13"
+    pattern="^\+963\d{9}$"
+    value="<%= safeProfile.phone || '' %>" />
+</label>
+
 
     <label class="field">
   <span class="label">المحافظة</span>
@@ -181,41 +212,49 @@
             <span class="label">اسم المؤسسة</span>
             <input maxlength="100" name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
           </label>
-
-          <% const selectedService = Array.isArray(safeProfile.services)
+<% const selectedService = Array.isArray(safeProfile.services)
       ? (safeProfile.services[0] || '')
       : (safeProfile.services || ''); %>
 
-<label class="field">
+         <label class="field">
   <span class="label">الخدمة / التخصص</span>
   <select name="services" id="serviceSelect" class="input" required>
     <option value="">اختر الخدمة…</option>
 
-    <option value="كهرباء زراعية" <%= selectedService==='كهرباء زراعية' ? 'selected' : '' %>>كهرباء زراعية</option>
-    <option value="مضخات"         <%= selectedService==='مضخات' ? 'selected' : '' %>>مضخات</option>
-    <option value="طاقة شمسية"    <%= selectedService==='طاقة شمسية' ? 'selected' : '' %>>طاقة شمسية</option>
-    <option value="ري (تنقيط/رش)" <%= selectedService==='ري (تنقيط/رش)' ? 'selected' : '' %>>ري (تنقيط/رش)</option>
-    <option value="بناء ريفي"     <%= selectedService==='بناء ريفي' ? 'selected' : '' %>>بناء ريفي</option>
-    <option value="تشخيص فني"     <%= selectedService==='تشخيص فني' ? 'selected' : '' %>>تشخيص فني</option>
-    <option value="صيانة وتركيبات"<%= selectedService==='صيانة وتركيبات' ? 'selected' : '' %>>صيانة وتركيبات</option>
-    <option value="حدادة/لحام"    <%= selectedService==='حدادة/لحام' ? 'selected' : '' %>>حدادة/لحام</option>
-    <option value="ألمنيوم"       <%= selectedService==='ألمنيوم' ? 'selected' : '' %>>ألمنيوم</option>
-    <option value="تبريد/تكييف زراعي" <%= selectedService==='تبريد/تكييف زراعي' ? 'selected' : '' %>>تبريد/تكييف زراعي</option>
+    <option value="نجار باطون" <%= selectedService==='نجار باطون' ? 'selected' : '' %>>نجار باطون</option>
+    <option value="معمرجي حجر وبلوك" <%= selectedService==='معمرجي حجر وبلوك' ? 'selected' : '' %>>معمرجي حجر وبلوك</option>
+    <option value="مليس" <%= selectedService==='مليس' ? 'selected' : '' %>>مليس</option>
+    <option value="مبلط" <%= selectedService==='مبلط' ? 'selected' : '' %>>مبلط</option>
+    <option value="فني ممدد صحية" <%= selectedService==='فني ممدد صحية' ? 'selected' : '' %>>فني ممدد صحية</option>
+    <option value="فني مدد كهرباء" <%= selectedService==='فني مدد كهرباء' ? 'selected' : '' %>>فني مدد كهرباء</option>
+    <option value="أنابيب ري زراعي" <%= selectedService==='أنابيب ري زراعي' ? 'selected' : '' %>>أنابيب ري زراعي</option>
+    <option value="فني جبس بورد وديكورات" <%= selectedService==='فني جبس بورد وديكورات' ? 'selected' : '' %>>فني جبس بورد وديكورات</option>
+    <option value="دهان" <%= selectedService==='دهان' ? 'selected' : '' %>>دهان</option>
+    <option value="حداد افرنجي" <%= selectedService==='حداد افرنجي' ? 'selected' : '' %>>حداد افرنجي</option>
+    <option value="فني تبريد وتكييف" <%= selectedService==='فني تبريد وتكييف' ? 'selected' : '' %>>فني تبريد وتكييف</option>
+    <option value="فني تدفئة مركزية وطاقة مياه شمسية" <%= selectedService==='فني تدفئة مركزية وطاقة مياه شمسية' ? 'selected' : '' %>>فني تدفئة مركزية وطاقة مياه شمسية</option>
+    <option value="نجار ألمنيوم" <%= selectedService==='نجار ألمنيوم' ? 'selected' : '' %>>نجار ألمنيوم</option>
+    <option value="فني تصميم وتركيب بلور" <%= selectedService==='فني تصميم وتركيب بلور' ? 'selected' : '' %>>فني تصميم وتركيب بلور</option>
+    <option value="نجار خشب عربي" <%= selectedService==='نجار خشب عربي' ? 'selected' : '' %>>نجار خشب عربي</option>
+    <option value="نجار خشب افرنجي" <%= selectedService==='نجار خشب افرنجي' ? 'selected' : '' %>>نجار خشب افرنجي</option>
+    <option value="فني تصميم وإنشاء مسابح" <%= selectedService==='فني تصميم وإنشاء مسابح' ? 'selected' : '' %>>فني تصميم وإنشاء مسابح</option>
+    <option value="فني مشتل نباتات وأشجار" <%= selectedService==='فني مشتل نباتات وأشجار' ? 'selected' : '' %>>فني مشتل نباتات وأشجار</option>
+    <option value="فني شوادر ومظلات" <%= selectedService==='فني شوادر ومظلات' ? 'selected' : '' %>>فني شوادر ومظلات</option>
+    <option value="تصميم ديكورات طين" <%= selectedService==='تصميم ديكورات طين' ? 'selected' : '' %>>تصميم ديكورات طين</option>
+    <option value="مقاول / متعهد إنشاءات" <%= selectedService==='مقاول / متعهد إنشاءات' ? 'selected' : '' %>>مقاول / متعهد إنشاءات</option>
   </select>
 </label>
 
       <label class="field">
   <span class="label">المنطقة</span>
   <input
-    name="region" maxlength="80"
-    class="input"
-    placeholder="اكتب المنطقة"
-    value="<%= safeProfile?.region || '' %>"
-  />
+  name="region" maxlength="80"
+  class="input"
+  placeholder="اكتب المنطقة"
+  required
+  value="<%= safeProfile?.region || '' %>"
+/>
 </label>
-
-      
-
           <label class="field field--full">
             <span class="label">الوصف</span>
             <textarea name="description" maxlength="2000" rows="4" class="input"><%= safeProfile.description || '' %></textarea>
@@ -383,6 +422,22 @@
 
   const photos = JSON.parse((qs('#initial-photos')?.textContent || '[]'));
   let   avatar = JSON.parse((qs('#initial-avatar')?.textContent || '""'));
+  // زر الحفظ في نموذج المقاول
+    const submitBtn = form?.querySelector('button[type="submit"]');
+  const defaultSubmitLabel = submitBtn?.textContent || 'حفظ وإرسال للمراجعة';
+  let isProfileSubmitting = false;
+
+  function setSubmitState(state, label){
+    if (!submitBtn) return;
+    isProfileSubmitting = state;
+    submitBtn.disabled = state;
+
+    // تفعيل / إلغاء حالة التحميل بصريًا
+    submitBtn.classList.toggle('btn--loading', state);
+
+    if (label) submitBtn.textContent = label;
+  }
+
 
   // معرف الطلب الجاري تعديله (إن وجد)
   let editingId = null;
@@ -515,27 +570,69 @@
     if (avatarPreview) avatarPreview.src = avatar;
   });
 
-  /* ============== حفظ الملف (POST أو PATCH) ============== */
+     /* ============== حفظ الملف (POST أو PATCH) ============== */
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-     const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
+
+    // لا نسمح بالضغط المتكرر أثناء الإرسال
+    if (isProfileSubmitting) return;
+
+    // 1) التحقق من الحجم الكلي للصور
+    const totalB64 = currentGalleryBytes(photos) + currentAvatarBytes(avatar);
     if (totalB64 > MAX_TOTAL_BYTES) {
-      e.preventDefault();
       return toast('إجمالي الصور يتجاوز 5MB — قلّل عدد/حجم الصور.','warn');
     }
-    const fd = new FormData(form);
-     const service = (fd.get('services')||'').toString().trim();
+  const fd          = new FormData(form);
+  const service     = (fd.get('services')||'').toString().trim();
+  const city        = (fd.get('city')||'').toString().trim();
+  const region      = (fd.get('region')||'').toString().trim();
+  const companyName = (fd.get('companyName')||'').toString().trim();
+  const phone       = (fd.get('phone')||'').toString().trim();
+  const phoneClean  = phone.replace(/\s+/g, ''); // إزالة المسافات
+
+  // 🔢  رقم الهاتف السوري: +963 متبوعة بـ 9 أرقام
+  if (!phoneClean){
+    return toast('اكتب رقم الهاتف','warn');
+  }
+  if (!/^\+963\d{9}$/.test(phoneClean)){
+    return toast('رقم الهاتف يجب أن يكون بصيغة ‎+963XXXXXXXXX (٩ أرقام بعد 963)','warn');
+  }
+
+  // 2) تحقق يدوي من الحقول الإلزامية قبل أي إرسال
+  if (!companyName){
+    return toast('اكتب اسم المؤسسة أو الشركة','warn');
+  }
+  if (!city){
+    return toast('اختر المحافظة','warn');
+  }
+  if (!region){
+    return toast('اكتب المنطقة','warn');
+  }
+  if (!service){
+    return toast('اختر التخصص / الخدمة','warn');
+  }
+
+  // 3) الصورة الشخصية / الشعار إلزامية
+  if (!avatar || !avatar.toString().trim()){
+    return toast('أضِف صورة شخصية أو شعار للمقاول قبل الإرسال','warn');
+  }
+
+  // 👈 من هنا نبدأ حالة "جارٍ الحفظ"
+  setSubmitState(true, 'جارٍ الحفظ…');
+
+    // 4) تجهيز البيانات للإرسال
     const payload = {
       name:        (fd.get('name')||'').toString().trim(),
       email:       (fd.get('email')||'').toString().trim(),
-      phone:       (fd.get('phone')||'').toString().trim(),
-      region:      (fd.get('region')||'').toString().trim(),
+        phone:       phoneClean,
+
+      region,
       bio:         (fd.get('bio')||'').toString().trim(),
-      companyName: (fd.get('companyName')||'').toString().trim(),
-      services: service ? [service] : [],
-      city:        (fd.get('city')||'').toString().trim(),
+      companyName,
+      services:    service ? [service] : [],
+      city,
       description: (fd.get('description')||'').toString().trim(),
-      videoUrl: (fd.get('videoUrl')||'').toString().trim(),   // ← أضِف هذا السطر
+      videoUrl:    (fd.get('videoUrl')||'').toString().trim(),
       avatar,
       photos,
       submitForReview: true
@@ -545,17 +642,53 @@
     const method = editingId ? 'PATCH' : 'POST';
 
     try{
-      const res  = await fetch(url, { method, headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+      const res  = await fetch(url, {
+        method,
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(payload)
+      });
       const json = await res.json().catch(()=>({ok:false}));
+
       if (json && json.ok){
-        toast(editingId ? 'تم تعديل الطلب وإرساله للمراجعة' : 'تم الحفظ وإرسال التعديلات للمراجعة','ok');
+        toast(
+          editingId
+            ? 'تم تعديل الطلب وإرساله للمراجعة'
+            : 'تم الحفظ وإرسال التعديلات للمراجعة',
+          'ok'
+        );
         editingId = null;
         renderRequests();
+
+        // ✅ حالة النجاح: نخبر المستخدم على الزر أيضاً
+        setSubmitState(false, 'تم الحفظ ✓');
+        setTimeout(()=>{
+          if (!isProfileSubmitting && submitBtn){
+            submitBtn.textContent = defaultSubmitLabel;
+          }
+        }, 1600);
+
       } else {
         toast(json.msg || 'تعذر الحفظ','warn');
+
+        // ⚠️ فشل من السيرفر
+        setSubmitState(false, 'تعذّر الحفظ');
+        setTimeout(()=>{
+          if (!isProfileSubmitting && submitBtn){
+            submitBtn.textContent = defaultSubmitLabel;
+          }
+        }, 1600);
       }
     }catch(err){
-      console.error(err); toast('خطأ في الاتصال','warn');
+      console.error(err);
+      toast('خطأ في الاتصال','warn');
+
+      // ⚠️ مشكلة شبكة
+      setSubmitState(false, 'تعذّر الاتصال');
+      setTimeout(()=>{
+        if (!isProfileSubmitting && submitBtn){
+          submitBtn.textContent = defaultSubmitLabel;
+        }
+      }, 1600);
     }
   });
 

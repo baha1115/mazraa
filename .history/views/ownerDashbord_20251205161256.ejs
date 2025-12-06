@@ -733,28 +733,6 @@ landForm.addEventListener('submit', async (e)=>{
 
   const idForEdit = (fd.get('id') || '').toString().trim();
   const isEdit    = !!idForEdit;
-  // قراءة الحقول المطلوبة
-  const area    = (fd.get('area') || '').toString().trim();   // المنطقة
-  const city    = (fd.get('city') || '').toString().trim();   // المحافظة
-  const sizeStr = (fd.get('size') || '').toString().trim();   // المساحة كنص
-  const sizeNum = Number(sizeStr);                            // المساحة كرقم
-  // ✅ المنطقة إجباري
-  if (!area){
-    toast('اكتب اسم المنطقة','warn');
-    return;
-  }
-
-  // ✅ المحافظة إجبارية
-  if (!city){
-    toast('اختر المحافظة','warn');
-    return;
-  }
-
-  // ✅ المساحة إجبارية (> 0)
-  if (!sizeStr || !Number.isFinite(sizeNum) || sizeNum <= 0){
-    toast('المساحة إجبارية — أدخل مساحة أكبر من صفر بالمتر المربع','warn');
-    return;
-  }
 
   // 2) التحقق من الحصّة (للإضافة الجديدة فقط، التعديل مسموح دائماً)
   if (!isEdit && !_quotaReady){
@@ -780,14 +758,13 @@ landForm.addEventListener('submit', async (e)=>{
 
  
 
-  // ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
-  if (!isEdit) {
-    const left      = _quotaState?.left;
-    const unlimited = _quotaState?.unlimited === true || left === Infinity;
-    if (!unlimited && Number(left) <= 0) {
-      toast('بلغت حد النشر المسموح به في خطتك. قم بالترقية للنشر أكثر.', 'warn');
-      return;
-    }
+ // ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
+if (!isEdit) {
+  const left      = _quotaState?.left;
+  const unlimited = _quotaState?.unlimited === true || left === Infinity;
+  if (!unlimited && Number(left) <= 0) {
+    toast('بلغت حد النشر المسموح به في خطتك. قم بالترقية للنشر أكثر.', 'warn');
+    return;
   }
 
   // فحص الواتساب (اختياري)
@@ -808,7 +785,7 @@ landForm.addEventListener('submit', async (e)=>{
     kind:          fd.get('kind') || 'sale',
     area:          (fd.get('area') || '').toString().trim(),
     city:          (fd.get('city') || '').toString().trim(),
-    size:          sizeNum,
+    size:          parseInt(fd.get('size') || 0,10),
     price:         priceNum,
     currency:      (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
     rentPeriod:    (fd.get('rentPeriod') || '').toString(),
