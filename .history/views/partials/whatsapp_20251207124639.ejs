@@ -1,0 +1,63 @@
+<%
+  // === القيم القادمة من لوحة التحكم (app.js يملأ res.locals.footer) ===
+  const f = (typeof footer !== 'undefined' && footer) ? footer : {};
+  // — السماح بتجاوز الرقم والرسالة من الـ include —
+  const rawNumber = (typeof waNumber !== 'undefined' && waNumber) ? waNumber : (f.whatsapp || '');
+  const waDigits  = String(rawNumber).replace(/\D/g, '');     // أرقام فقط لـ wa.me
+  const defaultText = 'مرحبًا، أحتاج مساعدة.';
+  const text = (typeof waText !== 'undefined' && waText) ? waText : defaultText;
+  function enc(x){ return encodeURIComponent(String(x || '')); }
+
+  // متغيّرات CSS اختيارية لضبط الموضع لكل صفحة من الـ include
+  const cssVars = [];
+  if (typeof waBottom !== 'undefined') cssVars.push(`--wa-fab-bottom:${String(waBottom)}`);
+  if (typeof waRight  !== 'undefined') cssVars.push(`--wa-fab-right:${String(waRight)}`);
+%>
+
+<% /* أدخل الستايل مرة واحدة فقط في الصفحة */ %>
+<% if (!locals.__waStyleIncluded) { locals.__waStyleIncluded = true; %>
+  <style id="whatsapp-fab-style">
+    /* ===== Floating WhatsApp FAB (scoped) ===== */
+    .fab-whatsapp{
+      position: fixed;
+      right: var(--wa-fab-right, 16px);
+      bottom: calc(var(--wa-fab-bottom, 16px) + env(safe-area-inset-bottom, 0px));
+      z-index: 70;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px;
+      border-radius: 999px;
+      background: #25D366; color: #fff; text-decoration: none;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .fab-whatsapp:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(0,0,0,.22);
+      background: #1ebe5d;
+    }
+    @media (max-width: 640px){
+      .fab-whatsapp{
+        right: var(--wa-fab-right, 12px);
+        bottom: calc(var(--wa-fab-bottom, 80px) + env(safe-area-inset-bottom, 0px));
+        width: 48px; height: 48px;
+      }
+    }
+  </style>
+<% } %>
+
+<% if (waDigits) { %>
+  <a
+    class="fab-whatsapp"
+    href="https://wa.me/<%= waDigits %>?text=<%= enc(text) %>"
+    target="_blank"
+    rel="noopener"
+    aria-label="الدردشة عبر واتساب"
+    title="الدردشة عبر واتساب"
+    style="<%= cssVars.join(';') %>"
+  >
+    <!-- أيقونة واتساب (SVG) -->
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">
+      <path fill="currentColor" d="M19.1 17.7c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.2-.8.9-1 .9-.1 0-.3.1-1-.3-.6-.3-1.2-.9-1.6-1.6-.1-.2 0-.3.2-.5.2-.2.3-.3.4-.5.1-.2.1-.3 0-.5 0-.1-.7-1.7-.9-2.2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.8.8-.8 2 0 1.2.8 2.4.9 2.6.1.2 1.6 2.6 3.9 3.6 2.3 1.1 2.3.7 2.7.7.4 0 1.3-.5 1.5-1 .2-.5.2-.9.1-1v-.1c0-.1-.2-.1-.4-.2zM16 4.1a11.9 11.9 0 0 0-10 18.3L5 28l5.8-1.5A11.9 11.9 0 1 0 16 4.1zm7.1 19.1a9.9 9.9 0 0 1-14.1 0 10 10 0 1 1 14.1 0z"/>
+    </svg>
+  </a>
+<% } %>

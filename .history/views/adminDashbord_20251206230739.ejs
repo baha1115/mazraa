@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>لوحة المشرف — Farmers</title>
+<meta name="description" content="لوحة تحكم Admin لمراجعة الأراضي والمقاولين والبانرات وإدارة الاشتراكات والسجل.">
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+<style>
+  :root{
+    --g700:#047857; --g600:#059669; --g500:#10b981;
+    --y500:#eab308;
+    --ink:#0f172a; --ink70:#334155; --ink50:#64748b;
+    --bg:#f7faf7; --white:#fff;
+    --r:16px; --rs:12px;
+    --sh:0 10px 26px rgba(2,44,34,.08);
+    --ring:0 0 0 3px rgba(5,150,105,.28);
+    /* استقرار عرض الصفحة عند ظهور/اختفاء سكرول */
+    scrollbar-gutter: stable both-edges;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;color:var(--ink);
+    font:15.5px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    background:
+      radial-gradient(900px 360px at 110% -10%, #fef9c3 0%, transparent 60%),
+      radial-gradient(900px 360px at -10% 120%, #ecfccb 0%, transparent 60%),
+      linear-gradient(#f7fff8,#fbfdf6);
+  }
+
+  /* منع التمدد الأفقي المفاجئ */
+  html, body { overflow-x: hidden; }
+  .container, .panel, .card { max-width: 100%; overflow-x: clip; }
+  img, video { max-width: 100%; height: auto; }
+
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:none;box-shadow:var(--ring);border-radius:10px}
+
+  /* Topbar */
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);border-bottom:1px solid #e5e7eb;backdrop-filter:blur(8px)}
+  .topbar__in{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.8rem 0}
+  .container{width:min(1200px,92%);margin-inline:auto}
+  .brand{display:flex;align-items:center;gap:.6rem;font-weight:900}
+  .brand__mark{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;color:#fff;background:linear-gradient(135deg,var(--g600),var(--y500))}
+  .topbar__act{display:flex;gap:.5rem}
+
+  /* Buttons / Inputs */
+  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem .85rem;border-radius:12px;border:1px solid transparent;font-weight:800;background:linear-gradient(135deg,var(--g600),var(--g700));color:#fff;box-shadow:0 10px 24px rgba(4,120,87,.18)}
+  .btn:hover{filter:brightness(.98)}
+  .btn--ghost{background:#fff;border-color:#e5e7eb;color:var(--ink)}
+  .btn--warn{background:linear-gradient(135deg,#f59e0b,#d97706)}
+  .btn--danger{background:linear-gradient(135deg,#ef4444,#dc2626)}
+  .btn--ok{background:linear-gradient(135deg,#10b981,#059669)}
+  .btn--sm{padding:.4rem .6rem}
+  .input{width:100%;padding:.6rem .8rem;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:258px 1fr;gap:1rem;margin:1rem 0}
+  .sidebar{border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:var(--sh);display:flex;flex-direction:column}
+  .menu{display:grid;padding:.5rem}
+  .menu__item{border:1px solid transparent;border-radius:12px;padding:.65rem .75rem;text-align:right;font-weight:800;color:var(--ink70);background:#fff}
+  .menu__item:hover{background:#f9fafb}
+  .menu__item.is-active{background:linear-gradient(135deg,var(--g600),var(--g700));color:#fff}
+  .sidebar__foot{margin-top:auto;padding:.8rem;border-top:1px solid #e5e7eb;color:var(--ink50);font-size:.92rem}
+
+  .content{min-width:0}
+  .panel{display:none;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:var(--sh);padding:1rem}
+  .panel.is-visible{display:block}
+  .head{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-bottom:.6rem}
+  .muted{color:var(--ink50)}
+
+  /* Cards / Lists */
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
+  .card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;padding:.8rem}
+  .title{margin:.2rem 0 .6rem;font-weight:900}
+  .land{display:grid;grid-template-columns:140px 1fr;gap:.8rem;border:1px solid #e5e7eb;border-radius:14px;padding:.6rem;background:#fff}
+  .land__media{width:140px;height:105px;border-radius:12px;overflow:hidden;background:#0b1a13}
+  .land__media img{width:100%;height:100%;object-fit:cover}
+  .meta{color:var(--ink50);font-size:.95rem}
+  .pill{display:inline-block;padding:.2rem .5rem;border-radius:999px;font-weight:800;font-size:.85rem;margin-inline-start:.35rem}
+  .p--pending{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+  .p--approved{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+  .p--rejected{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+
+  .table-wrap{border:1px solid #e2e8f0;border-radius:16px;background:#fff;overflow:hidden}
+  table{width:100%;border-collapse:separate;border-spacing:0}
+  thead th{position:sticky;top:0;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:right;padding:.55rem .7rem}
+  tbody td{padding:.55rem .7rem;border-bottom:1px solid #f1f5f9}
+
+  .drawer{position:fixed;top:0;right:-520px;width:min(520px,92%);height:100%;background:#fff;border-left:1px solid #e5e7eb;box-shadow:-12px 0 34px rgba(0,0,0,.08);transition:right .25s ease;z-index:80;display:flex;flex-direction:column}
+  .drawer[aria-hidden="false"]{right:0}
+  .drawer__head{display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid #e5e7eb}
+  .drawer__body{padding:1rem 1rem 2rem;overflow:auto}
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.2);backdrop-filter:blur(2px);z-index:70}
+
+  .toasts{position:fixed;left:16px;bottom:16px;display:grid;gap:.5rem;z-index:90}
+  .toast{padding:.55rem .8rem;border-radius:12px;border:1px solid #e2e8f0;background:#fff;box-shadow:var(--sh);font-weight:800}
+  .toast--ok{border-color:#a7f3d0;background:#ecfdf5;color:#065f46}
+  .toast--warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
+
+  /* ---- ملف تحميل مخصص (إصلاح الانزلاق) ---- */
+  .filebox{
+    position: relative;                           /* مهم جداً لتقييد الـ input المطلق داخلها */
+    display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+    max-width:100%; overflow:hidden;
+  }
+  /* إخفاء بصري للـ input بدون إنشاء تمرير أفقي */
+  .filebox input[type="file"]{
+    position: absolute !important;                /* يتمركز داخل .filebox فقط */
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  .filebox__btn{
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.55rem .9rem; border-radius:12px; border:1px solid #d1d5db;
+    background:#fff; font-weight:800; cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.05);
+  }
+  .filebox__btn:hover{ background:#f8fafc }
+  .filebox__name{
+    font-size:.95rem; color:#475569; min-width:180px;
+    padding:.4rem .6rem; border:1px dashed #cbd5e1; border-radius:10px; background:#f8fafc;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:100%;
+    direction:ltr; /* لأسماء ملفات إنجليزية/أرقام طويلة */
+  }
+
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    .cards{grid-template-columns:1fr}
+  }
+
+  .site-header { background:#fff; border-bottom:1px solid #eee; }
+  .nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+  .nav .navlinks { display:flex; align-items:center; gap:1rem; }
+  .nav .btn { padding:.5rem .9rem; border-radius:10px; }
+  .badge { font-weight:700; }
+  .mobile-menu { padding:.75rem 1rem; background:#fff; border-top:1px solid #eee; }
+  .nav-toggle { background:transparent; border:0; }
+  #previewMap { height: 260px; border-radius: 12px; border:1px solid #e5e7eb; overflow:hidden; }
+.showcase-card{
+  border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; background:#fff;
+  display:flex; flex-direction:column; box-shadow:0 8px 20px rgba(0,0,0,.04);
+}
+.showcase-thumb{height:140px; background:#0b1a13}
+.showcase-thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.showcase-body{padding:.6rem .7rem}
+.showcase-title{font-weight:800; margin:.1rem 0}
+.showcase-desc{color:#64748b; font-size:.92rem; min-height:1.6em}
+.showcase-actions{display:flex; gap:.5rem; padding:.6rem; border-top:1px solid #eef2f7}
+/* === Showcase Lists (rentTop / saleTop / bestContractors) === */
+.showcase-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:.9rem;
+}
+
+.showcase-card{
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 10px 22px rgba(2,44,34,.06);
+  overflow:hidden;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  display:flex;
+  flex-direction:column;
+}
+
+.showcase-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 26px rgba(2,44,34,.10);
+  border-color:#cbd5e1;
+}
+
+.showcase-thumb{
+  height:140px;
+  background:#0b1a13;
+}
+
+.showcase-thumb img{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+
+.showcase-body{
+  padding:.7rem .8rem .2rem;
+}
+
+.showcase-title{
+  font-weight:900;
+  margin:.05rem 0 .25rem;
+  color:#0f172a;
+}
+
+.showcase-desc{
+  color:#64748b;
+  font-size:.94rem;
+  min-height:1.6em;
+  line-height:1.45;
+}
+
+.showcase-meta{
+  display:flex; gap:.5rem; align-items:center;
+  padding:.4rem .8rem .8rem;
+}
+
+.showcase-actions{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:.6rem; padding:.6rem .8rem; border-top:1px solid #eef2f7;
+}
+
+.showcase-actions .btn{
+  padding:.4rem .65rem;
+}
+
+.showcase-link{
+  color:#334155; font-size:.92rem; text-decoration:underline;
+}
+.showcase-link:hover{ color:#0f172a; }
+
+@media (max-width:640px){
+  .showcase-thumb{ height:120px; }
+}
+/* ===== Mobile upgrades ===== */
+.mobile-tabs {
+  position: fixed; right: 0; left: 0; bottom: 0; z-index: 60;
+  display: flex; gap: .2rem; justify-content: space-around;
+  padding: .4rem; background: #fff; border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -8px 18px rgba(0,0,0,.06);
+}
+.mobile-tabs__btn {
+  flex: 1; padding: .55rem .4rem; border-radius: 10px; border: 1px solid #e5e7eb;
+  background: #fff; font-weight: 800; font-size: .9rem;
+}
+.mobile-tabs__btn.is-active {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(135deg, var(--g600), var(--g700));
+  box-shadow: 0 8px 18px rgba(4,120,87,.18);
+}
+
+@media (max-width: 980px){
+  body{ padding-bottom: 64px; }          /* علشان ما تغطي القائمة السفلية المحتوى */
+  .layout{ grid-template-columns: 1fr; }
+  .sidebar{ display: none; }             /* نخبي القائمة الجانبية على الموبايل */
+  .panel{ padding: .8rem .8rem 1rem; }
+  .head{ flex-direction: column; align-items: flex-start; gap: .4rem; }
+
+  /* بطاقات الأراضي */
+  .land{ grid-template-columns: 1fr; }
+  .land__media{ width: 100%; height: 160px; }
+
+  /* شبكة الكروت */
+  .cards{ grid-template-columns: 1fr; gap: .6rem; }
+  .showcase-grid{ grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); }
+
+  /* الدروار على عرض الشاشة */
+  .drawer{ right: -100%; width: 100%; }
+  .drawer[aria-hidden="false"]{ right: 0; }
+
+  /* جدول الاشتراكات → بطاقات قابلة للقراءة */
+  .table-wrap{ border-radius: 12px; overflow: hidden; }
+  table{ display: block; }
+  thead{ display: none; }
+  tbody, tr, td{ display: block; width: 100%; }
+  tbody tr{ padding: .6rem .8rem; border-bottom: 1px solid #f1f5f9; }
+  tbody td{ padding: .45rem 0; border-bottom: 0; }
+  tbody td:nth-child(1)::before{ content: 'الاسم: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(2)::before{ content: 'الإيميل: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(3)::before{ content: 'النوع: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(4)::before{ content: 'الصلاحيات/الملاحظات: '; color:#64748b; font-weight:700; }
+  tbody td:nth-child(5)::before{ content: 'تحرير: '; color:#64748b; font-weight:700; }
+
+  /* منع تكبير iOS وقت التركيز على الحقول */
+  .input{ font-size: 16px; }
+}
+
+@media (min-width: 981px){
+  .mobile-tabs{ display: none; }         /* نخفي قائمة الموبايل على الديسكتوب */
+}
+/* جدول المستخدمين على الموبايل */
+@media (max-width:980px){
+  .users-table thead{ display:none; }
+  .users-table, .users-table tbody, .users-table tr, .users-table td{ display:block; width:100%; }
+  .users-table tbody tr{ padding:.6rem .8rem; border-bottom:1px solid #f1f5f9; }
+  .users-table td{ padding:.45rem 0; }
+  .users-table td:nth-child(1)::before{ content:'الاسم: '; color:#64748b; font-weight:700; }
+  .users-table td:nth-child(2)::before{ content:'الإيميل: '; color:#64748b; font-weight:700; }
+  .users-table td:nth-child(3)::before{ content:'الدور: '; color:#64748b; font-weight:700; }
+  .users-table td:nth-child(4)::before{ content:'الخطة/الانتهاء: '; color:#64748b; font-weight:700; }
+  .users-table td:nth-child(5)::before{ content:'الانضمام: '; color:#64748b; font-weight:700; }
+}
+.badge{display:inline-block;padding:.25rem .5rem;border-radius:.4rem;font-size:.85rem}
+.badge--basic{background:#e5e7eb;color:#111827}
+.badge--premium{background:#2563eb;color:#fff}
+.badge--vip{background:#d97706;color:#111}
+
+</style>
+
+</head>
+<body>
+<%- include('partials/navbar') %>
+<main class="container layout">
+  <aside class="sidebar" aria-label="قائمة">
+    <nav class="menu">
+      <button class="menu__item is-active" data-view="farms">أراضٍ بانتظار الموافقة</button>
+      <button class="menu__item" data-view="contractors">ملفات المقاولين</button>
+      <button class="menu__item" data-view="banners">بانرات الصفحة الرئيسية</button>
+      <button class="menu__item" data-view="subs">الاشتراكات والصلاحيات</button>
+      <button class="menu__item" data-view="history">البنر المتحرك العلوي</button>
+      <button class="menu__item" data-view="settings">البنر السفلي الثابت</button>
+      <button class="menu__item" data-view="users">المستخدمون</button>
+    </nav>
+    <div class="sidebar__foot">© <span data-year></span> Farmers</div>
+  </aside>
+
+  <section class="content">
+
+    <!-- 1) Farms Pending -->
+    <section id="view-farms" class="panel">
+      <div class="head">
+        <h2>أراضٍ بانتظار الموافقة</h2>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <label class="muted">تصفية المنطقة:</label>
+          <select id="areaFilter" class="input" style="width:220px">
+            <option value="all">الكل</option>
+          </select>
+        </div>
+      </div>
+      <div id="farmsWrap" class="cards"></div>
+      <p id="farmsEmpty" class="muted" hidden>لا توجد طلبات بانتظار المراجعة.</p>
+      <div id="farmsPager" class="table-pager" style="display:flex;align-items:center;gap:.5rem;margin-top:.75rem;">
+  <button type="button" class="btn btn--ghost btn--sm" id="farmsPrev">السابق</button>
+  <span class="muted" id="farmsInfo" style="font-size:.9rem"></span>
+  <button type="button" class="btn btn--ghost btn--sm" id="farmsNext">التالي</button>
+</div>
+
+    </section>
+
+    <!-- 2) Contractors -->
+<!-- Contractors as CARDS -->
+<section id="view-contractors" class="panel">
+  <div class="head"><h2>ملفات المقاولين بانتظار المراجعة</h2></div>
+  <div style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0 .8rem">
+    <label class="muted">الحالة:</label>
+    <select id="contractorStatus" class="input" style="width:220px">
+      <option value="pending" selected>قيد المراجعة</option>
+      <option value="approved">مقبول</option>
+      <option value="rejected">مرفوض</option>
+    </select>
+  </div>
+
+  <div id="contractorsCards" class="cards"></div>
+  <p id="contractorsEmpty" class="muted" hidden>لا توجد ملفات الآن.</p>
+</section>
+    <!-- داخل .content في adminDashbord.ejs -->
+<section id="view-banners" class="panel">
+  <div class="head"><h2>سلايدات الهيرو (Hero Swiper)</h2></div>
+
+  <form id="hero-add" class="card" style="display:grid;gap:.6rem;max-width:560px" enctype="multipart/form-data">
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="heroImgFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="heroImgFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (يدعم span)</label>
+      <input class="input" name="title" placeholder='مثال: هل لديك مزرعة؟ <span class="accent">انضم الآن</span>'>
+    </div>
+
+    <div>
+      <label class="muted">الوصف</label>
+      <textarea class="input" name="lead" rows="3"></textarea>
+    </div>
+
+    <button class="btn btn--ok" type="submit">إضافة</button>
+  </form>
+
+  <script>
+    (function(){
+      const fi = document.getElementById('heroImgFile');
+      const nameEl = document.querySelector('#hero-add .filebox__name');
+      if (fi && nameEl) {
+        fi.addEventListener('change', () => {
+          const f = fi.files && fi.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      }
+    })();
+  </script>
+
+  <div style="margin:.8rem 0 .4rem"><strong>القائمة الحالية</strong></div>
+  <div id="hero-list" style="display:grid;gap:.6rem"></div>
+  <p id="hero-empty" class="muted">لا توجد سلايدات بعد.</p>
+
+
+
+
+
+  <div class="head" style="margin-top:1rem"><h3>إضافة عناصر لكل سكشن (Upload)</h3></div>
+
+  <!-- rentTop -->
+  <form action="/admin/home/showcase/rentTop/item" method="post" enctype="multipart/form-data" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <strong>إضافة عنصر إلى: أجمل أراضي للإيجار (rentTop)</strong>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="rentTopFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="rentTopFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (اختياري)</label>
+      <input class="input" name="title" placeholder="عنوان مختصر">
+    </div>
+
+    <div>
+      <label class="muted">وصف مختصر (اختياري)</label>
+      <input class="input" name="desc" placeholder="نص تعريفي قصير">
+    </div>
+
+    <div>
+      <label class="muted">رابط التفاصيل (اختياري)</label>
+      <input class="input" name="link" placeholder="/rent أو /sale أو رابط خارجي">
+    </div>
+
+    <button type="submit" class="btn btn--ok">+ إضافة للـ rentTop</button>
+  </form>
+
+  <!-- saleTop -->
+  <form action="/admin/home/showcase/saleTop/item" method="post" enctype="multipart/form-data" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <strong>إضافة عنصر إلى: أجمل أراضي للبيع (saleTop)</strong>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="saleTopFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="saleTopFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (اختياري)</label>
+      <input class="input" name="title" placeholder="عنوان مختصر">
+    </div>
+
+    <div>
+      <label class="muted">وصف مختصر (اختياري)</label>
+      <input class="input" name="desc" placeholder="نص تعريفي قصير">
+    </div>
+
+    <div>
+      <label class="muted">رابط التفاصيل (اختياري)</label>
+      <input class="input" name="link" placeholder="/sale أو /rent أو رابط خارجي">
+    </div>
+
+    <button type="submit" class="btn btn--ok">+ إضافة للـ saleTop</button>
+  </form>
+
+  <!-- bestContractors -->
+  <form action="/admin/home/showcase/bestContractors/item" method="post" enctype="multipart/form-data" class="card" style="display:grid;gap:.6rem;max-width:860px">
+    <strong>إضافة عنصر إلى: أفضل المقاولين (bestContractors)</strong>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="bestContractorsFile" type="file" name="imgFile" accept="image/*" required>
+        <label for="bestContractorsFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">العنوان (اختياري)</label>
+      <input class="input" name="title" placeholder="اسم/عنوان مختصر">
+    </div>
+
+    <div>
+      <label class="muted">وصف مختصر (اختياري)</label>
+      <input class="input" name="desc" placeholder="نص تعريفي قصير">
+    </div>
+
+    <div>
+      <label class="muted">رابط التفاصيل (اختياري)</label>
+      <input class="input" name="link" placeholder="/contractors أو صفحة مقاول">
+    </div>
+
+    <button type="submit" class="btn btn--ok">+ إضافة للـ bestContractors</button>
+  </form>
+
+  <script>
+    (function(){
+      document.querySelectorAll('.filebox').forEach(box=>{
+        const input  = box.querySelector('input[type="file"]');
+        const nameEl = box.querySelector('.filebox__name');
+        if (!input || !nameEl) return;
+        input.addEventListener('change', ()=>{
+          const f = input.files && input.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      });
+    })();
+  </script>
+<!-- ====== عرض العناصر الحالية لكل سكشن + الحذف ====== -->
+<div class="head" style="margin-top:1rem"><h3>العناصر الحالية بكل سكشن</h3></div>
+
+<!-- rentTop LIST -->
+<section class="card" style="display:grid;gap:.6rem;max-width:100%">
+  <strong>أجمل أراضي للإيجار (rentTop)</strong>
+ <div id="list-rentTop" class="showcase-grid">
+    <!-- يمتلئ عبر JS -->
+  </div>
+</section>
+
+<!-- saleTop LIST -->
+<section class="card" style="display:grid;gap:.6rem;max-width:100%">
+  <strong>أجمل أراضي للبيع (saleTop)</strong>
+ <div id="list-saleTop" class="showcase-grid">
+    <!-- يمتلئ عبر JS -->
+  </div>
+</section>
+
+<!-- bestContractors LIST -->
+<section class="card" style="display:grid;gap:.6rem;max-width:100%">
+  <strong>أفضل المقاولين (bestContractors)</strong>
+ <div id="list-bestContractors" class="showcase-grid">
+    <!-- يمتلئ عبر JS -->
+  </div>
+</section>
+
+</section>
+
+    <!-- 3) Banners -->
+    
+    <!-- 4) Subs & Permissions -->
+    <section id="view-subs" class="panel">
+      <div class="head"><h2>الاشتراكات والصلاحيات</h2></div>
+      <div class="table-wrap">
+<div style="display:flex;gap:.5rem;align-items:center;margin:.4rem 0 .8rem">
+  <label class="muted">الحالة:</label>
+  <select id="subsStatus" class="input" style="width:220px">
+    <option value="pending" selected>قيد المراجعة</option>
+    <option value="approved">مقبول</option>
+  </select>
+</div>
+
+
+
+        <table>
+          <thead><tr><th>الاسم</th><th>الإيميل</th><th>النوع</th><th>الصلاحيات</th><th style="width:180px">تحرير</th></tr></thead>
+          <tbody id="subsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5) History -->
+   <section id="view-history" class="panel">
+  <div class="head"><h2>إدارة البنرات الترويجية (Swiper)</h2></div>
+
+  <div class="card" style="display:grid;gap:.6rem;max-width:720px">
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      <input id="bnr-enabled" type="checkbox" /> تفعيل عرض البنرات في الموقع
+    </label>
+
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      اختر الصفحة:
+      <select id="bnr-key" class="input" style="width:240px">
+        <option value="sale-banners">صفحة البيع</option>
+        <option value="home-banners" style="display:none;">الصفحة الرئيسية</option>
+        <option value="rent-banners">صفحة الإيجار</option>
+        <option value="contractors-banners">صفحة المقاولين</option>
+      </select>
+    </label>
+
+    <form id="bnr-add-form" style="display:grid;gap:.5rem">
+      <div>
+        <label class="muted">صورة</label>
+        <div class="filebox" dir="rtl">
+          <input id="imgFile" type="file" name="imgFile" accept="image/*" />
+          <label for="imgFile" class="filebox__btn">📤 اختر صورة</label>
+          <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+        </div>
+      </div>
+
+      <div><label class="muted">العنوان</label><input class="input" name="title"></div>
+      <div><label class="muted">النص</label><textarea class="input" name="text" rows="3"></textarea></div>
+      <div><label class="muted">الرابط</label><input class="input" name="link"></div>
+      <div><label class="muted">نص الزر</label><input class="input" name="btn" value="التفاصيل"></div>
+      <button class="btn btn--ok" type="submit">إضافة بانر</button>
+    </form>
+
+    <hr>
+
+    <div>
+      <h3 class="title">البنرات الحالية</h3>
+      <div id="bnr-list" style="display:grid;gap:.6rem"></div>
+      <p id="bnr-empty" class="muted">لا توجد بنرات بعد.</p>
+    </div>
+  </div>
+
+  <!-- سجل الإداري (placeholder لتفادي null) -->
+  <div class="card" style="margin-top:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>سجل العمليات</strong>
+      <button id="clearHistory" class="btn btn--ghost btn--sm" type="button">تفريغ السجل</button>
+    </div>
+    <div id="historyList" style="margin-top:.6rem"></div>
+  </div>
+</section>
+<% var _promo = (typeof promo !== 'undefined' && promo) ? promo : {}; %>
+
+    <!-- 6) Admin settings -->
+   <!-- Users -->
+<section id="view-users" class="panel">
+  <div class="head">
+    <h2>جميع المستخدمين</h2>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <input id="usersSearch" class="input" placeholder="بحث بالاسم/الإيميل" style="width:260px">
+      <select id="usersRole" class="input" style="width:180px">
+        <option value="all" selected>كل الأدوار</option>
+        <option value="owner">مالك</option>
+        <option value="contractor">مقاول</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="users-table">
+      <thead>
+        <tr><th>الاسم</th><th>الإيميل</th><th>الدور</th><th>الخطة/الانتهاء</th><th>تاريخ الانضمام</th></tr>
+      </thead>
+      <tbody id="usersBody"></tbody>
+    </table>
+  </div>
+  <p id="usersEmpty" class="muted" hidden>لا يوجد مستخدمون لعرضهم.</p>
+</section>
+
+    <!-- 6) Admin settings -->
+<section id="view-settings" class="panel">
+  <div class="head"><h2>إضافة بانرات</h2></div>
+
+  <form id="bottom-form" class="card" action="/admin/promo/bottom" method="post" enctype="multipart/form-data" style="display:grid;gap:.6rem;max-width:720px">
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      اختر الصفحة:
+      <select id="btm-key" name="__key__" class="input" style="width:240px">
+        <option value="sale">صفحة البيع</option>
+        <option value="rent">صفحة الإيجار</option>
+        <option value="contractors">صفحة المقاولين</option>
+      </select>
+    </label>
+
+    <label class="muted" style="display:flex;align-items:center;gap:.5rem">
+      <input type="checkbox" name="enabled"> تفعيل البانر
+    </label>
+
+    <div>
+      <label class="muted">الصورة</label>
+      <div class="filebox" dir="rtl">
+        <input id="bottomImgFile" type="file" name="imgFile" accept="image/*">
+        <label for="bottomImgFile" class="filebox__btn">📤 اختر صورة</label>
+        <span class="filebox__name">لم تُحدَّد صورة بعد</span>
+      </div>
+    </div>
+
+    <div><label class="muted">العنوان</label><input class="input" name="title"></div>
+    <div><label class="muted">النص</label><textarea class="input" name="text" rows="3"></textarea></div>
+    <div><label class="muted">الرابط</label><input class="input" name="link"></div>
+    <div><label class="muted">نص الزر</label><input class="input" name="btn" value="التفاصيل"></div>
+
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn--ok" type="submit">حفظ</button>
+      <button class="btn btn--ghost" type="reset">إلغاء</button>
+    </div>
+  </form>
+
+  <!-- معاينة البنر الحالي + زر حذف -->
+  <section class="card" style="display:grid;gap:.6rem;max-width:720px;margin-top:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>المعاينة الحالية</strong>
+      <button id="btm-delete" class="btn btn--danger btn--sm" type="button">حذف البنر لهذه الصفحة</button>
+    </div>
+
+    <div id="btm-current">
+      <p class="muted">لا توجد بيانات بعد.</p>
+    </div>
+    <section class="card" style="margin-top:1rem">
+  <h3 style="margin-bottom:.5rem">إعدادات الفوتر</h3>
+  <form id="footerForm" class="grid" style="grid-template-columns:1fr 1fr; gap:.7rem">
+    <input class="input" name="email"    placeholder="البريد (مثال: support@example.com)">
+    <input class="input" name="phone"    placeholder="الهاتف (مثال: +963 900 000 000)">
+    <input class="input" name="whatsapp" placeholder="واتساب (رقم دولي بدون مسافات)">
+    <input class="input" name="address"  placeholder="العنوان (اختياري)">
+
+    <input class="input" name="facebook"  placeholder="رابط فيسبوك">
+    <input class="input" name="twitter"   placeholder="رابط تويتر/X">
+    <input class="input" name="youtube"   placeholder="رابط يوتيوب">
+    <input class="input" name="instagram" placeholder="رابط إنستغرام">
+    <input class="input" name="tiktok"    placeholder="رابط تيكتوك">
+
+    <div style="grid-column:1/-1; display:flex; gap:.6rem; justify-content:flex-end">
+      <button type="submit" class="btn btn-primary">حفظ</button>
+    </div>
+  </form>
+</section>
+
+  </section>
+
+  <script>
+    (function(){
+      const form   = document.getElementById('bottom-form');
+      const keySel = document.getElementById('btm-key');
+      const nameEl = document.querySelector('#bottom-form .filebox__name');
+      const file   = document.getElementById('bottomImgFile');
+      const view   = document.getElementById('btm-current');
+      const delBtn = document.getElementById('btm-delete');
+
+      // اسم الملف المختار
+      if (file && nameEl) {
+        file.addEventListener('change', () => {
+          const f = file.files && file.files[0];
+          nameEl.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+        });
+      }
+
+      // أضف ?key=... قبل الإرسال (يحافظ على منطقك الحالي)
+      form.addEventListener('submit', function(){
+        if (!keySel) return;
+        form.action = '/admin/promo/bottom?key=' + encodeURIComponent(keySel.value);
+      });
+
+      // جلب بيانات البنر الحالي
+      async function fetchBottom(){
+        const k = keySel.value || 'sale';
+        const res = await fetch('/admin/promo/bottom?key=' + encodeURIComponent(k), {
+          headers:{ 'accept':'application/json' }
+        });
+        if(!res.ok) throw new Error('load failed');
+        const j = await res.json();
+        return j && j.data ? j.data : { enabled:false };
+      }
+
+      // رسم البطاقة
+      function renderBottomCard(doc){
+        const d = doc || {};
+        if (!d.enabled && !d.img && !d.title && !d.text){
+          view.innerHTML = '<p class="muted">لا توجد بيانات بعد.</p>';
+          return;
+        }
+        const img = d.img ? `<div style="width:160px;height:100px;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#0b1a13"><img src="${d.img}" alt="" style="width:100%;height:100%;object-fit:cover"></div>` : '';
+        view.innerHTML = `
+          <div style="display:grid;grid-template-columns:160px 1fr;gap:.8rem;align-items:center">
+            ${img || '<div class="muted">لا صورة</div>'}
+            <div>
+              <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.25rem">
+                <span class="pill ${d.enabled ? 'p--approved':'p--pending'}">${d.enabled?'مفعل':'غير مفعل'}</span>
+              </div>
+              <div style="font-weight:900">${(d.title||'—')}</div>
+              <div class="muted" style="white-space:pre-wrap">${(d.text||'')}</div>
+              ${d.link ? `<div style="margin-top:.4rem"><a class="btn btn--ghost btn--sm" href="${d.link}" target="_blank" rel="noopener">${d.btn||'التفاصيل'}</a></div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // حذف البنر الحالي (يعيد تعيين الوثيقة لتكون غير مفعّلة وفارغة)
+      async function deleteBottom(){
+        const k = keySel.value || 'sale';
+        const ok = confirm('حذف البنر لهذه الصفحة؟');
+        if(!ok) return;
+        const res = await fetch('/admin/promo/bottom?key=' + encodeURIComponent(k), { method:'DELETE' });
+        if (!res.ok) { alert('تعذر الحذف'); return; }
+        await loadBottom();
+      }
+
+      async function loadBottom(){
+        try{
+          const doc = await fetchBottom();
+          renderBottomCard(doc);
+        }catch(e){
+          console.error(e);
+          view.innerHTML = '<p class="muted">تعذر جلب البيانات.</p>';
+        }
+      }
+
+      keySel.addEventListener('change', loadBottom);
+      delBtn.addEventListener('click', deleteBottom);
+
+      // أول تحميل
+      loadBottom();
+    })();
+  </script>
+</section>
+
+
+</main>
+<!-- Mobile bottom nav -->
+<nav class="mobile-tabs" aria-label="التنقل السريع">
+  <button class="mobile-tabs__btn is-active" data-view="farms">الأراضي</button>
+  <button class="mobile-tabs__btn" data-view="contractors">المقاولون</button>
+  <button class="mobile-tabs__btn" data-view="banners">البانرات</button>
+  <button class="mobile-tabs__btn" data-view="subs">الاشتراكات</button>
+  <button class="mobile-tabs__btn" data-view="history">العلوي</button>
+  <button class="mobile-tabs__btn" data-view="settings">السفلي</button>
+  <button class="mobile-tabs__btn" data-view="users">المستخدمون</button>
+</nav>
+
+<!-- Drawer -->
+<aside id="drawer" class="drawer" aria-hidden="true" role="dialog" aria-labelledby="drawerTitle">
+  <div class="drawer__head"><h3 id="drawerTitle">معاينة</h3><button class="btn btn--ghost btn--sm" data-close>✕</button></div>
+  <div id="drawerBody" class="drawer__body"></div>
+</aside>
+<div id="backdrop" class="backdrop" hidden></div>
+
+<!-- Toasts -->
+<div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- Helpers ---------- */
+  const qs  = (s, r=document)=>r.querySelector(s);
+  const qsa = (s, r=document)=>Array.from(r.querySelectorAll(s));
+  function esc(s){return (s??'').toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+    function debounce(fn, ms){
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), ms);
+    };
+  }
+  const toastBox = qs('#toasts');
+  const fmt = new Intl.NumberFormat('en');
+  function moneySym(c){ return c === 'SYP' ? 'ل.س' : '$'; }
+  function toast(msg, kind='ok', ms=2200){
+    const t = document.createElement('div');
+    t.className = 'toast ' + (kind==='ok' ? 'toast--ok' : 'toast--warn');
+    t.textContent = msg;
+    toastBox.appendChild(t);
+    setTimeout(()=>t.remove(), ms);
+  }
+  qsa('[data-year]').forEach(el => el.textContent = String(new Date().getFullYear()));
+
+  /* ---------- LocalStorage (للسجل والإعدادات فقط) ---------- */
+  const ADMIN_KEY = 'farmers_admin_actions';
+  function load(k){ try{const raw=localStorage.getItem(k); return raw?JSON.parse(raw):null;}catch{return null} }
+  function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+  const adminState = load(ADMIN_KEY) || [];
+
+  /* ---------- Navigation ---------- */
+const views = {
+  farms: qs('#view-farms'),
+  contractors: qs('#view-contractors'),
+  banners: qs('#view-banners'),
+  subs: qs('#view-subs'),
+  history: qs('#view-history'),
+  settings: qs('#view-settings'),
+  users: qs('#view-users'),            // ← جديد
+};
+
+  qsa('.menu__item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      qsa('.menu__item').forEach(b=>b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const t = btn.dataset.view;
+      Object.entries(views).forEach(([k,sec])=>sec.classList.toggle('is-visible', k===t));
+    });
+  });
+
+  /* =========================
+     1) FARMS (Pending)
+     ========================= */
+    const farmsWrap  = qs('#farmsWrap');
+  const farmsEmpty = qs('#farmsEmpty');
+  const areaFilter = qs('#areaFilter');
+
+  // عناصر الـ pagination
+  const farmsPager = qs('#farmsPager');
+  const farmsPrev  = qs('#farmsPrev');
+  const farmsNext  = qs('#farmsNext');
+  const farmsInfo  = qs('#farmsInfo');
+
+  let farmsPage  = 1;
+  const FARMS_LIMIT = 20;
+  let farmsPages = 1;
+
+  async function uniqueAreas(){
+    try{
+      // نأخذ صفحة واحدة كبيرة فقط لاستخراج المناطق (يكفي)
+      const res = await fetch('/admin/farms?status=pending&limit=500', { headers:{'Accept':'application/json'} });
+      const json = await res.json();
+      const lands = json.ok ? (json.data||[]) : [];
+      const a = Array.from(new Set(lands.map(l=>l.area).filter(Boolean)));
+      areaFilter.innerHTML = '<option value="all">الكل</option>' + a.map(x=>`<option>${esc(x)}</option>`).join('');
+    }catch{
+      areaFilter.innerHTML = '<option value="all">الكل</option>';
+    }
+  }
+
+  async function apiGetPendingFarms(area, page = 1){
+    const params = new URLSearchParams({
+      status: 'pending',
+      page: String(page),
+      limit: String(FARMS_LIMIT)
+    });
+
+    if (area && area !== 'all') {
+      params.set('area', area);
+    }
+
+    const res = await fetch('/admin/farms?' + params.toString(), {
+      headers:{'Accept':'application/json'}
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error('Failed to load');
+    return json; // { ok, data, total, page, pages, limit }
+  }
+
+  async function apiApproveFarm(id){
+    const res = await fetch('/admin/farms/'+id+'/approve', { method:'PATCH' });
+    return res.json();
+  }
+  async function apiRejectFarm(id, note){
+    const res = await fetch('/admin/farms/'+id+'/reject', {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ note: note||'' })
+    });
+    return res.json();
+  }
+  async function apiGetFarmById(id){
+    const res = await fetch(`/admin/farms/${id}`, { headers:{'Accept':'application/json'} });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.msg || 'failed');
+    return json.data;
+  }
+
+  function farmDetailsHTML(f){
+   const kindText  = f.kind === 'rent' ? 'إيجار' : 'بيع';
+
+  const isRent  = String(f.kind || '').toLowerCase() === 'rent';
+  const isDaily = String(f.rentPeriod || '').toLowerCase() === 'daily';
+
+  const priceText = isRent
+    ? (moneySym(f.currency) + fmt.format(f.price) + (isDaily ? '/يوم' : '/شهر'))
+    : (moneySym(f.currency) + fmt.format(f.price));
+    const locLine   = f.location ? `${(f.location.address||'')} ${(f.location.lat!=null&&f.location.lng!=null)?`(${f.location.lat}, ${f.location.lng})`:''}` : '—';
+
+    const imgs = Array.isArray(f.photos) && f.photos.length
+      ? f.photos.slice(0, 8).map(src => `
+          <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+            <img src="${src}" alt="" style="width:100%;height:120px;object-fit:cover">
+          </div>`).join('')
+      : '<div class="muted">لا توجد صور مرفوعة.</div>';
+
+    const rejectNote = (f.status === 'rejected' && f.reviewNote)
+      ? `<p class="muted" style="margin:.4rem 0 0"><strong>سبب الرفض:</strong> ${esc(f.reviewNote)}</p>`
+      : '';
+const video = f.videoUrl ? videoBlock(f.videoUrl) : '';
+    return `
+      <div style="display:grid;gap:.55rem">
+        <h3 style="margin:.2rem 0">${esc(f.title || '—')}</h3>
+        <div class="muted">
+          ${kindText} • ${esc(f.area || '—')} — ${esc(f.city || '—')} • ${fmt.format(f.size||0)} م² • ${priceText}
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:.35rem 0">
+          ${imgs}
+        </div>
+${(f.poolDesc||'').trim() ? `
+  <div><h4>وصف المسبح</h4><p style="white-space:pre-wrap">${esc(f.poolDesc)}</p></div>` : ''}
+
+${(f.amenitiesDesc||'').trim() ? `
+  <div><h4>وصف المرافق</h4><p style="white-space:pre-wrap">${esc(f.amenitiesDesc)}</p></div>` : ''}
+
+ ${(f.buildingDesc||'').trim() ? `
+   <div><h4>وصف البناء</h4><p style="white-space:pre-wrap">${esc(f.buildingDesc)}</p></div>` : ''}
+
+        <div>
+          <p style="white-space:pre-wrap">${esc(f.description || f.desc || '—')}</p>
+        </div>
+ ${video}
+        <div>
+          <p class="muted" style="margin:.1rem 0"><strong>الموقع:</strong> ${esc(locLine)}</p>
+          <div id="previewMap" style="height:280px;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb"></div>
+        </div>
+
+        <div style="margin-top:.3rem">
+          <span class="pill ${
+            f.status==='approved' ? 'p--approved' :
+            f.status==='rejected' ? 'p--rejected' : 'p--pending'
+          }">
+            ${
+              f.status==='approved' ? 'مقبول' :
+              f.status==='rejected' ? 'مرفوض' : 'بانتظار المراجعة'
+            }
+          </span>
+          ${rejectNote}
+        </div>
+      </div>
+    `;
+  }
+
+  function initPreviewMap(f){
+    const box = document.getElementById('previewMap');
+    if (!box) return;
+    const lat = Number(f?.location?.lat);
+    const lng = Number(f?.location?.lng);
+    if (!isFinite(lat) || !isFinite(lng)) {
+      box.innerHTML = '<div class="muted" style="padding:.5rem">لا توجد إحداثيات لعرض الخريطة.</div>';
+      return;
+    }
+    const map = L.map('previewMap', { scrollWheelZoom:false }).setView([lat, lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([lat, lng]).addTo(map);
+  }
+
+  async function renderFarms(page = 1){
+    if (!farmsWrap) return;
+
+    farmsWrap.innerHTML = '';
+    farmsEmpty && (farmsEmpty.style.display = 'none');
+    farmsPager && (farmsPager.style.visibility = 'hidden');
+
+    const area = areaFilter ? areaFilter.value : 'all';
+
+    let json;
+    try{
+      json = await apiGetPendingFarms(area, page);
+    }catch(err){
+      console.error(err);
+      if (farmsEmpty){
+        farmsEmpty.textContent = 'تعذر تحميل البيانات، حاول مجدداً.';
+        farmsEmpty.style.display = 'block';
+      }
+      return;
+    }
+
+    const items = json.data || [];
+    farmsPage  = json.page || 1;
+    farmsPages = json.pages || 1;
+    const total = json.total || items.length;
+
+    if (!items.length){
+      if (farmsEmpty){
+        farmsEmpty.textContent = 'لا توجد أراضٍ بانتظار الموافقة.';
+        farmsEmpty.style.display = 'block';
+      }
+      farmsWrap.innerHTML = '';
+    } else {
+      items.forEach(l=>{
+        const cover = (l.photos && l.photos[0]) || 'assets/rent/featured-03.jpg';
+        const loc = l.location ? ` • 📍 ${esc(l.location.address || (l.location.lat+', '+l.location.lng))}` : '';
+        const el = document.createElement('article');
+        el.className='land';
+
+        const isRent   = String(l.kind || '').toLowerCase() === 'rent';
+        const isDaily  = String(l.rentPeriod || '').toLowerCase() === 'daily';
+        const priceStr = isRent
+          ? (moneySym(l.currency) + fmt.format(l.price) + (isDaily ? '/يوم' : '/شهر'))
+          : (moneySym(l.currency) + fmt.format(l.price));
+
+        el.innerHTML = `
+          <div class="land__media"><img src="${cover}" alt=""></div>
+          <div>
+            <h3 class="title" style="margin:.1rem 0">${esc(l.title)}</h3>
+            <div class="meta">
+              ${l.kind==='sale'?'بيع':'إيجار'} • ${esc(l.area)} — ${esc(l.city||'')}${loc}
+              • ${priceStr} • ${fmt.format(l.size)} م²
+              <span class="pill p--pending">بانتظار المراجعة</span>
+            </div>
+
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem">
+              <button class="btn btn--ghost btn--sm" data-act="preview" data-id="${l._id}">معاينة</button>
+
+              <form action="/admin/farms/${l._id}/approve?_method=PATCH" method="post" style="display:inline">
+                <button class="btn btn--ok btn--sm" type="submit">موافقة</button>
+              </form>
+
+              <form action="/admin/farms/${l._id}/reject?_method=PATCH" method="post" style="display:inline-flex;gap:.35rem;align-items:center">
+                <input type="text" name="note" placeholder="سبب الرفض (اختياري)" style="min-width:140px" />
+                <button class="btn btn--warn btn--sm" type="submit">رفض</button>
+              </form>
+            </div>
+          </div>
+        `;
+        farmsWrap.appendChild(el);
+      });
+    }
+
+    // تحديث معلومات الـ pagination + الأزرار
+    if (farmsInfo){
+      const start = total ? ((farmsPage - 1) * FARMS_LIMIT) + 1 : 0;
+      const end   = total ? (start + items.length - 1) : 0;
+      farmsInfo.textContent = total
+        ? `عرض ${start}–${end} من ${total}`
+        : '';
+    }
+
+    if (farmsPrev) farmsPrev.disabled = (farmsPage <= 1);
+    if (farmsNext) farmsNext.disabled = (farmsPage >= farmsPages);
+
+    if (farmsPager){
+      farmsPager.style.visibility = (farmsPages > 1 ? 'visible' : 'hidden');
+    }
+  }
+  // تغيير المنطقة يعيدنا لأول صفحة
+  areaFilter?.addEventListener('change', ()=>{
+    farmsPage = 1;
+    renderFarms(1);
+  });
+
+  // أزرار السابق / التالي
+  farmsPrev?.addEventListener('click', ()=>{
+    if (farmsPage > 1){
+      renderFarms(farmsPage - 1);
+    }
+  });
+
+  farmsNext?.addEventListener('click', ()=>{
+    if (farmsPage < farmsPages){
+      renderFarms(farmsPage + 1);
+    }
+  });
+
+  areaFilter.addEventListener('change', renderFarms);
+
+  farmsWrap.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('button[data-act]'); if(!btn) return;
+    const id = btn.dataset.id, act = btn.dataset.act;
+
+    if (act==='preview'){
+      try {
+        const farm = await apiGetFarmById(id);
+        const html = farmDetailsHTML(farm);
+        openDrawer(html, 'تفاصيل الأرض');
+        setTimeout(()=> initPreviewMap(farm), 0);
+      } catch(err) {
+        console.error(err);
+        toast('تعذر تحميل التفاصيل','warn');
+      }
+      return;
+    }
+  });
+
+  /* =========================
+     2) CONTRACTORS (API)
+     ========================= */
+  async function apiGetContractors(status){
+    const params = new URLSearchParams({ status: status || 'pending' });
+    const res = await fetch('/admin/contractors?' + params.toString(), { headers:{'Accept':'application/json'} });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.msg || 'failed');
+    return json.data || [];
+  }
+  async function apiApproveContractor(id){
+    const res = await fetch('/admin/contractors/'+id+'/approve', { method:'PATCH' });
+    return res.json();
+  }
+  async function apiRejectContractor(id, note){
+    const res = await fetch('/admin/contractors/'+id+'/reject', {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({note: note||''})
+    });
+    return res.json();
+  }
+  function parseYoutubeId(url){
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    // صيغ مدعومة: https://youtu.be/ID  |  https://www.youtube.com/watch?v=ID  |  /embed/ID
+    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+    if (u.hostname.includes('youtube.com')) {
+      if (u.searchParams.get('v')) return u.searchParams.get('v');
+      const m = u.pathname.match(/\/embed\/([^/]+)/);
+      if (m) return m[1];
+    }
+    return null;
+  } catch { return null; }
+}
+
+function videoBlock(url){
+  if (!url) return '';
+  const id = parseYoutubeId(url);
+  if (id){
+    return `
+      <div style="margin-top:.5rem">
+        <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
+          <iframe src="https://www.youtube.com/embed/${id}"
+                  title="Video" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share"
+                  allowfullscreen
+                  style="position:absolute;inset:0;width:100%;height:100%"></iframe>
+        </div>
+      </div>`;
+  }
+  // لو كان رابط ملف فيديو مباشر mp4/webm/ogg:
+  if (/\.(mp4|webm|ogg)$/i.test(url)) {
+    return `
+      <div style="margin-top:.5rem">
+        <video controls style="width:100%;border-radius:10px;border:1px solid #e5e7eb" src="${url}"></video>
+      </div>`;
+  }
+  // غير ذلك: اعرضه كزر فتح
+  return `
+    <div style="margin-top:.5rem">
+      <a class="btn btn--ghost btn--sm" href="${url}" target="_blank" rel="noopener">فتح الفيديو</a>
+    </div>`;
+}
+
+// API: احضر مقاول واحد بالتفاصيل
+  async function apiGetContractorById(id){
+    const res  = await fetch('/admin/contractors/'+id, { headers:{'Accept':'application/json'} });
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.msg||'failed');
+    return json.data;
+  }
+  function renderVideoBlock(url){
+    if(!url) return '<div class="muted">لا يوجد فيديو.</div>';
+    const u = url.trim();
+    // YouTube
+    const yt = u.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([A-Za-z0-9_-]{11})/);
+    if (yt) {
+      return `
+        <div class="video-wrap">
+          <iframe width="100%" height="315"
+            src="https://www.youtube.com/embed/${yt[1]}"
+            title="YouTube video" frameborder="0"
+            allowfullscreen></iframe>
+        </div>`;
+    }
+    // Vimeo (مبسط)
+    const vm = u.match(/vimeo\.com\/(\d+)/);
+    if (vm) {
+      return `
+        <div class="video-wrap">
+          <iframe width="100%" height="315"
+            src="https://player.vimeo.com/video/${vm[1]}"
+            title="Vimeo video" frameborder="0"
+            allowfullscreen></iframe>
+        </div>`;
+    }
+    // ملف فيديو مباشر
+    if (/\.(mp4|webm|ogg)(\?|$)/i.test(u)) {
+      return `<video controls style="width:100%;max-height:360px"><source src="${u}"></video>`;
+    }
+    // غير ذلك: رابط فقط
+    return `<a href="${u}" target="_blank" rel="noopener">فتح الفيديو</a>`;
+  }
+
+ 
+// يبني معاينة كاملة (صور، نبذة، خدمات، بيانات تواصل، معرض أعمال)
+function contractorDetailsHTML(c){
+    const esc = s => (s??'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services||'');
+    const gallery  = Array.isArray(c.photos) && c.photos.length
+      ? c.photos.map(src => `
+          <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+            <img src="${src}" alt="" style="width:100%;height:140px;object-fit:cover">
+          </div>`).join('')
+      : '<div class="muted">لا توجد صور أعمال.</div>';
+
+    const avatar = c.avatar || '/assets/contractor-1.jpg';
+    const badge =
+      c.status==='approved' ? '<span class="pill p--approved">مقبول</span>' :
+      c.status==='rejected' ? '<span class="pill p--rejected">مرفوض</span>'  :
+                              '<span class="pill p--pending">قيد المراجعة</span>';
+
+    const rejectNote = (c.status==='rejected' && c.reviewNote)
+      ? `<div class="muted" style="margin-top:.35rem"><strong>سبب الرفض:</strong> ${esc(c.reviewNote)}</div>`
+      : '';
+
+    // ← إضافة بلوك الفيديو إن وُجد
+     const videoBlock = renderVideoBlock(c.videoUrl);
+
+    return `
+      <div style="display:grid;gap:.8rem">
+        <div style="display:grid;grid-template-columns:96px 1fr;gap:.8rem;align-items:center">
+          <div style="width:96px;height:96px;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#0b1a13">
+            <img src="${avatar}" alt="" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <div>
+            <h3 class="title" style="margin:.1rem 0">${esc(c.name || c.companyName || '—')} ${badge}</h3>
+            <div class="muted">
+              ${esc(c.companyName || '—')} • ${esc(c.city||'—')} — ${esc(c.region||'—')}
+              <br>الخدمات: ${esc(services || '—')}
+              <br>الهاتف: ${esc(c.phone || '—')} • البريد: ${esc(c.email || '—')}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin:.2rem 0">نبذة</h4>
+          <p style="white-space:pre-wrap">${esc(c.bio || c.description || '—')}</p>
+        </div>
+
+        ${videoBlock}
+
+        <div>
+          <h4 style="margin:.2rem 0">معرض الأعمال</h4>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem">${gallery}</div>
+        </div>
+
+        ${rejectNote}
+      </div>
+    `;
+  }
+  const contractorStatus  = qs('#contractorStatus');
+  const contractorsCards  = qs('#contractorsCards');
+  const contractorsEmpty  = qs('#contractorsEmpty');
+  function pill(status){
+    if (status==='approved') return '<span class="pill p--approved">مقبول</span>';
+    if (status==='rejected') return '<span class="pill p--rejected">مرفوض</span>';
+    return '<span class="pill p--pending">قيد المراجعة</span>';
+  }
+
+  async function renderContractorCards(){
+    contractorsCards.innerHTML = '';
+    let rows = [];
+    try { rows = await apiGetContractors(contractorStatus.value); } catch { rows = []; }
+
+    contractorsEmpty.hidden = rows.length>0;
+
+    rows.forEach(c=>{
+      const avatar = c.avatar || '/assets/contractor-1.jpg';
+      const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services||'');
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `
+        <div style="display:grid;grid-template-columns:96px 1fr;gap:.8rem;align-items:flex-start">
+          <div style="width:96px;height:96px;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#0b1a13">
+            <img src="${avatar}" alt="" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <div>
+            <h3 class="title" style="margin:.15rem 0">${esc(c.name || c.companyName || '—')}</h3>
+            <div class="meta">
+              ${esc(c.companyName || '—')} • ${esc(c.city||'—')} — ${esc(c.region||'—')}
+              <br>الخدمات: ${esc(services || '—')}
+              <br>الهاتف: ${esc(c.phone || '—')} • البريد: ${esc(c.email || '—')}
+            </div>
+            <div style="margin-top:.35rem">${pill(c.status)}</div>
+
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem">
+              <button class="btn btn--ghost btn--sm" data-act="view" data-id="${c._id}">معاينة</button>
+
+              <form action="/admin/contractors/${c._id}/approve?_method=PATCH" method="post" style="display:inline">
+                <button class="btn btn--ok btn--sm" type="submit">موافقة</button>
+              </form>
+
+              <form action="/admin/contractors/${c._id}/reject?_method=PATCH" method="post" style="display:inline-flex;gap:.35rem;align-items:center">
+                <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:200px;padding:.3rem .5rem"/>
+                <button class="btn btn--danger btn--sm" type="submit">رفض</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+      contractorsCards.appendChild(card);
+    });
+  }
+document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('button[data-act="view-contractor"][data-id]');
+    if(!btn) return;
+    try{
+      const doc = await apiGetContractorById(btn.dataset.id);
+      const html = contractorDetailsHTML(doc);
+      openDrawer(html, 'ملف مقاول');
+    }catch(err){
+      console.error(err);
+      toast('تعذر تحميل التفاصيل','warn');
+    }
+  });
+document.addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button[data-act="view"][data-id]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+
+  try {
+    const contractor = await apiGetContractorById(id);
+    const html = contractorDetailsHTML(contractor);
+    openDrawer(html, 'ملف مقاول');
+  } catch (err) {
+    console.error(err);
+    toast('تعذر تحميل تفاصيل المقاول','warn');
+  }
+});
+
+  contractorStatus?.addEventListener('change', renderContractorCards);
+
+  /* =========================
+     3) Banners (Demo)
+     ========================= */
+ 
+  /* =========================
+     4) Subscriptions (Demo)
+     ========================= */
+  const subsBody = qs('#subsBody');
+  let users = [
+    {id:'U-OWN', name:'مالك',      email:'owner@example.com',      plan: 'Basic',  perms:['بيع','إيجار','بانر']},
+    {id:'U-CON', name:'مقاول (API)', email:'contractor@example.com', plan: 'Basic', perms:['مقاول','بانر']},
+  ];
+async function apiGetSubs(status){
+  const params = new URLSearchParams({ status: status || 'pending' });
+  const res = await fetch('/admin/subscriptions?' + params.toString(), { headers:{'Accept':'application/json'} });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.msg || 'failed');
+   console.log('subs rows:', json.data); // ← شوف هل user.subscriptionExpiresAt واصل
+  return json.data || [];
+}
+async function apiApproveSub(id){
+  const res = await fetch('/admin/subscriptions/'+id+'/approve', { method:'PATCH' });
+  return res.json();
+}
+async function apiRejectSub(id, note){
+  const res = await fetch('/admin/subscriptions/'+id+'/reject', {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ note: note || '' })
+  });
+  return res.json();
+}
+
+function fmtDateISO(d){
+  try{ const dt = new Date(d); 
+       if (isNaN(dt)) return '—';
+       return dt.toLocaleDateString('ar-SY', { year:'numeric', month:'2-digit', day:'2-digit' });
+  }catch(_){ return '—'; }
+}
+
+function dedupeLatestApproved(rows){
+    // رتب الأحدث أولاً: approvedAt ثم createdAt احتياطيًا
+    const sorted = rows.slice().sort((a,b)=>{
+      const da = new Date(a.approvedAt || a.createdAt || 0).getTime();
+      const db = new Date(b.approvedAt || b.createdAt || 0).getTime();
+      return db - da; // الأحدث أولاً
+    });
+    const pick = new Map(); // userId -> row
+    for (const r of sorted){
+      const uid = (r.user && (r.user._id || r.user)) || null;
+      if (!uid) continue;
+      if (!pick.has(uid)) pick.set(uid, r); // بما إننا مرتبين، أول مرة = أحدث
+    }
+    return Array.from(pick.values());
+  }
+
+  async function renderSubs(){
+    subsBody.innerHTML = '';
+    let rows = [];
+    const state = (subsStatus?.value || 'pending');
+
+    try { rows = await apiGetSubs(state); } catch { rows = []; }
+
+    // لو الحالة "مقبول"؛ أظهر فقط أحدث طلب مقبول لكل مستخدم
+    if (state === 'approved') {
+      rows = dedupeLatestApproved(rows);
+    }
+
+    if (!rows.length){
+      subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك لهذه الحالة.</td></tr>`;
+      return;
+    }
+
+    const fmt = (d)=>{
+      try{
+        const x = new Date(d);
+        if (isNaN(x)) return '—';
+        return x.toLocaleDateString('ar-EG', { year:'numeric', month:'2-digit', day:'2-digit' });
+      }catch{ return '—'; }
+    };
+
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      const uname  = r.user?.name  || r.name  || '—';
+      const email  = r.user?.email || '—';
+      const plan   = r.plan || r.user?.subscriptionTier || '—';
+      const expAt  = r.user?.subscriptionExpiresAt ? fmt(r.user.subscriptionExpiresAt) : '—';
+
+      if (state === 'approved') {
+        // عند "مقبول": أظهر الخطة + تاريخ الانتهاء فقط (لا أزرار)
+        tr.innerHTML = `
+          <td>${esc(uname)}</td>
+          <td>${esc(email)}</td>
+          <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
+          <td class="muted">ينتهي في: <strong>${esc(expAt)}</strong></td>
+          <td class="muted">—</td>
+        `;
+      } else {
+        // عند "تحت المراجعة": أزرار + اختيار المدة
+        tr.innerHTML = `
+          <td>${esc(uname)}</td>
+          <td>${esc(email)}</td>
+          <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
+          <td>${esc(r.notes || '')}</td>
+          <td style="display:flex;gap:.4rem;align-items:center">
+            <select class="input" data-dur="${r._id}" style="width:120px">
+              <option value="month" selected>شهر</option>
+              <option value="year">سنة</option>
+            </select>
+            <button class="btn btn--ok btn--sm" data-sub="${r._id}" data-act="sub-approve">موافقة</button>
+            <form class="inline-reject" data-sub="${r._id}" style="display:inline-flex;gap:.35rem;align-items:center">
+              <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:180px;padding:.3rem .5rem"/>
+              <button class="btn btn--danger btn--sm" type="submit">رفض</button>
+            </form>
+          </td>
+        `;
+      }
+
+      subsBody.appendChild(tr);
+    });
+  }
+
+
+subsStatus?.addEventListener('change', renderSubs);
+subsBody?.addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button[data-act="sub-approve"][data-sub]');
+  if (!btn) return;
+  const id = btn.dataset.sub;
+
+  const durSel = subsBody.querySelector(`select[data-dur="${id}"]`);
+  const duration = durSel ? durSel.value : 'month';
+
+  try {
+    const res = await fetch('/admin/subscriptions/'+id+'/approve', {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ duration })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.msg||'failed');
+    toast('تمت الموافقة على الاشتراك','ok');
+    renderSubs();
+  } catch(err) {
+    console.error(err); toast('تعذّر الموافقة','warn');
+  }
+});
+
+subsBody?.addEventListener('submit', async (e)=>{
+  const form = e.target.closest('form.inline-reject[data-sub]');
+  if (!form) return;
+  e.preventDefault();
+  const id = form.dataset.sub;
+  const note = new FormData(form).get('note') || '';
+  try{
+    const r = await fetch('/admin/subscriptions/'+id+'/reject', {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ note })
+    });
+    const j = await r.json();
+    if(!j.ok) throw 0;
+    toast('تم الرفض','ok');
+    renderSubs();
+  }catch(_){ toast('تعذر الرفض','warn'); }
+});
+// ===== Users (API + Render) =====
+async function apiGetUsers({ q = '', role = 'all' } = {}) {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (role) params.set('role', role);
+  const r = await fetch('/admin/users?' + params.toString(), {
+    headers: { 'Accept': 'application/json' }
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.msg || 'failed');
+  return j.data || [];
+}
+
+const usersBody   = qs('#usersBody');
+const usersEmpty  = qs('#usersEmpty');
+const usersSearch = qs('#usersSearch');
+const usersRole   = qs('#usersRole');
+
+  function dateFmt(d){
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return '—';
+    return dt.toLocaleDateString('ar-SY', { year:'numeric', month:'2-digit', day:'2-digit' });
+  }
+
+  // شارة الخطة
+  function planBadge(plan){
+    const p = String(plan || '').trim().toLowerCase();
+    const text = (p === 'vip') ? 'VIP' : (p === 'premium' ? 'Premium' : 'Basic');
+    const cls  = (p === 'vip') ? 'badge--vip' : (p === 'premium' ? 'badge--premium' : 'badge--basic');
+    return `<span class="badge ${cls}">${text}</span>`;
+  }
+function roleAr(role){
+  const v = String(role||'').trim().toLowerCase();
+  if (v === 'owner' || v === 'landowner') return 'مالك';
+  if (v === 'contractor') return 'مقاول';
+  if (v === 'admin') return 'مشرف';
+  if (v === 'user') return 'مستخدم';
+  return 'مستخدم';
+}
+async function renderUsers(){
+  if (!usersBody) return;
+  usersBody.innerHTML = '';
+  let rows = [];
+  try{
+    rows = await apiGetUsers({
+      role: usersRole?.value || 'all',
+      q: usersSearch?.value?.trim() || ''
+    });
+  }catch(_){ rows = []; }
+
+  usersEmpty.hidden = rows.length > 0;
+
+  rows.forEach(u=>{
+    const tr = document.createElement('tr');
+    const name   = u.name || '—';
+    const email  = u.email || '—';
+    const role   = u.role || u.type || 'user';
+const plan   = u.subscriptionTier || u.plan || 'Basic';
+// دعم اسم قديم محتمل مثل subscriptionUntil إضافةً إلى subscriptionExpiresAt
+const expRaw = u.subscriptionExpiresAt || u.subscriptionUntil;
+const exp    = expRaw ? dateFmt(expRaw) : '—';
+const joined = u.createdAt ? dateFmt(u.createdAt) : '—';
+
+    tr.innerHTML = `
+      <td>${esc(name)}</td>
+      <td dir="ltr">${esc(email)}</td>
+      <td>${roleAr(role)}</td>
+
+      <td>${planBadge(plan)} ${exp!=='—' ? `<small class="muted">حتى ${esc(exp)}</small>` : ''}</td>
+      <td>${joined}</td>
+    `;
+    usersBody.appendChild(tr);
+  });
+}
+
+usersSearch?.addEventListener('input', debounce(renderUsers, 300));
+usersRole?.addEventListener('change', renderUsers);
+document.addEventListener('DOMContentLoaded', renderUsers);
+
+  /* =========================
+     5) History
+     ========================= */
+  const historyList = qs('#historyList');
+  function logAction(type, text, payload={}){
+    const item = {id: 'A-'+Date.now(), ts: new Date().toISOString(), type, text, payload};
+    adminState.push(item);
+    save(ADMIN_KEY, adminState);
+    renderHistory();
+  }
+  function renderHistory(){
+    if (!historyList) return;
+    if (!adminState.length){ historyList.innerHTML='<p class="muted">لا يوجد سجل بعد.</p>'; return; }
+    
+    historyList.innerHTML = adminState.slice().reverse().map(a=>{
+      const d = new Date(a.ts).toLocaleString('ar-EG');
+      return `<div style="display:grid;grid-template-columns:140px 1fr;gap:.6rem;padding:.45rem .2rem;border-bottom:1px dashed #e5e7eb">
+        <div class="muted">${d}</div>
+        <div><strong>${esc(a.text)}</strong><div class="muted" style="font-size:.92rem">#${esc(a.type)}</div></div>
+      </div>`;
+    }).join('');
+  }
+  qs('#clearHistory')?.addEventListener('click', ()=>{ if(!confirm('تفريغ السجل؟')) return; save(ADMIN_KEY, []); adminState.length=0; renderHistory(); });
+
+  /* ---------- Drawer ---------- */
+  const drawer   = qs('#drawer');
+  const backdrop = qs('#backdrop');
+  qs('[data-close]')?.addEventListener('click', closeDrawer);
+  backdrop?.addEventListener('click', closeDrawer);
+  function openDrawer(html, title='معاينة'){
+    qs('#drawerTitle').textContent = title;
+    qs('#drawerBody').innerHTML = html;
+    drawer.setAttribute('aria-hidden','false'); backdrop.hidden=false;
+  }
+  function closeDrawer(){ drawer.setAttribute('aria-hidden','true'); backdrop.hidden=true; }
+
+  /* ---------- Admin Settings ---------- */
+  const adminSettings = qs('#adminSettings');
+  const ADMIN_PREFS_KEY='farmers_admin_prefs';
+  const prefs = load(ADMIN_PREFS_KEY) || {name:'Admin',noti:'all'};
+  function fillPrefs(){ if(!adminSettings) return; adminSettings.name.value=prefs.name; adminSettings.noti.value=prefs.noti; }
+  adminSettings?.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const fd = new FormData(adminSettings);
+    prefs.name = (fd.get('name')||'Admin').toString();
+    prefs.noti = fd.get('noti')||'all';
+    save(ADMIN_PREFS_KEY, prefs); toast('تم حفظ الإعدادات','ok');
+  });
+
+  /* ---------- Init ---------- */
+  function init(){
+    uniqueAreas();
+    renderFarms();
+
+    // المقاولون (بالـAPI)
+    renderContractorCards();
+
+    // الديمو
+    renderSubs();
+    renderHistory();
+    fillPrefs();
+    renderUsers();
+
+  }
+  init();
+
+  /* ---------- Misc ---------- */
+  qs('#refreshBtn')?.addEventListener('click', ()=>{ location.reload(); });
+  qs('#logoutBtn')?.addEventListener('click', ()=> toast('تم تسجيل الخروج (تجريبي)','warn'));
+})();
+</script>
+<script>
+(async function bannerAdmin(){
+  const $  = (s, r=document)=>r.querySelector(s);
+
+  // عناصر الواجهة
+  const listBox = $('#bnr-list');
+  const empty   = $('#bnr-empty');
+  const form    = $('#bnr-add-form');
+  const enabled = $('#bnr-enabled');
+  const keySel  = $('#bnr-key');
+
+  if (!listBox || !empty || !form || !enabled) return;
+
+  // المفتاح الحالي (افتراضي home-banners إن لم يوجد select)
+  function currentKey(){ return keySel && keySel.value ? keySel.value : 'home-banners'; }
+
+  // مسارات REST تستخدم param :key
+  const paths = {
+    get:      key => `/admin/promo/banners/${encodeURIComponent(key)}`,
+    add:      key => `/admin/promo/banners/${encodeURIComponent(key)}`,
+    enabled:  key => `/admin/promo/banners/${encodeURIComponent(key)}/enabled`,
+    del: (key,id) => `/admin/promo/banners/${encodeURIComponent(key)}/${encodeURIComponent(id)}`
+  };
+
+  // عرض اسم ملف الرفع
+  const fileInput = form.querySelector('#imgFile');
+  const fileName  = form.querySelector('.filebox__name');
+  fileInput?.addEventListener('change', () => {
+    const f = fileInput.files && fileInput.files[0];
+    if (fileName) fileName.textContent = f ? f.name : 'لم تُحدَّد صورة بعد';
+  });
+
+  async function load(){
+    try{
+      const r = await fetch(paths.get(currentKey()), { headers:{'Accept':'application/json'} });
+      const j = await r.json();
+      if(!j.ok) throw 0;
+      const d = j.data || {enabled:false, items:[]};
+      enabled.checked = !!d.enabled;
+      render(d.items||[]);
+    }catch(_){
+      enabled.checked = false;
+      render([]);
+    }
+  }
+
+  function render(items){
+    listBox.innerHTML = '';
+    if(!items || !items.length){
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+
+    items
+      .slice()
+      .sort((a,b)=>(a.order||0)-(b.order||0))
+      .forEach(it=>{
+        const el = document.createElement('div');
+        el.style.cssText='border:1px solid #e5e7f0;border-radius:12px;padding:.6rem;display:grid;grid-template-columns:140px 1fr;gap:.6rem;align-items:center';
+        el.innerHTML = `
+          <div style="width:140px;height:90px;border-radius:10px;overflow:hidden;background:#0b1a13">
+            <img src="${it.img}" alt="" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <div>
+            <div style="font-weight:800">${it.title||'—'}</div>
+            <div class="muted" style="font-size:.95rem;white-space:pre-wrap">${it.text||''}</div>
+            <div style="display:flex;gap:.4rem;margin-top:.4rem">
+              ${it.link ? `<a class="btn btn--ghost btn--sm" href="${it.link}" target="_blank" rel="noopener">فتح الرابط</a>` : ''}
+              <button class="btn btn--danger btn--sm" data-del="${it._id}">حذف</button>
+            </div>
+          </div>`;
+        listBox.appendChild(el);
+      });
+  }
+
+  // إضافة بانر (رفع ملف)
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    try{
+      const r = await fetch(paths.add(currentKey()), { method:'POST', body: fd });
+      const j = await r.json(); if(!j.ok) throw 0;
+      form.reset();
+      if (fileName) fileName.textContent = 'لم تُحدَّد صورة بعد';
+      await load();
+    }catch(_){
+      alert('تعذر إضافة البانر');
+    }
+  });
+
+  // تفعيل/تعطيل بنرات المفتاح الحالي
+  enabled.addEventListener('change', async ()=>{
+    try{
+      const r = await fetch(paths.enabled(currentKey()), {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ enabled: enabled.checked })
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+    }catch(_){
+      alert('تعذر تحديث التفعيل');
+      enabled.checked = !enabled.checked;
+    }
+  });
+
+  // حذف عنصر
+  listBox.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-del]');
+    if(!btn) return;
+    if(!confirm('حذف هذا البانر؟')) return;
+    try{
+      const r = await fetch(paths.del(currentKey(), btn.dataset.del), { method:'DELETE' });
+      const j = await r.json(); if(!j.ok) throw 0;
+      await load();
+    }catch(_){
+      alert('تعذر الحذف');
+    }
+  });
+
+  // إعادة التحميل عند تبديل الصفحة
+  keySel?.addEventListener('change', load);
+
+  // أول تحميل
+  load();
+})();
+</script>
+
+<script>
+(async function heroAdmin(){
+  const $  = (s,r=document)=>r.querySelector(s);
+  const list  = $('#hero-list');
+  const empty = $('#hero-empty');
+  const form  = $('#hero-add');
+
+  async function load(){
+    try{
+      const r = await fetch('/admin/hero/slides', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      render(j.data||[]);
+    }catch{ render([]); }
+  }
+  function render(items){
+    list.innerHTML = '';
+    if(!items.length){ empty.hidden=false; return; }
+    empty.hidden = true;
+    items.forEach(it=>{
+      const el = document.createElement('div');
+      el.style.cssText = 'border:1px solid #e5e7f0;border-radius:12px;padding:.6rem;display:grid;grid-template-columns:140px 1fr;gap:.6rem;align-items:center';
+      el.innerHTML = `
+        <div style="width:140px;height:90px;border-radius:10px;overflow:hidden;background:#0b1a13">
+          <img src="${it.img}" alt="" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="font-weight:800">${it.title||'—'}</div>
+            <label class="muted" style="display:flex;gap:.35rem;align-items:center">
+              <input type="checkbox" data-on="${it._id}" ${it.enabled?'checked':''}> مفعّل
+            </label>
+          </div>
+          <div class="muted" style="font-size:.95rem;white-space:pre-wrap">${it.lead||''}</div>
+          <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center">
+            <label class="muted">الترتيب:</label>
+            <input type="number" value="${it.order||0}" data-order="${it._id}" class="input" style="width:110px">
+            <button class="btn btn--danger btn--sm" data-del="${it._id}">حذف</button>
+          </div>
+        </div>`;
+      list.appendChild(el);
+    });
+  }
+
+  // ✅ هنا التغيير: نرسل FormData بدون Content-Type يدوي
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    try{
+      const r = await fetch('/admin/hero/slides', {
+        method:'POST',
+        body: fd
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+      form.reset(); load();
+    }catch{ alert('تعذّر الإضافة'); }
+  });
+
+  list?.addEventListener('change', async (e)=>{
+    const idOn = e.target.closest('input[type="checkbox"][data-on]')?.dataset.on;
+    const idOrd= e.target.closest('input[type="number"][data-order]')?.dataset.order;
+    try{
+      if (idOn){
+        await fetch('/admin/hero/slides/'+idOn, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ enabled: e.target.checked })
+        });
+      }
+      if (idOrd){
+        const val = Number(e.target.value)||0;
+        await fetch('/admin/hero/slides/'+idOrd, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ order: val })
+        });
+      }
+    }catch{}
+  });
+
+  list?.addEventListener('click', async (e)=>{
+    const id = e.target.closest('[data-del]')?.dataset.del;
+    if(!id) return;
+    if(!confirm('حذف هذه الشريحة؟')) return;
+    try{
+      const r = await fetch('/admin/hero/slides/'+id, { method:'DELETE' });
+      const j = await r.json(); if(!j.ok) throw 0;
+      load();
+    }catch{ alert('تعذّر الحذف'); }
+  });
+
+  load();
+})();
+</script>
+
+<script>
+(function homeShowcaseAdmin(){
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+  const form   = $('#hs-form');
+  const itemsB = $('#hs-items');
+  const addBtn = $('#hs-add-item');
+  const viewB  = $('#hs-view');
+if (!form || !itemsB || !addBtn || !viewB) return;
+  const itemTpl = (data={}, idx=0)=>`
+    <div class="card" data-idx="${idx}" style="display:grid;gap:.5rem">
+      <div style="display:grid;grid-template-columns:160px 1fr;gap:.6rem;align-items:center">
+        <div style="width:160px;height:96px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#0b1a13">
+          <img src="${data.img||''}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.src='/public/assets/farm-default.jpg'">
+        </div>
+        <div style="display:grid;gap:.5rem">
+          <input class="input" name="img"   placeholder="رابط الصورة" value="${data.img||''}">
+          <input class="input" name="title" placeholder="العنوان"     value="${data.title||''}">
+          <input class="input" name="desc"  placeholder="الوصف"       value="${data.desc||''}">
+          <input class="input" name="link"  placeholder="رابط الزر"   value="${data.link||''}">
+          <input class="input" name="order" type="number" placeholder="الترتيب" value="${Number(data.order||0)}">
+          <button type="button" class="btn btn--danger btn--sm" data-del>حذف العنصر</button>
+        </div>
+      </div>
+    </div>`;
+
+  function readItemsFromUI(){
+    return $$('#hs-items .card').map(card=>{
+      const get = n=>card.querySelector(`[name="${n}"]`)?.value || '';
+      return {
+        img: get('img'), title:get('title'), desc:get('desc'), link:get('link'),
+        order: Number(get('order')||0)
+      };
+    });
+  }
+
+  function fillUIItems(items){
+    itemsB.innerHTML = '';
+    items.slice(0,3).forEach((it,i)=> itemsB.insertAdjacentHTML('beforeend', itemTpl(it,i)));
+  }
+
+  addBtn?.addEventListener('click', ()=>{
+    const cur = readItemsFromUI();
+    if (cur.length >= 3) return alert('الحد الأقصى 3 عناصر');
+    itemsB.insertAdjacentHTML('beforeend', itemTpl({}, cur.length));
+  });
+
+  itemsB?.addEventListener('click', (e)=>{
+    const del = e.target.closest('[data-del]');
+    if(!del) return;
+    del.closest('.card')?.remove();
+  });
+
+  async function loadAll(){
+    try{
+      const r = await fetch('/admin/home/showcase', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      renderView(j.data || []);
+    }catch{ renderView([]); }
+  }
+
+  function renderView(rows){
+    if (!viewB) return;
+    viewB.innerHTML = rows.map(row=>{
+      const items = (row.items||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
+      return `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>${row.key}</strong>
+            <span class="pill ${row.enabled?'p--approved':'p--pending'}">${row.enabled?'مفعل':'غير مفعل'}</span>
+          </div>
+          <div class="muted">${row.title||''}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.5rem">
+            ${items.map(it=>`
+              <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+                <img src="${it.img}" alt="" style="width:100%;height:120px;object-fit:cover">
+                <div style="padding:.5rem">
+                  <div style="font-weight:800">${it.title||'—'}</div>
+                  <div class="muted" style="font-size:.92rem">${it.desc||''}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // تعبئة النموذج عند تغيير المفتاح (تحميل بياناته لتعديلها)
+  form?.key?.addEventListener('change', async ()=>{
+    const key = form.key.value;
+    try{
+      const r = await fetch('/admin/home/showcase', { headers:{'Accept':'application/json'} });
+      const j = await r.json(); if(!j.ok) throw 0;
+      const row = (j.data||[]).find(x=>x.key===key);
+      form.enabled.checked = !!row?.enabled;
+      form.title.value = row?.title || '';
+      fillUIItems(row?.items || []);
+    }catch{
+      form.enabled.checked = true;
+      form.title.value = '';
+      fillUIItems([]);
+    }
+  });
+
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const key = form.key.value;
+    const payload = {
+      title: form.title.value || '',
+      enabled: form.enabled.checked,
+      items: readItemsFromUI()
+    };
+    try{
+      const r = await fetch('/admin/home/showcase/'+encodeURIComponent(key), {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json(); if(!j.ok) throw 0;
+      alert('تم الحفظ');
+      loadAll();
+    }catch{ alert('تعذر الحفظ'); }
+  });
+
+  // إقلاع
+  (async function init(){
+    // حمّل أول سكشن افتراضيًا
+    await loadAll();
+    form.key.dispatchEvent(new Event('change'));
+  })();
+})();
+</script>
+<script>
+  // ====== Showcase viewer & delete ======
+  async function fetchShowcases(){
+    const res = await fetch('/admin/home/showcase', { headers:{'accept':'application/json'} });
+    if(!res.ok) throw new Error('Failed to load showcases');
+    const json = await res.json();
+    return (json && json.data) ? json.data : [];
+  }
+
+  function byKey(rows){
+    const map = { rentTop:{items:[]}, saleTop:{items:[]}, bestContractors:{items:[]} };
+    rows.forEach(r => { if(r && r.key && map[r.key] !== undefined) map[r.key] = r; });
+    return map;
+  }
+
+  function escapeHtml(s){
+    return (s||'').toString().replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  }
+
+  function renderShowcaseList(containerId, items, key){
+    const wrap = document.getElementById(containerId);
+    if(!wrap) return;
+    wrap.innerHTML = '';
+
+    if(!Array.isArray(items) || !items.length){
+      wrap.innerHTML = '<p class="muted" style="grid-column:1/-1">لا توجد عناصر بعد.</p>';
+      return;
+    }
+
+    items.forEach((it, idx) => {
+      const card = document.createElement('div');
+      card.className = 'showcase-card';
+
+      card.innerHTML = `
+        <div class="showcase-thumb">
+          ${it.img ? `<img src="${it.img}" alt="">` : ''}
+        </div>
+
+        <div class="showcase-body">
+          <div class="showcase-title">${escapeHtml(it.title || '')}</div>
+          <div class="showcase-desc">${escapeHtml(it.desc || '')}</div>
+        </div>
+
+        <div class="showcase-actions">
+          <div>
+            ${it.link ? `<a class="showcase-link" href="${it.link}" target="_blank" rel="noopener">رابط التفاصيل</a>` : '<span class="muted">—</span>'}
+          </div>
+          <div>
+            <button class="btn btn--danger btn--sm" data-key="${key}" data-idx="${idx}">حذف</button>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(card);
+    });
+
+    // تفويض الحذف (مرّة واحدة لتفادي التكرار)
+    wrap.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-key]');
+      if(!btn) return;
+      const k = btn.getAttribute('data-key');
+      const i = btn.getAttribute('data-idx');
+      if(!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return;
+      try{
+        const res = await fetch(`/admin/home/showcase/${encodeURIComponent(k)}/item/${encodeURIComponent(i)}`, {
+          method:'DELETE',
+          headers:{ 'accept':'application/json' }
+        });
+        if(!res.ok) throw new Error('Delete failed');
+        await loadShowcaseLists();
+        (window.showToast ? showToast('تم الحذف','ok') : null);
+      }catch(err){
+        console.error(err);
+        (window.showToast ? showToast('تعذر الحذف','warn') : null);
+      }
+    }, { once:true });
+  }
+
+  async function loadShowcaseLists(){
+    const rows = await fetchShowcases();
+    const map  = byKey(rows);
+    renderShowcaseList('list-rentTop',         map.rentTop.items || [],         'rentTop');
+    renderShowcaseList('list-saleTop',         map.saleTop.items || [],         'saleTop');
+    renderShowcaseList('list-bestContractors', map.bestContractors.items || [], 'bestContractors');
+  }
+
+  // شغّل التحميل أول ما تفتح الصفحة
+  (async function initShowcaseLists(){
+    try { await loadShowcaseLists(); } catch(e){ console.error(e); }
+  })();
+</script>
+<script>
+  // … بعد تعريف views = { farms, contractors, banners, subs, history, settings }
+  (function navUnify(){
+    const sideBtns   = Array.from(document.querySelectorAll('.menu__item'));
+    const mobileBtns = Array.from(document.querySelectorAll('.mobile-tabs__btn'));
+    const views = {
+      farms:        document.querySelector('#view-farms'),
+      contractors:  document.querySelector('#view-contractors'),
+      banners:      document.querySelector('#view-banners'),
+      subs:         document.querySelector('#view-subs'),
+      history:      document.querySelector('#view-history'),
+      settings:     document.querySelector('#view-settings'),
+    };
+
+    function activateView(name){
+      Object.entries(views).forEach(([k,sec])=>{
+        if (sec) sec.classList.toggle('is-visible', k===name);
+      });
+      sideBtns.forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+      mobileBtns.forEach(b=> b.classList.toggle('is-active', b.dataset.view===name));
+    }
+
+    // اربط الجانبي
+    sideBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+    });
+    // اربط السفلي
+    mobileBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=> activateView(btn.dataset.view));
+    });
+
+    // تفعيل افتراضي
+    activateView('farms');
+  })();
+</script>
+<script>
+(() => {
+  const fForm = document.getElementById('footerForm');
+  if (!fForm) return;
+
+  // حمّل القيم الحالية
+  (async function loadFooter(){
+    try{
+      const res  = await fetch('/admin/site/footer', { headers: { 'accept':'application/json' }});
+      const json = await res.json();
+      const d = json?.data || {};
+      for (const [k,v] of Object.entries(d)) {
+        const el = fForm.querySelector(`[name="${k}"]`);
+        if (el) el.value = v || '';
+      }
+    }catch(e){ console.error(e); }
+  })();
+
+  // احفظ القيم
+   fForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(fForm);
+    const payload = Object.fromEntries(fd.entries());
+
+    const res = await fetch('/admin/site/footer', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    const j = await res.json().catch(()=>({}));
+    if (j?.ok) (window.showToast? showToast('تم الحفظ','ok') : alert('تم الحفظ'));
+    else       (window.showToast? showToast('تعذر الحفظ','warn') : alert('تعذر الحفظ'));
+  });
+})();
+</script>
+
+</body>
+</html>

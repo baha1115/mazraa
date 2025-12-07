@@ -1,366 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title><%= contractor ? (contractor.name + ' — تفاصيل المقاول') : 'المقاول غير موجود' %></title>
-  <meta name="description" content="تفاصيل مقاول: معرض الأعمال، الخدمات، المناطق المغطّاة، ووسائل التواصل." />
-  <link rel="stylesheet" href="/Public/styles/contractorsstyle.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
-</head>
-<body>
-
-  <%- include('partials/navbar', { active: 'contractors' }) %>
-
-  <% if (!contractor) { %>
-    <section class="section">
-      <div class="container">
-        <h1>المقاول غير موجود</h1>
-        <p class="muted">عذرًا، لم نعثر على المقاول المطلوب.</p>
-        <a class="btn btn-outline" href="/contractors#list">عودة إلى المقاولين</a>
-      </div>
-    </section>
-  <% } else { 
-       const avatar   = contractor.avatar || '/Public/assets/contractors/default.jpg';
-       const name     = contractor.name || contractor.companyName || '—';
-       const services = Array.isArray(contractor.services) ? contractor.services.join('، ') : (contractor.services || '—');
-       const region   = contractor.region || contractor.city || '—';
-       const tier     = contractor.subscriptionTier || 'Basic';
-       const photos   = (Array.isArray(contractor.photos) && contractor.photos.length) ? contractor.photos : [avatar];
-  %>
-
-  <!-- هيدر / ملخص -->
-  <header class="contractor-hero">
-    <div class="container contractor-hero__inner">
-      <div class="hero-top">
-        <div class="a avatar--lg">
-          <img src="<%= avatar %>" alt="صورة <%= name %>" />
-        </div>
-        <div class="hero-copy">
-          <h1 class="name"><%= name %></h1>
-          <p class="specialization"><%= services %></p>
-          <p class="region"><%= region %></p>
-          <ul class="stats" role="list" style="width:100%;display:flex;justify-content:center;align-items:flex-start;flex-direction:column;margin-bottom:-1rem;">
-            <li><strong>الاشتراك:</strong> <span class="tier"><%= tier %></span></li>
-          </ul>
-          <div class="hero-actions" style="position:absolute;right:2rem;top:11rem;">
-            <a class="btn btn-primary" href="#request">طلب خدمة</a>
-            <% if (contractor.phone) { %>
-              <a class="btn btn-outline" href="tel:<%= contractor.phone.replace(/\s+/g,'') %>">اتصل: <%= contractor.phone %></a>
-            <% } %>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-<section id="rating" class="section rating" aria-labelledby="rating-title">
-  <div class="container">
-    <h2 id="rating-title" style="margin-bottom:.5rem;">التقييم</h2>
-
-    <!-- عرض المتوسط والعدد -->
-    <p class="muted" id="ratingSummary"
-       data-id="<%= contractor._id %>"
-       data-avg="<%= contractor.ratingAvg || 0 %>"
-       data-count="<%= contractor.ratingCount || 0 %>">
-      التقييم الحالي: <strong dir="ltr"><span id="avgNum"><%= contractor.ratingAvg || 0 %></span>/5</strong>
-      — عدد المقيمين: <strong id="countNum"><%= contractor.ratingCount || 0 %></strong>
-    </p>
-
-    <!-- نجوم التقييم -->
-    <div class="stars" id="rateStars" role="radiogroup" aria-label="قيِّم هذا المقاول">
-      <% for (let i=1; i<=5; i++){ %>
-        <button type="button"
-                class="star"
-                role="radio"
-                aria-checked="false"
-                data-val="<%= i %>"
-                title="<%= i %> من 5">★</button>
-      <% } %>
-    </div>
-
-    <p class="muted" id="rateMsg" style="min-height:1.4rem;margin-top:.5rem"></p>
-  </div>
-</section>
-
-<style>
-  .stars { display:flex; gap:.25rem; font-size: 2rem; line-height:1; }
-  .star  {
-    background:none; border:0; cursor:pointer; padding:.1rem .2rem;
-    color:#cbd5e1; /* رمادي فاتح */
-    transition: transform .1s ease, color .1s ease;
-  }
-  .star.is-hot, .star:hover { color:#f59e0b; transform: translateY(-1px); } /* ذهبي */
-</style>
-
-  <!-- معرض الأعمال -->
-  <section id="gallery" class="section gallery" aria-labelledby="gallery-title">
-    <div class="container">
-      <h2 id="gallery-title" style="margin-bottom:1rem;">الأعمال السابقة:</h2>
-      <div class="swiper gallery-swiper" aria-label="صور المعرض">
-        <div class="swiper-wrapper">
-          <% photos.forEach(function(src){ %>
-            <div class="swiper-slide">
-              <img src="<%= src %>" alt="عمل لـ <%= name %>" loading="lazy" />
-            </div>
-          <% }) %>
-        </div>
-        <div class="swiper-button-prev" aria-label="السابق"></div>
-        <div class="swiper-button-next" aria-label="التالي"></div>
-        <div class="swiper-pagination"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- الخدمات -->
-  <section id="services" class="section services" aria-labelledby="services-title">
-    <div class="container">
-      <h2 id="services-title">الخدمات المقدّمة</h2>
-      <article class="prose">
-        <% if (Array.isArray(contractor.services) && contractor.services.length) { %>
-          <ul>
-            <% contractor.services.forEach(s => { %><li><%= s %></li><% }) %>
-          </ul>
-        <% } else { %>
-          <p class="muted">لم يضف المقاول قائمة خدمات بعد.</p>
-        <% } %>
-      </article>
-    </div>
-  </section>
-
-  <!-- المناطق -->
-  <section id="coverage" class="section coverage" aria-labelledby="coverage-title">
-    <div class="container">
-      <h2 id="coverage-title">المناطق المشمولة</h2>
-      <ul class="tags" role="list">
-        <li class="tag"><%= region %></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- طلب خدمة -->
-  <section id="request" class="section request" aria-labelledby="request-title">
-    <div class="container">
-      <h2 id="request-title">طلب خدمة</h2>
-      <p class="muted">املأ بياناتك وسنتواصل معك في أقرب وقت.</p>
-      <form id="request-form" action="/request" method="post" novalidate>
-        <input type="hidden" name="contractorId" value="<%= contractor._id %>"/>
-        <div class="form-grid">
-          <div class="field">
-            <label class="label" for="rq-name">الاسم</label>
-            <input id="rq-name" class="input" name="name" type="text" placeholder="اكتب اسمك" required />
-          </div>
-          <div class="field">
-            <label class="label" for="rq-phone">رقم الهاتف</label>
-            <input id="rq-phone" class="input" name="phone" type="tel" placeholder="+963 XXX XXX" required />
-          </div>
-          <div class="field">
-            <label class="label" for="rq-service">نوع الخدمة</label>
-            <select id="rq-service" name="service" required>
-              <option value="">اختر الخدمة</option>
-              <option value="Electricity">كهرباء</option>
-              <option value="Pumps">مضخات</option>
-              <option value="Solar Energy">طاقة شمسية</option>
-              <option value="Construction">بناء</option>
-              <option value="Diagnostics">تشخيص فني</option>
-              <option value="Irrigation">ري</option>
-            </select>
-          </div>
-          <div class="field field--full">
-            <label class="label" for="rq-desc">وصف مختصر</label>
-            <textarea id="rq-desc" class="input" name="description" rows="4" placeholder="صف طلبك بشكل مختصر"></textarea>
-          </div>
-          <div class="field field--actions">
-            <button class="btn btn-primary" type="submit">إرسال</button>
-            <a class="btn btn-outline" href="https://wa.me/21600000000?text=<%= encodeURIComponent('أحتاج خدمة من المقاول: '+name) %>" target="_blank" rel="noopener">واتساب</a>
-          </div>
-        </div>
-      </form>
-    </div>
-  </section>
-
-  <% } /* نهاية if(contractor) */ %>
-<% if (Array.isArray(topRated) && topRated.length) { %>
-<section class="section" aria-labelledby="top-rated-title">
-  <div class="container">
-    <h2 id="top-rated-title" style="margin-bottom:1rem;">أفضل المقاولين تقييماً</h2>
-    <div class="cards-grid">
-      <% topRated.forEach(function(c){ 
-           const name = c.name || c.companyName || '—';
-           const avatar = c.avatar || '/Public/assets/contractors/default.jpg';
-           const svc = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '—');
-           const reg = c.region || c.city || '—';
-           const avg = Number(c.ratingAvg || 0).toFixed(2);
-           const cnt = Number(c.ratingCount || 0);
-      %>
-        <article class="contractor-card">
-          <a class="contractor-link" href="/contractor/<%= c._id %>">
-            <header class="contractor-head">
-              <figure class="avatar">
-                <img src="<%= avatar %>" alt="صورة <%= name %>" loading="lazy" />
-              </figure>
-              <div class="head-info">
-                <h3 class="name"><%= name %></h3>
-                <p class="specialization"><%= svc %></p>
-                <p class="region"><%= reg %></p>
-                <p class="muted">⭐ <strong dir="ltr"><%= avg %></strong> (<%= cnt %>)</p>
-              </div>
-              <% if (c.subscriptionTier==='VIP') { %>
-                <span class="badge badge--tier">VIP</span>
-              <% } else if (c.subscriptionTier==='Premium') { %>
-                <span class="badge badge--tier">مميز</span>
-              <% } %>
-            </header>
-            <div class="contractor-body">
-              <button class="btn btn-outline" type="button">عرض المقاول</button>
-            </div>
-          </a>
-        </article>
-      <% }) %>
-    </div>
-  </div>
-</section>
-<% } %>
-  <%- include('partials/promo', { promoContractors }) %>
- <!--
-
-   ========================
-       الفوتر
-   ======================== -->
-<footer class="farm-footer" dir="rtl" aria-labelledby="footer-title">
-  <h2 id="footer-title" class="sr-only">تذييل الموقع</h2>
-
-  <div class="footer-top">
-    <!-- الشعار والوصف المختصر -->
-    <div class="footer-brand">
-      <div class="logo-mark" aria-hidden="true">🌿</div>
-      <div>
-        <strong class="brand-name">مزرعتي</strong>
-        <p class="brand-desc">
-          منصّة لعرض وطلب المزارع (بيع/إيجار) وربط المزارعين بالمقاولين والخبراء.
-        </p>
-      </div>
-    </div>
-
-    <!-- روابط سريعة -->
-    <nav class="footer-links" aria-label="روابط سريعة">
-      <div>
-        <h3 class="footer-title">تصفح</h3>
-        <ul>
-          <li><a href="/sale">مزارع للبيع</a></li>
-          <li><a href="/rent">مزارع للإيجار</a></li>
-          <li><a href="/contractors">المقاولون</a></li>
-          <li><a href="/plans">الاشتراكات</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="footer-title">الدعم</h3>
-        <ul>
-          <li><a href="/about">من نحن</a></li>
-          <li><a href="/about#faq">الأسئلة الشائعة</a></li>
-          <li><a href="/about#privacy">سياسة الخصوصية</a></li>
-          <li><a href="/about#terms">الشروط والأحكام</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="footer-title">تواصل</h3>
-        <ul class="contact">
-          <li><a href="mailto:info@farmers.example">info@farmers</a></li>
-          <li><a href="tel:+963900000000">+963 900 000</a></li>
-          <li><a href="https://wa.me/963900000000" target="_blank" rel="noopener">واتساب مباشر</a></li>
-        </ul>
-      </div>
-    </nav>
-  </div>
-
-  <div class="footer-bottom">
-    <div class="social" aria-label="شبكات اجتماعية">
-      <a class="s-link" href="#" aria-label="تويتر" title="تويتر" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.4-1.3 1.7-2.2-.8.5-1.7.9-2.6 1.1A3.9 3.9 0 0 0 12 8.6c0 .3 0 .5.1.8A11 11 0 0 1 3 5.4a3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.6 3.2 4-.3.1-.7.2-1 .2-.2 0-.5 0-.7-.1.5 1.6 2 2.8 3.8 2.8A7.8 7.8 0 0 1 2 19.5c1.7 1.1 3.8 1.8 6 1.8 7.2 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 1.8-2.1z"/></svg>
-      </a>
-      <a class="s-link" href="#" aria-label="فيسبوك" title="فيسبوك" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.2.3-2 2-2h2V1h-3c-3 0-5 2-5 5v4H6v4h3v8h4z"/></svg>
-      </a>
-      <a class="s-link" href="#" aria-label="يوتيوب" title="يوتيوب" rel="noopener">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2.2.6 9.4.6 9.4.6s7.2 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.8 15.5V8.6l6.2 3.5-6.2 3.4z"/></svg>
-      </a>
-    </div>
-
-    <p class="copyright">
-      © <span id="year-placeholder">2025</span> فارمرز — جميع الحقوق محفوظة.
-    </p>
-
-    <div class="mini-links">
-      <a href="/about">الخصوصية</a>
-      <span class="dot" aria-hidden="true">•</span>
-      <a href="/about">الشروط</a>
-    </div>
-  </div>
-</footer>
-
-   <script src="../Public/contractorsingle.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script>
-    new Swiper('.gallery-swiper', {
-      loop: true,
-      slidesPerView: 1,
-      spaceBetween: 12,
-      pagination: { el: '.swiper-pagination', clickable: true },
-      navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
-    });
-  </script>
-  <script>
-(() => {
-  const wrap   = document.getElementById('ratingSummary');
-  const stars  = Array.from(document.querySelectorAll('#rateStars .star'));
-  const msg    = document.getElementById('rateMsg');
-  if (!wrap || !stars.length) return;
-
-  const id     = wrap.dataset.id;
-  const avgEl  = document.getElementById('avgNum');
-  const cntEl  = document.getElementById('countNum');
-
-  // تلوين مبدئي (حسب المتوسط)
-  function paint(avg){
-    const whole = Math.round(avg);
-    stars.forEach((s, i) => s.classList.toggle('is-hot', i < whole));
-  }
-  paint(Number(wrap.dataset.avg||0));
-
-  // إرسال التقييم
-  async function sendRating(val){
-    msg.textContent = 'جارٍ الإرسال...';
-    try {
-      const r = await fetch(`/contractor/${id}/rate`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body: JSON.stringify({ value: val })
-      });
-      const j = await r.json();
-      if (!j.ok) throw new Error(j.msg || 'فشل الإرسال');
-      // حدّث الواجهة
-      avgEl.textContent = j.data.avg.toFixed ? j.data.avg.toFixed(2) : j.data.avg;
-      cntEl.textContent = j.data.count;
-      paint(Number(j.data.avg||0));
-      msg.textContent = 'شكرًا! تم تسجيل تقييمك.';
-    } catch(e){
-      msg.textContent = e.message || 'تعذّر الإرسال.';
-    }
-  }
-
-  stars.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = Number(btn.dataset.val);
-      stars.forEach(s => s.setAttribute('aria-checked','false'));
-      btn.setAttribute('aria-checked','true');
-      paint(val);
-      sendRating(val);
-    });
-  });
-})();
-</script>
-
-</body>
-</html>
-
-
-

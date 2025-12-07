@@ -1,175 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>الاشتراكات</title>
-  <link rel="stylesheet" href="../public/styles/homestyle.css" />
-</head>
-<style>
-    /* يجمّل رقم الخطوة داخل البطاقة */
-#how-to-subscribe .plan .plan-badge {
-  background: var(--brand, #2d7);
-  color: #fff;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem; height: 2rem;
-  font-weight: 700;
-  margin-bottom: .5rem;
-}
-
-/* يجعل الكروت متساوية الارتفاع داخل الشبكة (إن لم تكن مفعّلة) */
-#how-to-subscribe .plan { display: flex; flex-direction: column; }
-#how-to-subscribe .plan h3 { margin-top: .25rem; }
-#how-to-subscribe .plan p { margin: .25rem 0 .75rem; }
-#how-to-subscribe .plan .btn { margin-top: auto; }
-
-</style>
-<%- include('partials/navbar') %>
-  <main id="content" class="section">
-    <div class="container">
-      <div class="section-header">
-        <h1 id="plans-title">اختر الخطة المناسبة لك</h1>
-        <p class="muted">يمكنك الترقية أو الإلغاء في أي وقت.</p>
-      </div>
-
-      <div class="plan-grid" id="plans">
-        <!-- الخطة الأساسية -->
-        <article class="plan" data-plan-id="basic" data-price="4.99" data-period="شهري">
-          <h3>أساسي</h3>
-          <div class="plan-price">
-            <span class="price">$4.99</span><span class="period">/شهر</span>
-          </div>
-          <ul class="plan-features">
-            <li><span class="check">✓</span> وصول لخصائص أساسية</li>
-            <li><span class="check">✓</span> دعم عبر البريد</li>
-            <li><span class="check">✓</span> مستخدم واحد</li>
-          </ul>
-          <button class="btn btn-subscribe btn-block" data-select-plan>اشترك الآن</button>
-        </article>
-
-        <!-- الخطة الأكثر شعبية -->
-        <article class="plan plan--popular" data-plan-id="pro" data-price="9.99" data-period="شهري" aria-label="الخطة الأكثر شعبية">
-          <span class="plan-badge">الأكثر شعبية</span>
-          <h3>احترافي</h3>
-          <div class="plan-price">
-            <span class="price">$9.99</span><span class="period">/شهر</span>
-          </div>
-          <ul class="plan-features">
-            <li><span class="check">✓</span> كل مزايا أساسي</li>
-            <li><span class="check">✓</span> تقارير متقدمة</li>
-            <li><span class="check">✓</span> حتى 5 مستخدمين</li>
-            <li><span class="check">✓</span> دعم أولوية</li>
-          </ul>
-          <button class="btn btn-primary btn-block" data-select-plan>اشترك الآن</button>
-        </article>
-
-        <!-- الخطة السنوية -->
-        <article class="plan" data-plan-id="business_annual" data-price="99.00" data-period="سنوي">
-          <h3>أعمال (سنوي)</h3>
-          <div class="plan-price">
-            <span class="price">$99</span><span class="period">/سنة</span>
-          </div>
-          <ul class="plan-features">
-            <li><span class="check">✓</span> كل مزايا احترافي</li>
-            <li><span class="check">✓</span> عدد مستخدمين غير محدود</li>
-            <li><span class="check">✓</span> مدير حساب</li>
-          </ul>
-          <button class="btn btn-subscribe btn-block" data-select-plan>اشترك الآن</button>
-        </article>
-      </div>
-
-      <!-- مربع الدفع/التأكيد -->
-      <section id="checkout" class="skills" style="display:none; margin-top:1.5rem;">
-        <h3 class="skills-title">إتمام الاشتراك</h3>
-        <form id="checkout-form">
-          <div style="display:grid; gap:.8rem;">
-            <div class="kpi">
-              <div class="kpi-icon">ℹ️</div>
-              <p class="kpi-label">الخطة المختارة:</p>
-              <p class="kpi-value" id="summary-plan">—</p>
-            </div>
-            <div class="kpi">
-              <div class="kpi-icon">$</div>
-              <p class="kpi-label">السعر:</p>
-              <p class="kpi-value" id="summary-price">—</p>
-            </div>
-
-            <!-- حقول دفع مبسطة (بدّلها ببوابة الدفع الفعلية مثل Stripe) -->
-            <input required type="text" name="fullName" placeholder="الاسم الكامل" class="btn btn-outline" />
-            <input required type="email" name="email" placeholder="البريد الإلكتروني" class="btn btn-outline" />
-            <input required type="text" name="card" placeholder="رقم البطاقة (تجريبي)" class="btn btn-outline" />
-
-            <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
-              <button type="submit" class="btn btn-primary">إتمام الدفع</button>
-              <button type="button" id="cancel-checkout" class="btn btn-outline">إلغاء</button>
-            </div>
-          </div>
-        </form>
-        <p id="checkout-status" class="muted" style="margin-top:.6rem;"></p>
-      </section>
-    </div>
-  </main>
-<!-- كيف أطلب اشتراك؟ -->
-<section id="how-to-subscribe" class="section" aria-labelledby="howto-title">
-  <div class="container">
-    <header class="section-header" style="margin-bottom:.75rem">
-      <h2 id="howto-title">كيف أطلب اشتراك؟</h2>
-      <p class="muted">يمكنك طلب الاشتراك من لوحة التحكم في بضع خطوات بسيطة.</p>
-    </header>
-
-    <div class="plan-grid" style="margin-top:.75rem">
-      <!-- الخطوة 1 -->
-      <article class="plan" aria-label="الخطوة ١">
-        <div class="plan-badge">١</div>
-        <h3>ادخل إلى لوحة التحكم</h3>
-        <p class="muted">سجّل الدخول ثم انتقل إلى <strong>لوحة التحكم</strong>.</p>
-        <a href="/dashboard" class="btn btn-outline btn-block">الذهاب إلى لوحة التحكم</a>
-      </article>
-
-      <!-- الخطوة 2 -->
-      <article class="plan" aria-label="الخطوة ٢">
-        <div class="plan-badge">٢</div>
-        <h3>افتح قسم الاشتراكات</h3>
-        <p class="muted">من القائمة الجانبية اختر <strong>الاشتراكات</strong> أو <strong>طلب اشتراك</strong>.</p>
-        <a href="/dashboard#subscribe" class="btn btn-outline btn-block">فتح قسم الاشتراكات</a>
-      </article>
-
-      <!-- الخطوة 3 -->
-      <article class="plan" aria-label="الخطوة ٣">
-        <div class="plan-badge">٣</div>
-        <h3>اختر خطتك وقدّم الطلب</h3>
-        <p class="muted">اختر الخطة المناسبة ثم اضغط <strong>طلب اشتراك</strong> وأرسل الطلب للمراجعة/الدفع.</p>
-        <a href="/dashboard#subscribe" class="btn btn-primary btn-block">طلب اشتراك الآن</a>
-      </article>
-    </div>
-
-    <!-- ملاحظة صغيرة -->
-    <div class="kpi" style="margin-top:1rem">
-      <div class="kpi-icon">💡</div>
-      <p class="kpi-label">ملاحظة:</p>
-      <p class="kpi-value">
-        إذا لم يظهر لك قسم الاشتراكات في لوحة التحكم، تأكد من تسجيل الدخول بالحساب الصحيح أو تواصل معنا على واتساب.
-      </p>
-    </div>
-  </div>
-</section>
-
-  <footer id="site-footer" class="farm-footer">
-    <div class="footer-bottom container">
-      <p class="copyright">© <span data-year></span> Farmers</p>
-      <div class="mini-links">
-        <a href="/terms">الشروط</a><span class="dot">•</span>
-        <a href="/privacy">الخصوصية</a>
-      </div>
-    </div>
-  </footer>
-
-  <a class="fab-whatsapp" href="https://wa.me/0000000000" aria-label="تواصل واتساب"></a>
-
-  <script src="../public/homejava.js"></script>
-  
-</body>
-</html>
