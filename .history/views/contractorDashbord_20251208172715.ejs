@@ -112,51 +112,6 @@
 @keyframes btn-spin{
   to{ transform:rotate(1turn); }
 }
-/* ===== جعل قائمة الداشبورد شريطًا سفليًا على الموبايل ===== */
-@media (max-width: 640px){
-  /* نخلي المحتوى يأخذ مسافة تحت للشريط */
-  .layout{
-    grid-template-columns: 1fr;
-    margin-bottom: 4.5rem; /* مساحة للشريط السفلي */
-  }
-
-  /* نحول الـ sidebar إلى شريط مثبت أسفل الشاشة */
-  .sidebar{
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    border-radius: 16px 16px 0 0;
-    min-height: auto;
-    box-shadow: 0 -6px 20px rgba(15,23,42,.15);
-    border-top: 1px solid #e5e7eb;
-    border-inline: 0;
-    border-bottom: 0;
-    background:#fff;
-    padding: .35rem .5rem;
-    z-index: 40;
-  }
-
-  /* نخلي عناصر القائمة أفقية بدل عمودية */
-  .menu{
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    padding: 0;
-    gap: .35rem;
-  }
-
-  .menu__item{
-    text-align: center;
-    font-size: .78rem;
-    padding: .4rem .3rem;
-    white-space: nowrap;
-  }
-
-  /* نخفي الفوتر الصغير داخل الـ sidebar على الموبايل */
-  .sidebar__footer{
-    display: none;
-  }
-}
 
   </style>
 </head>
@@ -982,6 +937,13 @@ if (svcEl) {
   });
 })();
 </script>
+<%- include('partials/mobile-nav', { 
+  activeTab: 'dash',   // لأنك الآن داخل لوحة التحكم
+  isAuth,
+  isAdmin,
+  isContractor,
+  isOwner,
+}) %>
 
 </body>
 </html>

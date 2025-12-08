@@ -365,9 +365,9 @@ app.use('/', publicRouter);
 app.use('/', ownerRouter);
 
 // ✅ ملف التحقق من Google Search Console
-app.get('/google88fd5ddd67a71ece.html', (req, res) => {
+app.get('/google88fd5ddd67a71ece (1).html', (req, res) => {
   res.type('text/html');
-  res.sendFile(path.join(__dirname, 'google88fd5ddd67a71ece.html'));
+  res.sendFile(path.join(__dirname, 'google88fd5ddd67a71ece (1).html'));
 });
 
 // ✅ robots.txt
