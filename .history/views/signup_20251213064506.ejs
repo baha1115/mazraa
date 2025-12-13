@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
   <title>المزارعون — إنشاء حساب / تسجيل الدخول</title>
   <link rel="stylesheet" href="/styles/logincss.css" />
   <style>
@@ -70,6 +71,13 @@
     .form-note { font-size:.9rem; color:var(--muted); }
     a { color:var(--brand); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    /* ===== Password Guard ===== */
+.pw-meter{ height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden; }
+.pw-meter__bar{ height:100%; background:linear-gradient(90deg,#ef4444,#f59e0b,#10b981); width:0%; transition:width .2s ease; }
+.pw-reqs{ list-style:none; padding:0; margin:.45rem 0 0; display:grid; gap:.2rem; font-size:.9rem; }
+.pw-reqs li{ color:#6b7280; }
+.pw-reqs li[data-ok="1"]{ color:#0f766e; font-weight:700; }
+
   </style>
 </head>
 
@@ -143,9 +151,26 @@
                 <!-- الهاتف (مطلوب) -->
               <div class="field">
                 <label class="label" for="phone">رقم الهاتف</label>
-                <input class="input" id="phone" type="tel" name="phone"
-                      dir="ltr" placeholder="+9639xxxxxxx"
-                      value="<%= oldData.phone || '' %>" required />
+              <input class="input" id="phone" type="tel" name="phone"
+  dir="ltr" inputmode="numeric" pattern="^\+963\d{9}$"
+  placeholder="+9639xxxxxxx" value="<%= oldData.phone || '' %>" required
+  oninput="
+    // أرقام عربية → إنجليزية، وإزالة غير المسموح
+    this.value = this.value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d+]/g,'');
+    // تحويلات شائعة إلى +963 + محلي
+    let v=this.value;
+    if (/^00963/.test(v)) v='+'+v.slice(2);
+    if (/^963/.test(v))   v='+'+v;
+    if (/^0\d{9}$/.test(v)) v='+963'+v.slice(1);
+    // قصّ المحلي إلى 9 أرقام كحد أقصى
+    if (/^\+?963/.test(v)) {
+      const local = v.replace(/^\+?963/,'').replace(/\D/g,'').slice(0,9);
+      v = '+963'+local;
+    }
+    this.value = v;
+  "
+/>
+
                 <% if (err.phone) { %><p class="error"><%= err.phone %></p><% } %>
               </div>
 
@@ -163,6 +188,23 @@
                   <input class="input" id="confirm" type="password" name="confirm" required />
                   <% if (err.confirm) { %><p class="error"><%= err.confirm %></p><% } %>
                 </div>
+<!-- مؤشر قوة كلمة السر + قائمة الشروط -->
+<div class="field" id="pw-guard">
+  <div class="pw-meter" aria-hidden="true">
+    <div class="pw-meter__bar" id="pw-bar" style="width:0%"></div>
+  </div>
+  <ul class="pw-reqs" id="pw-reqs">
+    <li data-ok="0" id="req-length">8 أحرف على الأقل</li>
+    <li data-ok="0" id="req-types">تحتوي 3 أنواع على الأقل: (حروف صغيرة/كبيرة/أرقام/رموز)</li>
+    <li data-ok="0" id="req-common">ليست كلمة شائعة جدًا (password/123456..)</li>
+    <li data-ok="0" id="req-match">تطابق التأكيد</li>
+  </ul>
+  <label style="display:inline-flex; gap:8px; align-items:center; margin-top:.35rem;">
+    <input type="checkbox" id="togglePw" />
+    <span>إظهار كلمة المرور</span>
+  </label>
+</div>
+<button type="button" class="btn btn-outline" id="gen-strong" style="margin-top:.4rem">توليد كلمة قوية</button>
 
                 <!-- الدور -->
                 <div class="field">
@@ -196,7 +238,7 @@
                             <div class="field">
                 <label class="label" for="identifier">البريد الإلكتروني أو رقم الهاتف</label>
                 <input class="input" id="identifier" type="text" name="identifier"
-                      dir="ltr" placeholder="email@example.com أو +9639xxxxxxx"
+                      dir="ltr" placeholder="phone or email"
                       value="<%= oldData.identifier || '' %>" />
                 <% if (err.identifier) { %><p class="error"><%= err.identifier %></p><% } %>
               </div>
@@ -282,5 +324,114 @@
       });
     }
   </script>
+  <script>
+(function(){
+  const pw       = document.getElementById('password');
+  const pw2      = document.getElementById('confirm');
+  const btn      = document.getElementById('signup-submit');
+  const roleSel  = document.getElementById('role');
+
+  const bar      = document.getElementById('pw-bar');
+  const reqLen   = document.getElementById('req-length');
+  const reqTypes = document.getElementById('req-types');
+  const reqCommon= document.getElementById('req-common');
+  const reqMatch = document.getElementById('req-match');
+  const togglePw = document.getElementById('togglePw');
+  const genBtn   = document.getElementById('gen-strong');
+
+  // كلمات شائعة (قائمة قصيرة تكفي للحارس الأمامي)
+  const COMMON = ['password','123456','qwerty','111111','123123','iloveyou','admin','letmein','welcome'];
+
+  // تحويل أرقام عربية إن وُجدت
+  const ARAB = '٠١٢٣٤٥٦٧٨٩';
+  function normalizeDigits(s){ return s.replace(/[٠-٩]/g, d => String(ARAB.indexOf(d))); }
+
+  function countTypes(s){
+    let t=0;
+    if (/[a-z]/.test(s)) t++;
+    if (/[A-Z]/.test(s)) t++;
+    if (/\d/.test(s))    t++;
+    if (/[^A-Za-z0-9]/.test(s)) t++;
+    return t;
+  }
+
+  function scoreStrength(s){
+    // نقاط بسيطة: طول + أنواع + مكافأة لعدم التكرار
+    let score = 0;
+    if (s.length >= 8) score += 40;
+    score += Math.min(3, countTypes(s)) * 20; // حتى 60
+    if (!/(.)\1{2,}/.test(s)) score += 10;    // لا تكرارات طويلة
+    return Math.min(100, score);
+  }
+
+  function isCommon(s){
+    const lower = s.toLowerCase();
+    return COMMON.some(c => lower.includes(c));
+  }
+
+  function update(){
+    let v  = normalizeDigits(pw.value || '');
+    let v2 = normalizeDigits(pw2.value || '');
+    pw.value  = v;
+    pw2.value = v2;
+
+    const okLen    = v.length >= 8;
+    const okTypes  = countTypes(v) >= 3;
+    const okCommon = !isCommon(v);
+    const okMatch  = v && v === v2;
+
+    reqLen.setAttribute('data-ok', okLen ? '1':'0');
+    reqTypes.setAttribute('data-ok', okTypes ? '1':'0');
+    reqCommon.setAttribute('data-ok', okCommon ? '1':'0');
+    reqMatch.setAttribute('data-ok', okMatch ? '1':'0');
+
+    const s = scoreStrength(v);
+    bar.style.width = (okLen ? s : Math.min(s, 30)) + '%';
+
+    // زر الإرسال: لا يُفعل إلا إذا توفرت الشروط + تم اختيار الدور
+    const hasRole = roleSel && roleSel.value && roleSel.value.trim() !== '';
+    btn.disabled = !(okLen && okTypes && okCommon && okMatch && hasRole);
+  }
+
+  pw.addEventListener('input', update);
+  pw2.addEventListener('input', update);
+  roleSel && roleSel.addEventListener('change', update);
+  document.addEventListener('DOMContentLoaded', update);
+  update();
+
+  // إظهار/إخفاء كلمة المرور
+  if (togglePw){
+    togglePw.addEventListener('change', ()=>{
+      const t = togglePw.checked ? 'text' : 'password';
+      pw.type = t; pw2.type = t;
+    });
+  }
+
+  // توليد كلمة قوية (اختياري)
+  function rand(n){ return Array.from(crypto.getRandomValues(new Uint32Array(n))).map(x=>x%10).join(''); }
+  function genStrong(){
+    const lowers = 'abcdefghijklmnopqrstuvwxyz';
+    const uppers = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const digits = '0123456789';
+    const syms   = '!@#$%^&*()_-+=[]{}?';
+    function pick(str, n){ return Array.from({length:n},()=>str[Math.floor(Math.random()*str.length)]).join(''); }
+    let candidate = pick(lowers,3)+pick(uppers,3)+pick(digits,3)+pick(syms,2)+rand(2);
+    candidate = candidate.split('').sort(()=>Math.random()-0.5).join('');
+    pw.value = candidate; pw2.value = candidate; update();
+  }
+  if (genBtn) genBtn.addEventListener('click', genStrong);
+
+  // تأكيد أخير قبل الإرسال
+  const form = document.getElementById('signup-form');
+  form && form.addEventListener('submit', (e)=>{
+    update();
+    if (btn.disabled){
+      e.preventDefault();
+      alert('يرجى اختيار دور الحساب وإدخال كلمة سر قوية وتأكيد مطابق.');
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
