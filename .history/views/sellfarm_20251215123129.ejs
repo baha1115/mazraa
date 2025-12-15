@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
- <title>مزارع للإيجار في سوريا — مزرعتي</title>
-<meta name="description" content="تصفّح مزارع للإيجار في سوريا حسب المحافظة والمنطقة والسعر والمساحة. إيجار شهري أو يومي في دمشق، ريف دمشق، حلب، حمص وغيرها عبر منصة مزرعتي.">
-<link rel="stylesheet" href="/Public/styles/rentandfarmdetail.css">
+ <title>مزارع للبيع في سوريا — مزرعتي</title>
+<meta name="description" content="اكتشف مزارع للبيع في سوريا بمساحات وأسعار مختلفة. فلترة حسب المحافظة، المنطقة، السعر والمساحة عبر منصة مزرعتي.">
+<link rel="stylesheet" href="/public/styles/rentandfarmdetail.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 <link rel="dns-prefetch" href="https://res.cloudinary.com">
@@ -35,8 +35,7 @@
   .vip-hero-overlay{
     position:absolute;
     inset:0;
-    background:linear-gradient(
-      90deg,
+    background:linear-gradient(90deg,
       rgba(0,0,0,.35),
       rgba(0,0,0,.15) 40%,
       rgba(0,0,0,0) 70%
@@ -70,8 +69,6 @@
     width:150px;
     text-align:center;
   }
-
-  /* شارة VIP في سلايدر الـVIP */
   .vip-badge{
     position:absolute;
     top:12px;
@@ -84,34 +81,30 @@
     z-index:4;
     box-shadow:0 2px 8px rgba(0,0,0,.25);
   }
+  .vip-swiper .swiper-slide{ height:auto; }
 
-  /* ===== بطاقات الإيجار داخل السويبر ===== */
-  .rent-swiper .swiper-slide{ height:auto; }
-/* نجعل كل السلايدات بنفس الارتفاع */
-.rent-swiper .swiper-wrapper{
+  /* ===== Sale swiper & farm cards ===== */
+  .sale-swiper .swiper-slide{ height:auto; }
+/* نجعل السلايدات تشد الكروت لنفس الارتفاع */
+.sale-swiper .swiper-wrapper{
   align-items: stretch;
 }
 
-  /* بطاقة المزرعة (النسخة النهائية الموحّدة) */
   .farm-card{
-  display:flex;               /* بدل block */
-  flex-direction:column;      /* صورة فوق + جسم تحت */
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  overflow:hidden;
-  background:#fff;
-  box-shadow:0 2px 10px rgba(2,6,23,.05);
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  height:100%;                /* يملى السلايد بالكامل */
-}
-
+    display:block;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(2,6,23,.05);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
   .farm-card:hover{
     transform:translateY(-2px);
     box-shadow:0 10px 24px rgba(2,6,23,.08);
     border-color:#e2e8f0;
   }
 
-  /* صورة بنسبة 4:3 */
   .farm-media{
     position:relative;
     aspect-ratio:4/3;
@@ -124,83 +117,80 @@
     display:block;
   }
 
-  /* جسم البطاقة */
   .farm-body{
-  display:grid;
-  row-gap:.45rem;
-  padding:.7rem .75rem;
-  flex:1;                 /* يملأ المساحة تحت الصورة */
-}
+    padding:.7rem .75rem;
+    display:grid;
+    row-gap:.45rem;
+  }
 
   .farm-title{
     margin:0;
     font-size:1rem;
     font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
     display:-webkit-box;
     -webkit-line-clamp:2;
     -webkit-box-orient:vertical;
-    overflow:hidden;
     min-height:2.6em;
   }
 
-  .farm-location,
-  .farm-price{
-    margin:0 0 .25rem;
-  }
   .farm-location{
+    margin:0;
     color:#64748b;
     font-size:.9rem;
   }
   .farm-price{
-    color:#475569;
+    margin:0;
+    color:#64748b;
     font-weight:900;
     letter-spacing:.2px;
   }
 
-  /* عدد المشاهدات */
   .meta-views{
-    display:inline-block;
-    margin-top:.25rem;
+    color:#fff;
+    padding:.15rem .5rem;
+    font-size:.75rem;
+    z-index:4;
+  }
+  .farm-body .meta-views{
     margin-inline-start:auto;
     font-size:.85rem;
     color:#475569 !important;
   }
 
-  /* زر التفاصيل (أساس عام) */
   .btn.btn-outline{
     width:80%;
     display:inline-block;
     border:1px solid #0f172a;
+    text-align:center;
     border-radius:10px;
     padding:.55rem 1rem;
+    text-decoration:none;
     background:#fff;
     color:#0f172a;
-    text-align:center;
-    text-decoration:none;
   }
-  /* داخل جسم البطاقة: بعرض كامل */
   .farm-body .btn.btn-outline{
-  width:100%;
-  padding:.48rem .85rem;
-  font-weight:700;
-  margin-top:auto;        /* يخلي الزر دائماً في أسفل الكرت */
-}
+    width:100%;
+    padding:.48rem .85rem;
+    font-weight:700;
+  }
 
   .empty{
     padding:2rem;
     text-align:center;
   }
 
-  /* ===== شارات الخطط ===== */
+  /* ===== Badges ===== */
   .badge,
   .badge--video{
     z-index:4;
   }
 
-  /* شارة عامة */
   .badge{
-    max-width:60px;
     text-align:center;
+    max-width:50px;
     position:absolute;
     inset-inline-start:10px;
     top:10px;
@@ -216,32 +206,23 @@
     letter-spacing:.2px;
     box-shadow:0 4px 14px rgba(0,0,0,.12);
   }
-
-  /* شارة فيديو */
+  .badge--vip{ background:#0f172a; }
+  .badge--premium{
+    background:#8b5cf6;
+    color:#fff;
+    max-width:80px;
+  }
+  .badge--basic{ background:#64748b; }
   .badge--video{
     text-align:center;
     inset-inline-start:auto;
     inset-inline-end:10px;
     background:#ef4444;
-    width:70px;
+    max-width:100px;
     color:#fff;
   }
 
-  /* ألوان الخطط */
-  .badge--Basic{ background:#64748b; }             /* رمادي مزرّق */
-  .badge--Premium{
-    background:#0ea5e9;
-    max-width:80px;
-    color:#fff;
-  }                                                /* سماوي */
-  .badge--VIP{
-    background:#0f172a;
-    color:#fff;
-  }                                                /* كحلي */
-  /* في الإيجار قررت تخفي Basic */
-  .badge--Basic{ display:none; }
-
-  /* ===== فلاتر (ديسكتوب) ===== */
+  /* ===== Filters (desktop base) ===== */
   .filter-dropdown summary{
     cursor:pointer;
     display:flex;
@@ -259,9 +240,7 @@
   .filter-dropdown[open] summary::after{
     transform:rotate(180deg);
   }
-  .filters-form{
-    padding:.75rem 0 0;
-  }
+  .filters-form{ padding:.75rem 0 0; }
   .filters-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -291,48 +270,41 @@
     padding:.55rem 1rem;
   }
 
-  /* حالة إظهار/إخفاء المزيد */
-  .more-fields[hidden]{ display:none; }
-
-  .vip-swiper .swiper-slide{ height:auto; }
-
-  /* ===== ترتيب الهيرو على الموبايل (داخل البانر العلوي) ===== */
-  @media (max-width:640px){
-    .hero-top{
-      display:grid;
-      grid-template-columns:1fr 140px;
-      grid-template-areas:
-        "avatar actions"
-        "name   actions"
-        "spec   actions"
-        "region actions"
-        "rating actions"
-        "stats  stats";
-      align-items:center;
-      column-gap:.75rem;
-      row-gap:.25rem;
-      text-align:start;
-    }
-    .avatar--lg{ grid-area:avatar; justify-self:start; }
-    .hero-copy{ display:contents; }
-    .hero-copy .name{ grid-area:name; }
-    .hero-copy .specialization{ grid-area:spec; }
-    .hero-copy .region{ grid-area:region; }
-    .hero-rating{ grid-area:rating; justify-content:flex-start; }
-    .stats{ grid-area:stats; align-items:flex-start !important; }
-
-    .hero-actions{
-      grid-area:actions;
-      display:flex;
-      flex-direction:column;
-      gap:.5rem;
-      align-self:start;
-    }
-    .hero-actions .btn{ width:100%; }
+  .advanced-fields[hidden]{ display:none !important; }
+  .advanced-fields.fade-in{ animation:fadeIn .18s ease-in; }
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(-4px);}
+    to{opacity:1;transform:translateY(0);}
   }
 
-  /* ===== ضبط كروت الإيجار على الموبايل ===== */
+  /* ===== Sale cards · two-up on phones ===== */
   @media (max-width:640px){
+    .sale-swiper .farm-card{
+      border-radius:12px !important;
+    }
+    .sale-swiper .farm-card img{
+      height:140px !important;
+      object-fit:cover !important;
+    }
+    .sale-swiper .farm-body{ padding:.55rem !important; }
+    .sale-swiper .farm-title{
+      font-size:.95rem !important;
+      margin:.15rem 0 .3rem !important;
+    }
+    .sale-swiper .farm-location,
+    .sale-swiper .farm-price{
+      font-size:.82rem !important;
+      margin:0 0 .2rem !important;
+    }
+    .sale-swiper .btn.btn-outline{
+      padding:.4rem .7rem !important;
+      font-size:.85rem !important;
+    }
+  }
+
+  /* ===== Mobile fine-tuning + filters (نفس الـ breakpoint) ===== */
+  @media (max-width:640px){
+    .sale-swiper .swiper-slide{ height:auto; }
     .farm-body{
       padding:.6rem .6rem;
       row-gap:.4rem;
@@ -351,20 +323,20 @@
       font-size:.68rem;
       padding:.15rem .5rem;
     }
-  }
 
-  /* ===== Filters · موبايل (ضغط الواجهة) ===== */
-  @media (max-width:640px){
+    /* فلاتر مضغوطة + إخفاء بعض العناصر على الموبايل */
     #filters .filter-dropdown summary{
       font-size:.95rem !important;
       padding:.45rem 0 !important;
+      display:none !important;          /* إخفاء عنوان "تصفية النتائج" */
     }
     #filters .filters-form{
       padding:.5rem 0 0 !important;
     }
     #filters .filters-grid{
-      grid-template-columns:repeat(2,minmax(140px,1fr)) !important;
+      grid-template-columns:repeat(2,minmax(130px,1fr)) !important;
       gap:8px !important;
+      margin-top:0 !important;
     }
     #filters .field .label{
       margin:.1rem 0 .25rem !important;
@@ -373,61 +345,53 @@
     #filters .field input,
     #filters .field select{
       height:2.1rem !important;
-      padding:.4rem .6rem !important;
+      padding:.35rem .55rem !important;
       font-size:.88rem !important;
       border-radius:10px !important;
     }
-    #filters #toggle-more.btn.btn-outline{
+    #filters .field--actions{
+      gap:6px !important;
+      display:none !important;          /* إخفاء "المزيد" و"تطبيق" */
+    }
+    #filters .field--actions .btn.btn-outline{
       padding:.35rem .6rem !important;
       font-size:.86rem !important;
       border-radius:10px !important;
-      width:100%;
-    }
-    #filters #more-filters.filters-grid{
-      grid-template-columns:repeat(2,minmax(140px,1fr)) !important;
-      gap:8px !important;
     }
     #filters .field--actions .btn.btn-primary{
-      padding:.45rem .9rem !important;
+      padding:.42rem .8rem !important;
       font-size:.9rem !important;
       border-radius:10px !important;
     }
-  }
-
-  /* إخفاء عناصر من واجهة الفلاتر على الموبايل فقط */
-  @media (max-width:640px){
-    #filters .filter-dropdown > summary{
-      display:none !important;
-    }
-    #filters #toggle-more{
-      display:none !important;
-    }
-    #filters .field--actions{
-      display:none !important;
-    }
-    #filters .filters-form{
-      padding-top:0 !important;
-    }
-    #filters .filters-grid{
-      margin-top:0 !important;
+    #filters #advanced-fields.filters-grid{
+      grid-template-columns:repeat(2,minmax(130px,1fr)) !important;
+      gap:8px !important;
+      margin-top:.35rem !important;
     }
   }
 
-  /* ===== Rent Location Gate ===== */
-  #rent-location-gate{
+  /* ===== Tablet/Desktop touch-ups ===== */
+  @media (min-width:641px){
+    .farm-card{ border-radius:16px; }
+    .farm-body{ padding:.8rem .85rem; }
+    .farm-title{ font-size:1.05rem; }
+  }
+
+  /* ===== Location Gate (بوابة الموقع) ===== */
+  #location-gate{
     position:fixed;
     inset:0;
     display:none;
     z-index:1100;
   }
-  #rent-location-gate[aria-hidden="false"]{ display:block; }
-  #rent-location-gate .gate-backdrop{
+  #location-gate[aria-hidden="false"]{ display:block; }
+  #location-gate .gate-backdrop{
     position:absolute;
     inset:0;
     background:rgba(0,0,0,.45);
     backdrop-filter:saturate(120%) blur(2px);
   }
-  #rent-location-gate .gate-card{
+  #location-gate .gate-card{
     position:relative;
     margin:6vh auto 0;
     max-width:560px;
@@ -438,7 +402,7 @@
     box-shadow:0 10px 30px rgba(0,0,0,.22);
     animation:gatePop .18s ease-out;
   }
-  #rent-location-gate .gate-close{
+  #location-gate .gate-close{
     position:absolute;
     inset-inline-end:8px;
     top:6px;
@@ -451,26 +415,26 @@
     font-size:20px;
     line-height:1;
   }
-  #rent-location-gate h3{
+  #location-gate h3{
     margin:.25rem 0 .35rem;
     font-size:1.25rem;
     font-weight:900;
   }
-  #rent-location-gate .gate-note{
+  #location-gate .gate-note{
     margin:0 0 .6rem;
     color:#64748b;
     font-size:.95rem;
   }
-  #rent-location-gate .gate-fields{
+  #location-gate .gate-fields{
     display:grid;
     gap:10px;
     margin:.5rem 0 .8rem;
   }
-  #rent-location-gate .gate-label{
+  #location-gate .gate-label{
     font-weight:700;
     font-size:.9rem;
   }
-  #rent-location-gate .gate-input{
+  #location-gate .gate-input{
     width:100%;
     height:2.6rem;
     border:1px solid #e2e8f0;
@@ -478,13 +442,13 @@
     padding:.55rem .75rem;
     font-size:1rem;
   }
-  #rent-location-gate .gate-actions{
+  #location-gate .gate-actions{
     display:flex;
     gap:8px;
     align-items:center;
     justify-content:flex-start;
   }
-  #rent-location-gate .gate-btn{
+  #location-gate .gate-btn{
     border:1px solid #e2e8f0;
     background:#fff;
     color:#0f172a;
@@ -493,7 +457,7 @@
     font-weight:800;
     cursor:pointer;
   }
-  #rent-location-gate .gate-primary{
+  #location-gate .gate-primary{
     background:#0f172a;
     color:#fff;
     border-color:#0f172a;
@@ -503,11 +467,20 @@
     to{opacity:1;transform:translateY(0);}
   }
   @media (max-width:640px){
-    #rent-location-gate .gate-card{margin:10vh 12px 0;padding:14px;}
-    #rent-location-gate h3{ font-size:1.1rem; }
-    #rent-location-gate .gate-note{ font-size:.9rem; }
-    #rent-location-gate .gate-input{height:2.4rem;font-size:.95rem;}
-    #rent-location-gate .gate-btn{ padding:.5rem .8rem;font-size:.95rem;}
+    #location-gate .gate-card{
+      margin:10vh 12px 0;
+      padding:14px;
+    }
+    #location-gate h3{ font-size:1.1rem; }
+    #location-gate .gate-note{ font-size:.9rem; }
+    #location-gate .gate-input{
+      height:2.4rem;
+      font-size:.95rem;
+    }
+    #location-gate .gate-btn{
+      padding:.5rem .8rem;
+      font-size:.95rem;
+    }
   }
   /* إخفاء نقاط السويبر في هذه الصفحة */
 .contractor-swiper .swiper-pagination,
@@ -524,28 +497,66 @@
 <%
   const _isAuth      = (typeof isAuth !== 'undefined') ? isAuth : false;
   const _user        = (typeof user   !== 'undefined') ? user   : null;
-  const _currentPath = (typeof currentPath !== 'undefined') ? currentPath : '/rent';
+  const _currentPath = (typeof currentPath !== 'undefined') ? currentPath : '/sale';
   const _farmsSSR    = (typeof farms !== 'undefined' && Array.isArray(farms)) ? farms : [];
   function esc(x){ return String(x ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
   function num(n){ const v = Number(n); return Number.isFinite(v) ? v : 0; }
+%>
+<%
+  function priceHtml(f){
+    const c = (f.currency || 'USD');
+    const sym = (c === 'SYP') ? 'ل.س' : '$';
+    const p = Number(f.price||0);
+    return p ? (sym + p.toLocaleString('en')) : '—';
+  }
+%>
+<%
+  function truncateWords(str, n){
+    const w = String(str||'').trim().split(/\s+/);
+    return (w.length <= n) ? w.join(' ') : (w.slice(0,n).join(' ') + '…');
+  }
+%>
+<%
+function tweakCloudinary(url){
+  try{
+    var u = new URL(url);
+    if (u.hostname.includes('res.cloudinary.com') && u.pathname.includes('/upload/')){
+      u.pathname = u.pathname.replace('/upload/','/upload/f_auto,q_auto,w_800/');
+      return u.toString();
+    }
+  }catch(_){}
+  return url;
+}
+function assetPath(u){
+  u = (u||'').toString().trim();
+  if (!u) return '/public/assets/farm-default.jpg';
+  // امنع data: لأنها تنفخ الـHTML
+  if (/^data:/i.test(u)) return '/public/assets/farm-default.jpg';
+  if (/^https?:\/\//i.test(u)) return tweakCloudinary(u); // Cloudinary سريع
+  // تطبيع قديم
+  u = u.replace(/\\/g,'/').replace(/^\/?Public\//,'/public/').replace(/\/assests\//gi,'/assets/');
+  if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
+  if (u.startsWith('/assets/')) return '/public'+u;
+  if (u.startsWith('/')) return '/public'+u;
+  return '/uploads/'+u;
+}
 %>
 
 <%- include('partials/navbar', { isAuth: _isAuth, user: _user, currentPath: _currentPath }) %>
 
 <%- include('partials/whatsapp') %>
 <%- include('partials/promo-swiper', { bannersDoc }) %>
-
-<!-- ===== بوابة اختيار الموقع (Rent) ===== -->
-<div id="rent-location-gate" aria-hidden="true">
+<!-- ===== بوابة اختيار الموقع (تظهر عند الدخول) ===== -->
+<div id="location-gate" aria-hidden="true">
   <div class="gate-backdrop" data-close="1"></div>
-  <div class="gate-card" role="dialog" aria-modal="true" aria-labelledby="rent-gate-title">
+  <div class="gate-card" role="dialog" aria-modal="true" aria-labelledby="gate-title">
     <button class="gate-close" type="button" aria-label="إغلاق" data-close="1">×</button>
-    <h3 id="rent-gate-title">أين تريد البحث؟</h3>
+    <h3 id="gate-title">أين تريد البحث؟</h3>
     <p class="gate-note">اختر المحافظة وأدخل المنطقة (اختياريًا) لنظهر لك نتائج أدقّ.</p>
 
     <div class="gate-fields">
-      <label class="gate-label" for="rent-gate-city">المحافظة</label>
-      <select id="rent-gate-city" class="gate-input">
+      <label class="gate-label" for="gate-city">المحافظة</label>
+      <select id="gate-city" class="gate-input">
         <option value="">اختر المحافظة…</option>
         <option>دمشق</option>
         <option>ريف دمشق</option>
@@ -563,12 +574,12 @@
         <option>السويداء</option>
       </select>
 
-      <label class="gate-label" for="rent-gate-area">المنطقة (اختياري)</label>
-      <input id="rent-gate-area" class="gate-input" type="text" placeholder="مثال: قدسيا، المزة،..." />
+      <label class="gate-label" for="gate-area">المنطقة (اختياري)</label>
+      <input id="gate-area" class="gate-input" type="text" placeholder="مثال: قدسيا، المزة،...">
     </div>
 
     <div class="gate-actions">
-      <button id="rent-gate-apply" class="gate-btn gate-primary" type="button">اعرض النتائج</button>
+      <button id="gate-apply" class="gate-btn gate-primary" type="button">اعرض النتائج</button>
       <button class="gate-btn" type="button" data-close="1">تخطّي الآن</button>
     </div>
   </div>
@@ -580,10 +591,10 @@
     <details class="filter-dropdown" open>
       <summary id="filters-title">تصفية النتائج</summary>
 
-      <form id="rent-filters" class="filters-form" action="#results" method="get" novalidate>
+      <form id="sale-filters" class="filters-form" action="#results" method="get" novalidate>
         <div class="filters-grid">
-          <!-- تظهر دائمًا -->
-<div class="field">
+          <!-- الأساسي (يظهر دائمًا) -->
+         <div class="field">
   <label class="label" for="city">المحافظة</label>
   <select id="city" name="city" class="input">
     <option value="">اختر المحافظة…</option>
@@ -609,22 +620,25 @@
             <input id="area" name="area" type="text" placeholder="اكتب اسم المنطقة (مثال: ريف دمشق)" />
           </div>
 
-          <!-- زر المزيد -->
-          <div class="field" style="align-self:end;max-width:150px;display: inline-block;">
-            <button id="toggle-more" type="button" class="btn btn-outline">مزيد ▾</button>
+          <!-- زر المزيد/أقل -->
+          <div class="field field--actions">
+            <button id="toggle-advanced" class="btn btn-outline" type="button" aria-expanded="false" aria-controls="advanced-fields">
+              المزيد
+            </button>
+            <button class="btn btn-primary" type="submit" style="margin-inline-start:.5rem">تطبيق</button>
           </div>
         </div>
 
-        <!-- بقية الفلاتر (تكون مخفية مبدئياً) -->
-        <div id="more-filters" class="filters-grid more-fields" hidden>
+        <!-- الحقول المتقدمة (مخفية افتراضيًا) -->
+        <div id="advanced-fields" class="filters-grid advanced-fields" hidden>
           <div class="field">
             <label class="label" for="price-min">السعر (من)</label>
-            <input id="price-min" name="price_min" type="number" placeholder="مثال: 500" />
+            <input id="price-min" name="price_min" type="number" placeholder="مثال: 50000" />
           </div>
 
           <div class="field">
             <label class="label" for="price-max">السعر (إلى)</label>
-            <input id="price-max" name="price_max" type="number" placeholder="مثال: 2500" />
+            <input id="price-max" name="price_max" type="number" placeholder="مثال: 500000" />
           </div>
 
           <div class="field">
@@ -637,24 +651,20 @@
             <input id="size-max" name="size_max" type="number" placeholder="مثال: 25000" />
           </div>
         </div>
-            <div class="field field--actions" style="align-self:end;margin-top: 1rem;display: inline-block;">
-            <button class="btn btn-primary" type="submit">تطبيق</button>
-          </div>
       </form>
     </details>
   </div>
 </section>
-
-<!-- VIP Rent Only -->
-<section id="vip-rent" class="vip-sale-section" aria-labelledby="vip-rent-title" hidden>
+<!-- VIP Sale Only -->
+<section id="vip-sale" class="vip-sale-section" aria-labelledby="vip-sale-title" hidden>
   <div class="container">
     <header class="section-header">
-      <h2 id="vip-rent-title">مزارع للإيجار</h2>
+      <h2 id="vip-sale-title">مزارع للبيع</h2>
       <p class="muted">اضغط على البطاقة لفتح صفحة تفاصيل المزرعة.</p>
     </header>
 
     <div class="swiper vip-swiper" dir="rtl">
-      <div class="swiper-wrapper" id="vipRentWrapper"></div>
+      <div class="swiper-wrapper" id="vipSaleWrapper"></div>
       <div class="swiper-button-prev" aria-label="السابق"></div>
       <div class="swiper-button-next" aria-label="التالي"></div>
       <div class="swiper-pagination"></div>
@@ -667,67 +677,54 @@
   <div class="container">
     <header class="section-header">
     </header>
-    <div class="swiper rent-swiper" dir="rtl">
-      <div class="swiper-wrapper" id="rentWrapper">
+    <div class="swiper sale-swiper" dir="rtl">
+      <div class="swiper-wrapper" id="saleWrapper">
         <% if (_farmsSSR.length) { _farmsSSR.forEach(farm => {
-     const cover    = (Array.isArray(farm.photos) && farm.photos[0]) ? farm.photos[0] : '/Public/placeholder.jpg';
-     const titleTxt = esc(farm.title || '—');
-     const hasVideo = !!(farm.videoUrl);
-     const tier     = (farm?.owner?.subscriptionTier || farm?.ownerTier || 'Basic');  // 👈 بدل isVip فقط
-     const vw       = Number(farm.views || 0);
-    if (tier === 'VIP') { return; } // لا نرسم VIP في السلايدر العام
+             const cover = (Array.isArray(farm.photos) && farm.photos[0]) ? farm.photos[0] : '/Public/placeholder.jpg';
+             const titleTxt = esc(farm.title || '—');
+             const hasVideo = !!(farm.videoUrl);
+             const isVip    = (farm?.owner?.subscriptionTier === 'VIP') || (farm?.ownerTier === 'VIP');
+             if (tierSSR === 'VIP') { return; } // ⬅️ لا نرسم VIP في السلايدر العام
+        %>
+          <div class="swiper-slide">
+            <article class="farm-card">
+              <a class="farm-link" href="/farm/<%= farm._id %>" aria-label="عرض <%= titleTxt %>">
+                <figure class="farm-media" style="position:relative">
+  <img src="<%= assetPath(cover) %>" alt="<%= titleTxt %>"
+     loading="lazy" decoding="async" fetchpriority="low"
+     onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'"/>
 
-%>
-  <div class="swiper-slide">
-    <article class="farm-card">
-      <a class="farm-link" href="/rent/farm/<%= farm._id %>" aria-label="عرض <%= titleTxt %>">
-        <figure class="farm-media" style="position:relative">
-          <img src="<%= cover %>" alt="<%= titleTxt %>" loading="lazy"
-               onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'"/>
-          <% if (hasVideo) { %>
-            <span class="badge badge--video">🎥 فيديو</span>
-          <% } %>
-          <!-- 👇 شارة الخطة حسب tier -->
-          <% if (String(tier || 'Basic').toLowerCase() !== 'basic') { %>
-  <span class="badge badge--<%= tier %>"><%= tier %></span>
+
+  <% const tierSSR = (farm?.owner?.subscriptionTier || farm?.ownerTier || 'Basic'); %>
+<% if (tierSSR === 'VIP') { %>
+  <span class="badge badge--vip">VIP</span>
+<% } else if (tierSSR === 'Premium') { %>
+  <span class="badge badge--premium">Premium</span>
 <% } %>
 
-        </figure>
-        <div class="farm-body">
-          <h3 class="farm-title"><%= titleTxt %></h3>
-          <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
- <%
-  const _cur    = String(farm.currency || '').toUpperCase();
-  const _symbol = _cur === 'SYP' ? 'ل.س' : '$';
+  <% if (farm.videoUrl) { %>
+    <span class="badge badge--video">🎥 فيديو</span>
+  <% } %>
 
-  // لو الإيجار يومي → / يوميًا ، غير ذلك → / شهريًا
-  const _period = (String(farm.kind || '').toLowerCase() === 'rent' &&
-                   String(farm.rentPeriod || '').toLowerCase() === 'daily')
-                  ? ' / يوميًا'
-                  : ' / شهريًا';
-%>
+  
+</figure>
 
-<p class="farm-price">
-  <%= num(farm.price)
-      ? (_symbol + ' ' + num(farm.price).toLocaleString('en') + _period)
-      : '—' %>
-</p>
+                <div class="farm-body">
+                  <h3 class="farm-title" title="<%= titleTxt %>"><%= truncateWords(titleTxt, 3) %></h3>
 
-
-
-
-
-
-          <!-- 👇 عدد المشاهدات -->
-          <div class="meta-views">👁️ <%= vw.toLocaleString('en') %></div>
-
-          <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
-        </div>
-      </a>
-    </article>
-  </div>
-<% }) } %>
-
+                  <p class="farm-location"><%= esc(farm.area||'') %> — <%= esc(farm.city||'') %></p>
+                  <p class="farm-price">${
+  Number(f.price || 0)
+    ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
+    : '—'
+}</p>
+                  <span class="meta-views" style="color: #0f172a;">👁️ <%= Number(farm.views||0).toLocaleString('en') %></span>
+                  <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
+                </div>
+              </a>
+            </article>
+          </div>
+        <% }) } %>
       </div>
       <div class="swiper-button-prev" aria-label="السابق"></div>
       <div class="swiper-button-next" aria-label="التالي"></div>
@@ -739,96 +736,148 @@
 
   <%- include('partials/promo', { promoBottom }) %>
 
+
 <%- include('partials/footer') %>
 
-<!-- Swiper JS (مهم) -->
+
+<!-- Swiper JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
 <script type="module">
-  // زر "مزيد" لإظهار/إخفاء بقية الفلاتر
-const toggleBtn   = document.querySelector('#toggle-more');
-const moreFilters = document.querySelector('#more-filters');
-
-if (toggleBtn && moreFilters) {
-  toggleBtn.addEventListener('click', () => {
-    const isHidden = moreFilters.hasAttribute('hidden');
-    if (isHidden) {
-      moreFilters.removeAttribute('hidden');
-      toggleBtn.textContent = 'إخفاء ▲';
-    } else {
-      moreFilters.setAttribute('hidden', '');
-      toggleBtn.textContent = 'مزيد ▾';
+function tweakCloudinary(url){
+  try{
+    const u = new URL(url);
+    if (u.hostname.includes('res.cloudinary.com') && u.pathname.includes('/upload/')){
+      u.pathname = u.pathname.replace('/upload/','/upload/f_auto,q_auto,w_800/');
+      return u.toString();
     }
-  });
+  }catch(e){}
+  return url;
+}
+function assetPath(u){
+  u = (u || '').toString().trim();
+  if (/^data:/i.test(u)) return '/public/assets/farm-default.jpg'; // منع data:
+  if (/^https?:\/\//i.test(u)) return tweakCloudinary(u);         // Cloudinary سريع
+  u = u.replace(/\\/g,'/').replace(/^\/?Public\//,'/public/').replace(/\/assests\//gi,'/assets/');
+  if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
+  if (u.startsWith('/assets/')) return '/public'+u;
+  if (u.startsWith('/')) return '/public'+u;
+  return '/uploads/'+u;
+}
+
+</script>
+
+<script>
+  // تبديل إظهار/إخفاء الحقول المتقدمة
+  (function(){
+    const btn  = document.getElementById('toggle-advanced');
+    const box  = document.getElementById('advanced-fields');
+    if (!btn || !box) return;
+
+    btn.addEventListener('click', ()=>{
+      const willShow = box.hasAttribute('hidden');
+      if (willShow){
+        box.hidden = false;
+        box.classList.remove('fade-in'); // لإعادة تشغيل الأنيميشن
+        // force reflow لإعادة تشغيل الأنيميشن كل مرة
+        void box.offsetWidth;
+        box.classList.add('fade-in');
+        btn.textContent = 'أقل';
+        btn.setAttribute('aria-expanded','true');
+      } else {
+        box.hidden = true;
+        btn.textContent = 'المزيد';
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+  })();
+</script>
+<script type="module">
+  function truncateWordsJS(str, n){
+  const w = String(str || '').trim().split(/\s+/);
+  return (w.length <= n) ? w.join(' ') : (w.slice(0, n).join(' ') + '…');
 }
 
 /* ======= أدوات صغيرة ======= */
 const $  = (s,ctx=document)=>ctx.querySelector(s);
 const $$ = (s,ctx=document)=>Array.from(ctx.querySelectorAll(s));
 const fmtEN = n => Number(n||0).toLocaleString('en');
-const moneySym = c => String(c || '').toUpperCase() === 'SYP' ? 'ل.س' : '$';
 
 /* ======= عناصر الصفحة ======= */
-const form          = $('#rent-filters');
-const vipSection    = $('#vip-rent');
-const vipWrap       = $('#vipRentWrapper');
-const rentWrapper   = $('#rentWrapper');
+const form        = $('#sale-filters');
+const vipSection  = $('#vip-sale');
+const vipWrap     = $('#vipSaleWrapper');
+const saleWrapper = $('#saleWrapper');
 
 /* ======= HTML helpers ======= */
 function htmlEscape(s=''){ return String(s).replace(/[&<>"]/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
+function tweakCloudinary(url){
+  try{
+    const u = new URL(url);
+    if (u.hostname.includes('res.cloudinary.com') && u.pathname.includes('/upload/')){
+      u.pathname = u.pathname.replace('/upload/', '/upload/f_auto,q_auto,w_480/');
+      return u.toString();
+    }
+  }catch(_){}
+  return url;
+}
 function assetPath(u){
-   u = (u || '').toString().trim();
-  if (/^https?:\/\/res\.cloudinary\.com\//.test(u)) {
-    return u.replace('/upload/', '/upload/f_auto,q_auto,w_480/'); // تصغير
-  }
   u = (u || '').toString().trim();
-  if (/^data:/i.test(u) || /^https?:\/\//i.test(u)) return u;
-  u = u.replace(/\\/g, '/').replace(/^\/?Public\//, '/public/').replace(/\/assests\//gi, '/assets/');
+  if (!u) return '/public/assets/farm-default.jpg';
+  if (/^data:/i.test(u)) return '/public/assets/farm-default.jpg';
+  if (/^https?:\/\//i.test(u)) return tweakCloudinary(u);
+  u = u.replace(/\\/g,'/').replace(/^\/?Public\//,'/public/').replace(/\/assests\//gi,'/assets/');
   if (u.startsWith('/uploads/') || u.startsWith('/public/')) return u;
-  if (u.startsWith('/assets/')) return '/public' + u;
-  if (u.startsWith('/')) return '/public' + u;
-  return '/uploads/' + u;
+  if (u.startsWith('/assets/')) return '/public'+u;
+  if (u.startsWith('/')) return '/public'+u;
+  return '/uploads/'+u;
 }
 
 
 /* ======= قوالب الشرائح ======= */
-function rentSlide(f){
+function saleSlide(f){
   const raw   = (Array.isArray(f.photos) && f.photos[0]) ? f.photos[0] : '/assets/farm-default.jpg';
   const cover = assetPath(raw);
-  const link  = (String(f.kind || '').toLowerCase() === 'rent') ? `/rent/farm/${f._id}` : `/farm/${f._id}`;
+  const link  = `/farm/${f._id}`;
   const loc   = f.city ? `${f.area || ''} — ${f.city}` : (f.area || '—');
+
+  // طبّع الخطة للتأكد من حساسية حالة الأحرف
   const tierRaw = ((f.owner && f.owner.subscriptionTier) || f.ownerTier || 'Basic');
-const tier    = String(tierRaw);
-const showBadge = tier.toLowerCase() !== 'basic';
-const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>` : '';  
-  const vws   = Number(f.views || 0); // عدد المشاهدات
- const isRent   = String(f.kind || '').toLowerCase() === 'rent';
-  const isDaily  = String(f.rentPeriod || '').toLowerCase() === 'daily';
-  const periodTx = isRent ? (isDaily ? ' / يوميًا' : ' / شهريًا') : '';
+  const tierKey = String(tierRaw).trim().toLowerCase();
+
+  // أظهر البادج فقط إن كانت Premium أو VIP
+  const tierBadge =
+    tierKey === 'vip'     ? '<span class="badge badge--vip">VIP</span>' :
+    tierKey === 'premium' ? '<span class="badge badge--premium">Premium</span>' :
+                            '';
+
+  const views = Number(f.views || 0);
 
   return `
     <div class="swiper-slide">
       <article class="farm-card">
         <a class="farm-link" href="${link}" aria-label="${htmlEscape(f.title || 'مزرعة')}">
           <figure class="farm-media" style="position:relative">
-            <img src="${cover}"
+           <img src="${cover}"
      alt="${htmlEscape(f.title || 'مزرعة')}"
      loading="lazy" decoding="async" fetchpriority="low"
      sizes="(max-width:640px) 45vw, (max-width:1024px) 30vw, 280px"
      onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
 
+            ${tierBadge}
             ${f.videoUrl ? `<span class="badge badge--video">🎥 فيديو</span>` : ``}
-            ${badgeHTML}
           </figure>
           <div class="farm-body">
-            <h3 class="farm-title">${htmlEscape(f.title || '—')}</h3>
+            <h3 class="farm-title" title="${htmlEscape(f.title || '—')}">
+  ${htmlEscape(truncateWordsJS(f.title || '—', 3))}
+</h3>
+
             <p class="farm-location">${htmlEscape(loc)}</p>
-       <p class="farm-price">${
+            <p class="farm-price">${
               Number(f.price || 0)
-                ? (moneySym(f.currency) + ' ' + fmtEN(f.price) + periodTx)
+                ? ((f.currency==='SYP' ? 'ل.س' : '$') + ' ' + fmtEN(f.price))
                 : '—'
             }</p>
-            <div class="meta-views">👁️ ${fmtEN(vws)}</div>
+            <span class="meta-views" style="color: #0f172a;">👁️ ${fmtEN(views)}</span>
             <span class="btn btn-outline" role="button" tabindex="0">التفاصيل</span>
           </div>
         </a>
@@ -836,10 +885,12 @@ const badgeHTML = showBadge ? `<span class="badge badge--${tier}">${tier}</span>
     </div>`;
 }
 
-// VIP يستخدم نفس بطاقة الكرت العام
+
+// VIP يستخدم نفس بطاقة البيع العامة (تحافظ على 'ل.س' عند SYP)
 function vipSlide(f){
-  return rentSlide(f);
+  return saleSlide(f);
 }
+
 
 /* ======= جلب API ======= */
 async function fetchJSON(url){
@@ -850,21 +901,22 @@ async function fetchJSON(url){
 }
 
 /* ======= الحالة والسويبرات ======= */
-let allRent = [];
+let allSale = [];
 let vipAll  = [];
-let rentSwiper = null;
+let saleSwiper = null;
 let vipSwiper  = null;
-let nonVipRent = [];
-function destroySwiper(sw){ if (sw) try{ sw.destroy(true,true); }catch(_){} }
+function destroySwiper(sw){
+  if (sw) try{ sw.destroy(true,true); }catch(_){}
+}
 
-function initRentSwiper(){
-  destroySwiper(rentSwiper);
-  rentSwiper = new Swiper('.rent-swiper', {
+function initSaleSwiper(){
+  destroySwiper(saleSwiper);
+  saleSwiper = new Swiper('.sale-swiper', {
     watchOverflow: true,
-    pagination: { el: '.rent-swiper .swiper-pagination', clickable: true },
+    pagination: { el: '.sale-swiper .swiper-pagination', clickable: true },
     navigation: {
-      nextEl: '.rent-swiper .swiper-button-next',
-      prevEl: '.rent-swiper .swiper-button-prev'
+      nextEl: '.sale-swiper .swiper-button-next',
+      prevEl: '.sale-swiper .swiper-button-prev'
     },preloadImages: false,
 lazy: { loadPrevNext: true, loadPrevNextAmount: 2 },
 watchSlidesProgress: true,
@@ -875,17 +927,16 @@ watchSlidesProgress: true,
       480:  { slidesPerView: 2.10, spaceBetween: 12 },
       /* تابلت صغير */
       640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
+      /* تابلت/ديسكتوب كما كان */
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
   });
 }
+
 function initVipSwiper(){
   destroySwiper(vipSwiper);
   vipSwiper = new Swiper('.vip-swiper', {
-    slidesPerView: 1.05,
-    spaceBetween: 12,
     watchOverflow: true,
     pagination: { el: '.vip-swiper .swiper-pagination', clickable: true },
     navigation: {
@@ -895,24 +946,20 @@ function initVipSwiper(){
 lazy: { loadPrevNext: true, loadPrevNextAmount: 2 },
 watchSlidesProgress: true,
 
-   breakpoints: {
-      /* هاتف: كرتين */
-      0:    { slidesPerView: 2.02, spaceBetween: 10 },
+    breakpoints: {
+      0:    { slidesPerView: 2.02, spaceBetween: 10 },  /* نفس فكرة الهاتف */
       480:  { slidesPerView: 2.10, spaceBetween: 12 },
-      /* تابلت صغير */
       640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-      /* أكبر */
       1024: { slidesPerView: 3.2,  spaceBetween: 18 },
       1280: { slidesPerView: 4.2,  spaceBetween: 20 }
     }
   });
 }
 
-
-function renderRent(list){
-  if (!rentWrapper) return;
-  rentWrapper.innerHTML = (list && list.length) ? list.map(rentSlide).join('') : `<div class="empty muted">لا توجد نتائج مطابقة.</div>`;
-  initRentSwiper();
+function renderSale(list){
+  if (!saleWrapper) return;
+  saleWrapper.innerHTML = (list && list.length) ? list.map(saleSlide).join('') : `<div class="empty muted">لا توجد نتائج مطابقة.</div>`;
+  initSaleSwiper();
 }
 function renderVip(list){
   if (!vipSection || !vipWrap) return;
@@ -943,44 +990,44 @@ function applyFilters(){
     return okArea && okCity && okPrice && okSize;
   };
 
-  const filteredRent = nonVipRent.filter(pass); 
-  const filteredVip  = vipAll.filter(pass);
-  renderRent(filteredRent);
-  renderVip(filteredVip);
+ const filteredSale = allSale
+  .filter(pass)
+  .filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
+const filteredVip  = vipAll.filter(pass);
+renderSale(filteredSale);
+renderVip(filteredVip);
+
 }
 
 /* ======= بدء ======= */
 async function init(){
   try {
-    // دفعة أولى صغيرة للعرض السريع
-    const first = await fetchJSON('/api/farms/rent?limit=24');
-    allRent = Array.isArray(first) ? first : [];
+    // دفعة أولى صغيرة
+    const first = await fetchJSON('/api/farms/sale?limit=24');
+    allSale = Array.isArray(first) ? first : [];
+    const nonVipFirst = allSale.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
+    renderSale(nonVipFirst);
+  } catch(e){ console.warn('sale fetch error (first):', e); renderSale([]); }
 
-    // استبعاد VIP من العام
-    nonVipRent = allRent.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
-    renderRent(nonVipRent);
+  // أكمل لاحقًا بهدوء
+  requestIdleCallback(async () => {
+    try{
+      const rest = await fetchJSON('/api/farms/sale?limit=60');
+      allSale = Array.isArray(rest) ? rest : [];
+      const nonVip = allSale.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
+      renderSale(nonVip);
+    }catch(_){}
+  });
 
-    // لاحقًا: أكمل البيانات وضعها بهدوء
-    requestIdleCallback(async () => {
-      try{
-        const rest = await fetchJSON('/api/farms/rent?limit=60');
-        allRent = rest;
-        nonVipRent = allRent.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
-        renderRent(nonVipRent);
-      }catch(_){}
-    });
-  } catch(e){ console.warn('rent fetch error:', e); renderRent([]); }
-
-  // VIP بشكل منفصل (عدد أقل)
+  // VIP منفصل بعد العرض الأول
   try {
-    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1&limit=24');
+    vipAll = await fetchJSON('/api/farms/sale?vipOnly=1&limit=24');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 
-  // ربط الفلاتر كما هو…
   if (form){
     form.addEventListener('submit', e=>{ e.preventDefault(); applyFilters(); });
-    $$('#rent-filters input, #rent-filters select').forEach(inp=>{
+    $$('#sale-filters input, #sale-filters select').forEach(inp=>{
       inp.addEventListener('change', applyFilters);
       inp.addEventListener('input',  e=>{
         const n = (e.target?.name||'');
@@ -993,8 +1040,10 @@ async function init(){
 
 document.addEventListener('DOMContentLoaded', init);
  window.applyFilters = applyFilters;
-  window.setRentFilters = (city, area) => {
-    const form = document.getElementById('rent-filters');
+
+  // (اختياري) دالة صغيرة نستخدمها من الحارس
+  window.setSaleFilters = (city, area) => {
+    const form = document.getElementById('sale-filters');
     if (form) {
       if (form.city) form.city.value = city || '';
       if (form.area) form.area.value = area || '';
@@ -1003,27 +1052,28 @@ document.addEventListener('DOMContentLoaded', init);
   };
 </script>
 <script>
-/* ======== Rent Location Gate — يظهر في كل زيارة ======== */
+/* ======== حارس اختيار الموقع — يظهر في كل زيارة ======== */
 (function(){
-  const gate       = document.getElementById('rent-location-gate');
-  const gateCity   = document.getElementById('rent-gate-city');
-  const gateArea   = document.getElementById('rent-gate-area');
-  const btnApply   = document.getElementById('rent-gate-apply');
+  const gate     = document.getElementById('location-gate');
+  const gateCity = document.getElementById('gate-city');
+  const gateArea = document.getElementById('gate-area');
+  const btnApply = document.getElementById('gate-apply');
 
-  // حقول الفلاتر الأصلية
   const filterCity = document.getElementById('city');
   const filterArea = document.getElementById('area');
 
-  function openGate(){ gate?.setAttribute('aria-hidden','false'); }
-  function closeGate(){ gate?.setAttribute('aria-hidden','true'); }
+  function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
+  function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
 
   // إغلاق بالضغط على الخلفية/زر ×/تخطّي
   document.addEventListener('click', (e)=>{
     const t = e.target;
-    if (t?.dataset?.close || t?.classList?.contains('gate-backdrop')) closeGate();
+    if (t && (t.dataset?.close || t.classList?.contains('gate-backdrop'))){
+      closeGate();
+    }
   });
 
-  // تطبيق الاختيار ↔ تعبئة الفلاتر ↔ تشغيل الفلترة
+  // تطبيق الاختيار: املأ الفلاتر ونفّذ الترشيح
   btnApply?.addEventListener('click', ()=>{
     const c = (gateCity?.value || '').trim();
     const a = (gateArea?.value || '').trim();
@@ -1031,24 +1081,28 @@ document.addEventListener('DOMContentLoaded', init);
     if (filterCity) filterCity.value = c;
     if (filterArea) filterArea.value = a;
 
-    if (window.setRentFilters)      window.setRentFilters(c, a);
+    // نادِ دوال الفلترة المعرّضة من سكربت الموديول
+    if (window.setSaleFilters)      window.setSaleFilters(c, a);
     else if (window.applyFilters)   window.applyFilters();
 
     closeGate();
+
+    // مرّر لمنطقة النتائج
     document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
   });
 
   // افتح الحارس دائمًا عند كل زيارة/تحميل
   window.addEventListener('DOMContentLoaded', openGate);
 
-  // وعند الرجوع من الكاش الخلفي (BFCache) افتحه أيضًا
-  window.addEventListener('pageshow', (e)=>{ if (e.persisted) openGate(); });
+  // عند الرجوع من تاريخ المتصفح (BFCache) — أعد الفتح أيضًا
+  window.addEventListener('pageshow', (e)=>{
+    if (e.persisted) openGate();
+  });
 })();
 </script>
 
-
 <%- include('partials/mobile-nav', { 
-  activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
+  activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
 </body>

@@ -94,17 +94,14 @@
 
   /* بطاقة المزرعة (النسخة النهائية الموحّدة) */
   .farm-card{
-  display:flex;               /* بدل block */
-  flex-direction:column;      /* صورة فوق + جسم تحت */
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  overflow:hidden;
-  background:#fff;
-  box-shadow:0 2px 10px rgba(2,6,23,.05);
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  height:100%;                /* يملى السلايد بالكامل */
-}
-
+    display:block;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(2,6,23,.05);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
   .farm-card:hover{
     transform:translateY(-2px);
     box-shadow:0 10px 24px rgba(2,6,23,.08);
@@ -126,11 +123,10 @@
 
   /* جسم البطاقة */
   .farm-body{
-  display:grid;
-  row-gap:.45rem;
-  padding:.7rem .75rem;
-  flex:1;                 /* يملأ المساحة تحت الصورة */
-}
+    display:grid;
+    row-gap:.45rem;
+    padding:.7rem .75rem;
+  }
 
   .farm-title{
     margin:0;
@@ -180,11 +176,10 @@
   }
   /* داخل جسم البطاقة: بعرض كامل */
   .farm-body .btn.btn-outline{
-  width:100%;
-  padding:.48rem .85rem;
-  font-weight:700;
-  margin-top:auto;        /* يخلي الزر دائماً في أسفل الكرت */
-}
+    width:100%;
+    padding:.48rem .85rem;
+    font-weight:700;
+  }
 
   .empty{
     padding:2rem;

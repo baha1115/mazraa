@@ -466,37 +466,6 @@
   const pickAvatar    = qs('#pickAvatar');
   const avatarPreview = qs('#avatarPreview');
 
-    // جعل +963 تلقائية في حقل هاتف المقاول
-  const phoneInput = form?.querySelector('input[name="phone"]');
-  if (phoneInput) {
-    const SY_PREFIX = '+963';
-
-    // لو الحقل فاضي عند التركيز نضيف +963
-    phoneInput.addEventListener('focus', () => {
-      const v = phoneInput.value.trim();
-      if (!v) phoneInput.value = SY_PREFIX;
-    });
-
-    // أثناء الكتابة: نضمن بقاء +963 في البداية وعدم تكرارها
-    phoneInput.addEventListener('input', () => {
-      let v = phoneInput.value.replace(/\s+/g, '');
-
-      // لو المستخدم حاول يمسح أو يكتب بدون البادئة
-      if (!v.startsWith(SY_PREFIX)) {
-        // نحذف أي + أو 963 مكررة في البداية
-        v = v.replace(/^\+?963/, '');
-        // نسمح فقط بأرقام بعد البادئة
-        v = v.replace(/\D/g, '');
-        phoneInput.value = SY_PREFIX + v;
-      } else {
-        // عندنا البادئة، ننظّف الجزء الباقي
-        let rest = v.slice(SY_PREFIX.length);
-        rest = rest.replace(/\D/g, '');
-        phoneInput.value = SY_PREFIX + rest;
-      }
-    });
-  }
-
   const photos = JSON.parse((qs('#initial-photos')?.textContent || '[]'));
   let   avatar = JSON.parse((qs('#initial-avatar')?.textContent || '""'));
   // زر الحفظ في نموذج المقاول
