@@ -723,10 +723,12 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
 
 <% } /* end if farm */ %>
 <script>
-  // كل الصور (حتى لو الشبكة تعرض 4 فقط)
-  const ALL_PHOTOS = <%- JSON.stringify((photos || []).map(p => assetPath(p))) %>;
+  // كل صور المزرعة بالحجم الكامل (حتى لو الشبكة تعرض 4 فقط)
+  const ALL_PHOTOS = <%- JSON.stringify(
+    (Array.isArray(farm?.photos) ? farm.photos : ['/assets/farm-default.jpg'])
+      .map(p => assetPath(p))
+  ) %>;
 </script>
-
 
 <!-- ===== Lightbox / Fullscreen Gallery ===== -->
 <div id="lb" class="lb" hidden aria-hidden="true">
@@ -867,14 +869,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const anchors = Array.from(grid.querySelectorAll('a.g-item')); // كل صورة قابلة للنقر
   if(!anchors.length) return;
-console.log('ALL_PHOTOS length =', (typeof ALL_PHOTOS !== 'undefined' ? ALL_PHOTOS.length : 'UNDEFINED'));
-
 
   // مصادر الصور بالحجم الكامل من href
-const sources = (Array.isArray(ALL_PHOTOS) && ALL_PHOTOS.length)
-  ? ALL_PHOTOS
-  : anchors.map(a => a.getAttribute('href'));
-
+ const sources = (window.ALL_PHOTOS && window.ALL_PHOTOS.length) ? window.ALL_PHOTOS : anchors.map(a => a.getAttribute('href'));
 
 
   // عناصر اللايت بوكس
@@ -940,15 +937,10 @@ const sources = (Array.isArray(ALL_PHOTOS) && ALL_PHOTOS.length)
   }
 
   // اربط كل صورة
- anchors.forEach((a,i)=>{
-  const img=a.querySelector('img'); if(img) img.style.cursor='zoom-in';
-  a.addEventListener('click', (ev)=>{
-    ev.preventDefault();
-    const idx = Number(a.dataset.index || i);
-    openLB(idx);
+  anchors.forEach((a,i)=>{
+    const img=a.querySelector('img'); if(img) img.style.cursor='zoom-in';
+    a.addEventListener('click', (ev)=>{ ev.preventDefault(); openLB(i); });
   });
-});
-
 
   closeBtn.addEventListener('click', closeLB);
 })();
@@ -979,6 +971,10 @@ const sources = (Array.isArray(ALL_PHOTOS) && ALL_PHOTOS.length)
 
   targets.forEach(function(el){ io.observe(el); });
 })();
+</script>
+<script>
+  console.log("farm.photos length:", <%- JSON.stringify((farm?.photos||[]).length) %>);
+  console.log("ALL_PHOTOS length:", (window.ALL_PHOTOS||[]).length);
 </script>
 
 </body>

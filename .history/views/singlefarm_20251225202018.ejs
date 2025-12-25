@@ -867,14 +867,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const anchors = Array.from(grid.querySelectorAll('a.g-item')); // كل صورة قابلة للنقر
   if(!anchors.length) return;
-console.log('ALL_PHOTOS length =', (typeof ALL_PHOTOS !== 'undefined' ? ALL_PHOTOS.length : 'UNDEFINED'));
-
 
   // مصادر الصور بالحجم الكامل من href
-const sources = (Array.isArray(ALL_PHOTOS) && ALL_PHOTOS.length)
+const sources = (Array.isArray(window.ALL_PHOTOS) && ALL_PHOTOS.length)
   ? ALL_PHOTOS
   : anchors.map(a => a.getAttribute('href'));
-
 
 
   // عناصر اللايت بوكس

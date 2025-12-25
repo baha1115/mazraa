@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
   <title><%= farm ? (farm.title + ' — التفاصيل') : 'المزرعة غير موجودة' %></title>
   <meta name="description" content="تفاصيل المزرعة: الصور، الفيديو، الوصف، الموقع، السعر والحالة."/>
 
@@ -144,44 +145,46 @@
     }
 
     /* ===== Gallery · Extra-compact on Mobile ===== */
-    @media (max-width: 640px){
-      /* صغّر السكشن نفسه */
-      #gallery.card{
-        padding: .6rem !important;
-      }
-      #gallery h2{
-        margin: 0 0 .5rem !important;
-        font-size: 1rem !important;
-      }
+    /* ===== Gallery · mobile small 2×2 ===== */
+@media (max-width: 640px){
+  #gallery.card{
+    padding: .5rem .5rem .7rem !important;
+    border-radius: 14px !important;
+  }
+  #gallery h2{
+    margin: 0 0 .45rem !important;
+    font-size: .95rem !important;
+  }
 
-      /* شبكة أصغر: 4 أعمدة + فراغات أصغر */
-      .gallery-grid{
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 4px !important;
-      }
+  /* شبكتين في الصف (صور صغيرة) */
+  .gallery-grid{
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+  }
 
-      /* البند الأول بعرض كامل لكن بنسبة أصغر، والبقية مربعات صغيرة */
-      .gallery-grid .g-item.is-hero{
-        grid-column: span 4 !important;
-        aspect-ratio: 3 / 2 !important;
-      }
-      .gallery-grid .g-item{
-        aspect-ratio: 1 / 1 !important;
-      }
+  /* كل الصور مربعات صغيرة */
+  .gallery-grid .g-item{
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 10px !important;
+  }
 
-      /* الصورة تملأ بلا تمدد */
-      .gallery-grid .g-item img{
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-      }
+  /* لا يوجد بطل كبير في الموبايل: الكل نفس العرض */
+  .gallery-grid .g-item.is-hero,
+  .gallery-grid .g-item.is-rect{
+    grid-column: span 1 !important;
+  }
 
-      /* شارة +عدد أصغر قليلًا */
-      .g-item .g-more{
-        font-size: clamp(14px, 5vw, 18px) !important;
-      }
-    }
+  .gallery-grid .g-item img{
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  .g-item .g-more{
+    font-size: clamp(12px, 4vw, 16px) !important;
+  }
+}
 
     /* إخفاء سكشن "التواصل السريع" على الموبايل */
     @media (max-width: 1023.98px){
@@ -666,12 +669,20 @@ if (/^https?:\/\//i.test(u)) {
   <h2 id="gallery-title" style="margin:0 0 .75rem">المعرض</h2>
 
   <%
-    // حضّر الصور + المنطق الخاص بعدّاد الزيادة
-    const __photosAll = (Array.isArray(farm?.photos) && farm.photos.length) ? farm.photos : ['/assets/farm-default.jpg'];
+      
+    // تنظيف الصور: إزالة الفارغة / data:base64
+    const __rawPhotos = Array.isArray(farm?.photos) ? farm.photos : [];
+    const __photosClean = __rawPhotos
+      .map(p => (p || '').toString().trim())
+      .filter(p => p && !/^data:/i.test(p)); // لا نحسب data: أو الفارغة
+
+    const __photosAll = __photosClean.length ? __photosClean : ['/assets/farm-default.jpg'];
     const __total     = __photosAll.length;
     const __limit     = 4;                       // نعرض 4 فقط
     const __photos    = __photosAll.slice(0, __limit);
     const __more      = Math.max(0, __total - __limit);
+
+
   %>
 
   <div class="gallery-grid" id="galleryMain" style="--gg:8px">
@@ -693,9 +704,10 @@ if (/^https?:\/\//i.test(u)) {
           onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
         <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
         <% if (i === __limit - 1 && __more > 0) { %>
-          <span class="g-more" aria-hidden="true">+<%= __more %></span>
-          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
+          <span class="g-more" aria-hidden="true">+ المزيد</span>
+          <span class="sr-only">اضغط لعرض باقي الصور</span>
         <% } %>
+
       </a>
     <% }) %>
   </div>
@@ -960,7 +972,11 @@ document.addEventListener('DOMContentLoaded', function(){
   if(!anchors.length) return;
 
   // مصادر الصور بالحجم الكامل من href (نفس ما تعرضه بالبطاقة)
-  const sources = anchors.map(a => a.getAttribute('href'));
+ const sources = (Array.isArray(window.ALL_PHOTOS) && window.ALL_PHOTOS.length)
+  ? window.ALL_PHOTOS
+  : anchors.map(a => a.getAttribute('href'));
+console.log('sources length =', sources.length);
+
 
   // عناصر اللايت بوكس
   const lb     = document.getElementById('lb');
