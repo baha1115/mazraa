@@ -464,113 +464,6 @@
     display:block !important;
   }
 }
-/* ========== Fix: owner cards match /sale (no cut) ========== */
-.owner-sale-swiper .swiper-wrapper{ align-items: stretch; }
-
-.owner-sale-swiper .swiper-slide{
-  height: auto !important;
-}
-
-/* الكرت يصبح Flex مثل صفحة /sale */
-.owner-sale-swiper .farm-card{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-
-/* جسم الكرت يتمدد والزر ينزل تحت */
-.owner-sale-swiper .farm-body{
-  display: grid;
-  row-gap: .45rem;
-  flex: 1 !important;
-}
-
-/* اجعل زر التفاصيل آخر شيء دائمًا */
-.owner-sale-swiper .farm-body .btn.btn-outline{
-  margin-top: auto !important;
-  width: 100% !important;
-}
-
-/* لا تخفي عدّاد المشاهدات */
-.owner-sale-swiper .farm-body .meta-views{
-  display: inline-block !important;
-}
-/* اجعل كروت "نفس المالك" مطابقة 1:1 لسلوك /sale */
-.owner-sale-swiper .swiper-wrapper{ align-items: stretch !important; }
-.owner-sale-swiper .swiper-slide{ height: auto !important; }
-
-.owner-sale-swiper .farm-card{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-
-/* ⭐ الأهم: اجعل الرابط الداخلي يتمدد ويصبح flex */
-.owner-sale-swiper .farm-link{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-
-/* جسم الكرت يتمدد والزر يثبت أسفل */
-.owner-sale-swiper .farm-body{
-  display: grid !important;
-  row-gap: .45rem !important;
-  flex: 1 !important;
-}
-
-/* لا تخفي المشاهدات */
-.owner-sale-swiper .meta-views{
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* الزر دائمًا آخر شيء */
-.owner-sale-swiper .btn.btn-outline{
-  margin-top: auto !important;
-  width: 100% !important;
-}
-/* ========== Top Sale (Most viewed) match /sale VIP cards ========== */
-.top-sale-wrap .swiper-wrapper{ align-items: stretch !important; }
-.top-sale-wrap .swiper-slide{ height: auto !important; }
-
-/* نفس سلوك كروت /sale */
-.top-sale-wrap .farm-card{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-.top-sale-wrap .farm-link{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-.top-sale-wrap .farm-body{
-  display: grid !important;
-  row-gap: .45rem !important;
-  flex: 1 !important;
-}
-.top-sale-wrap .meta-views{
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-.top-sale-wrap .btn.btn-outline{
-  margin-top: auto !important;
-  width: 100% !important;
-}
-
-/* على الموبايل: أخفِ الأسهم وخلي النقاط (مثل /sale) */
-@media (max-width:640px){
-  .top-sale-wrap .swiper-button-prev,
-  .top-sale-wrap .swiper-button-next{
-    display: none !important;
-  }
-  .top-sale-wrap .swiper-pagination{
-    display: block !important;
-  }
-}
 
 </style>
 
@@ -977,11 +870,8 @@ if (/^https?:\/\//i.test(u)) {
 
 
 <% if (Array.isArray(topSale) && topSale.length) { %>
-  <section class="section top-sale-wrap">
-    <%- include('partials/top-sale', { items: topSale }) %>
-  </section>
+  <%- include('partials/top-sale', { items: topSale }) %>
 <% } %>
-
 
 <% } /* end if farm */ %>
 

@@ -531,46 +531,6 @@
   margin-top: auto !important;
   width: 100% !important;
 }
-/* ========== Top Sale (Most viewed) match /sale VIP cards ========== */
-.top-sale-wrap .swiper-wrapper{ align-items: stretch !important; }
-.top-sale-wrap .swiper-slide{ height: auto !important; }
-
-/* نفس سلوك كروت /sale */
-.top-sale-wrap .farm-card{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-.top-sale-wrap .farm-link{
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-.top-sale-wrap .farm-body{
-  display: grid !important;
-  row-gap: .45rem !important;
-  flex: 1 !important;
-}
-.top-sale-wrap .meta-views{
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-.top-sale-wrap .btn.btn-outline{
-  margin-top: auto !important;
-  width: 100% !important;
-}
-
-/* على الموبايل: أخفِ الأسهم وخلي النقاط (مثل /sale) */
-@media (max-width:640px){
-  .top-sale-wrap .swiper-button-prev,
-  .top-sale-wrap .swiper-button-next{
-    display: none !important;
-  }
-  .top-sale-wrap .swiper-pagination{
-    display: block !important;
-  }
-}
 
 </style>
 
@@ -977,11 +937,8 @@ if (/^https?:\/\//i.test(u)) {
 
 
 <% if (Array.isArray(topSale) && topSale.length) { %>
-  <section class="section top-sale-wrap">
-    <%- include('partials/top-sale', { items: topSale }) %>
-  </section>
+  <%- include('partials/top-sale', { items: topSale }) %>
 <% } %>
-
 
 <% } /* end if farm */ %>
 

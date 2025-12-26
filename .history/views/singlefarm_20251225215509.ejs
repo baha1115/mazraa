@@ -434,47 +434,6 @@
   .top-rent-wrap .swiper-button-next{ display:none !important; }
   .top-rent-wrap .swiper-pagination{ display:block !important; }
 }
-/* Top rent = نفس كروت VIP */
-.top-rent-wrap .swiper-wrapper{ align-items: stretch !important; }
-.top-rent-wrap .swiper-slide{ height:auto !important; }
-
-.top-rent-wrap .farm-card,
-.top-rent-wrap .farm-link{
-  display:flex !important;
-  flex-direction:column !important;
-  height:100% !important;
-}
-
-.top-rent-wrap .farm-media{
-  aspect-ratio: 16/10 !important;
-  overflow:hidden !important;
-  border-radius: 14px 14px 0 0 !important;
-}
-
-.top-rent-wrap .farm-media img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:cover !important;
-  display:block !important;
-}
-
-.top-rent-wrap .farm-body{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:.45rem !important;
-  flex:1 !important;
-}
-
-.top-rent-wrap .meta-views{
-  display:inline-block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-}
-
-.top-rent-wrap .btn.btn-outline{
-  margin-top:auto !important;
-  width:100% !important;
-}
 
   </style>
 
@@ -536,7 +495,6 @@ const cover  = assetPath(photos[0]);
 const ownerList     = Array.isArray(sameOwnerFarms) ? sameOwnerFarms : [];
 const hasOwnerFarms = ownerList.length > 0;
 
-
 const sym       = (farm?.currency === 'SYP') ? 'ل.س' : '$';
 const priceNum  = Number(farm?.price || 0);
 const isRent    = String(farm?.kind || '').toLowerCase() === 'rent';
@@ -547,9 +505,7 @@ const pStr = priceNum
   ? (sym + ' ' + priceNum.toLocaleString('en') + periodStr)
   : '—';
 %>
-<p style="text-align:center;color:red">
-DEBUG ownerList: <%= ownerList.length %> | topRent: <%= Array.isArray(topRent) ? topRent.length : 'NOT ARRAY' %>
-</p>
+
 <!-- الرأس والزر العائم -->
 <%- include('partials/navbar', { isAuth:_isAuth, user:_user, currentPath:_currentPath }) %>
 <%- include('partials/whatsapp') %>
@@ -636,7 +592,6 @@ DEBUG ownerList: <%= ownerList.length %> | topRent: <%= Array.isArray(topRent) ?
           </article>
         </div>
       </section>
-<!-- DEBUG -->
 
       <%
         // تجهيز نصوص المرافق/المسبح/البناء
@@ -840,10 +795,9 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
 <!-- Top Rent (لو عندك بارتشيال top-rent) -->
 <% if (Array.isArray(topRent) && topRent.length) { %>
   <section class="section top-rent-wrap">
-    <%- include('partials/top-rent', { items: topRent, assetPath: assetPath }) %>
+    <%- include('partials/top-rent', { items: topRent }) %>
   </section>
 <% } %>
-
 
 
 <% } /* end if farm */ %>
@@ -879,36 +833,7 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
           breakpoints:{ 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
         });
       }
-      if (document.querySelector('.owner-sale-swiper')) {
-  new Swiper('.owner-sale-swiper', {
-    watchOverflow:true,
-    pagination:{ el:'.owner-sale-swiper .swiper-pagination', clickable:true },
-    navigation:{ nextEl:'.owner-sale-swiper .swiper-button-next', prevEl:'.owner-sale-swiper .swiper-button-prev' },
-    breakpoints:{
-      0:{slidesPerView:2.02,spaceBetween:10},
-      480:{slidesPerView:2.1,spaceBetween:12},
-      640:{slidesPerView:2.4,spaceBetween:14},
-      1024:{slidesPerView:3.2,spaceBetween:18},
-      1280:{slidesPerView:4.2,spaceBetween:20}
-    }
-  });
-}
-const topRentSwiperEl = document.querySelector('.top-rent-wrap .swiper');
-if (topRentSwiperEl) {
-  new Swiper(topRentSwiperEl, {
-    watchOverflow:true,
-    pagination:{ el:'.top-rent-wrap .swiper-pagination', clickable:true },
-    navigation:{ nextEl:'.top-rent-wrap .swiper-button-next', prevEl:'.top-rent-wrap .swiper-button-prev' },
-    breakpoints:{
-      0:{slidesPerView:2.02,spaceBetween:10},
-      480:{slidesPerView:2.1,spaceBetween:12},
-      640:{slidesPerView:2.4,spaceBetween:14},
-      1024:{slidesPerView:3.2,spaceBetween:18},
-      1280:{slidesPerView:4.2,spaceBetween:20}
-    }
-  });
-}
-
+      
     });
   </script>
 <% } %>
@@ -996,7 +921,24 @@ if (topRentSwiperEl) {
   activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
-
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if (document.querySelector('.owner-sale-swiper')) {
+    new Swiper('.owner-sale-swiper', {
+      watchOverflow:true,
+      pagination:{ el:'.owner-sale-swiper .swiper-pagination', clickable:true },
+      navigation:{ nextEl:'.owner-sale-swiper .swiper-button-next', prevEl:'.owner-sale-swiper .swiper-button-prev' },
+      breakpoints:{
+        0:    { slidesPerView: 2.02, spaceBetween: 10 },   /* هاتف: كرتان */
+        480:  { slidesPerView: 2.10, spaceBetween: 12 },
+        640:  { slidesPerView: 2.4,  spaceBetween: 14 },
+        1024: { slidesPerView: 3.2,  spaceBetween: 18 },
+        1280: { slidesPerView: 4.2,  spaceBetween: 20 }
+      }
+    });
+  }
+});
+</script>
 <script>
 (function(){
   const grid = document.getElementById('galleryMain');          // شبكة المعرض لديك
