@@ -72,6 +72,19 @@ async function applyPlanLimitsForUser(userId, tier) {
     { $set: { isSuspended: true, suspendedReason: 'limit' } }
   );
 }
+// داخل adminRouter.js قبل الراوتات (helper بسيط)
+function safeUrl(u){
+  u = String(u || '').trim();
+  if (!u) return '';
+  // امنع javascript: و data: و vbscript:
+  if (/^(javascript:|data:|vbscript:)/i.test(u)) return '';
+  // اسمح بـ /path أو http(s)
+  if (u.startsWith('/')) return u;
+  if (/^https?:\/\//i.test(u)) return u;
+  return ''; // غير ذلك اعتبره غير صالح
+}
+
+
 
 // --- أعلى adminRouter.js ---
 const path = require('path');
@@ -848,6 +861,12 @@ router.post('/hero/slides',
       const title = (req.body.title || '').trim();
       const lead  = (req.body.lead  || '').trim();
 
+      // داخل POST /hero/slides
+const btn1Text = (req.body.btn1Text || '').trim();
+const btn1Link = safeUrl(req.body.btn1Link);
+const btn2Text = (req.body.btn2Text || '').trim();
+const btn2Link = safeUrl(req.body.btn2Link);
+
       const uploadedUrl = await uploadImgIfAny(req.file, { folder: 'promo', publicIdPrefix: 'hero' });
       const imgFromUrl  = (req.body.img || '').trim();
       const img         = uploadedUrl || imgFromUrl;
@@ -855,11 +874,15 @@ router.post('/hero/slides',
       if (!img) return res.status(400).json({ ok:false, msg:'الصورة مطلوبة' });
 
       const max = await HeroSlide.findOne().sort({ order: -1 }).lean();
-      const row = await HeroSlide.create({
-        img, title, lead,
-        order: (max?.order ?? -1) + 1,
-        enabled: true
-      });
+
+      
+const row = await HeroSlide.create({
+  img, title, lead,
+  btn1Text, btn1Link,
+  btn2Text, btn2Link,
+  order: (max?.order ?? -1) + 1,
+  enabled: true
+});
 
       res.json({ ok:true, data: row });
     } catch (e) {

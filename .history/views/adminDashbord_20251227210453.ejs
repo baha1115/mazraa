@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
 <title>لوحة المشرف — Farmers</title>
 <meta name="description" content="لوحة تحكم Admin لمراجعة الأراضي والمقاولين والبانرات وإدارة الاشتراكات والسجل.">
 <link
@@ -307,6 +308,57 @@
 .badge--basic{background:#e5e7eb;color:#111827}
 .badge--premium{background:#2563eb;color:#fff}
 .badge--vip{background:#d97706;color:#111}
+/* ===== Users header & controls ===== */
+.panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:.75rem;
+  margin-bottom:.75rem;
+  flex-wrap:wrap;
+}
+
+.panel-head .panel-actions{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  flex-wrap:wrap;
+}
+
+/* شكل حبوب (pill) للـ select و input */
+.panel-head .panel-actions .input,
+.panel-head .panel-actions select,
+.panel-head .panel-actions input{
+  border-radius:999px;
+  border-color:#d1d5db;
+  box-shadow:0 4px 10px rgba(15,23,42,.04);
+  height:2.4rem;
+}
+
+/* حقل البحث مع أيقونة */
+.input-search{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.input-search__icon{
+  position:absolute;
+  inset-inline-start:.75rem;
+  color:#94a3b8;
+  font-size:.9rem;
+  pointer-events:none;
+}
+
+.input-search__field{
+  padding-inline-start:2rem; /* مساحة للأيقونة */
+}
+
+/* حجم منطقي على الديسكتوب */
+@media (min-width:981px){
+  #usersRole{ min-width:170px; }
+  #usersSearch{ min-width:220px; }
+}
 
 </style>
 
@@ -342,6 +394,12 @@
       </div>
       <div id="farmsWrap" class="cards"></div>
       <p id="farmsEmpty" class="muted" hidden>لا توجد طلبات بانتظار المراجعة.</p>
+      <div id="farmsPager" class="table-pager" style="display:flex;align-items:center;gap:.5rem;margin-top:.75rem;">
+  <button type="button" class="btn btn--ghost btn--sm" id="farmsPrev">السابق</button>
+  <span class="muted" id="farmsInfo" style="font-size:.9rem"></span>
+  <button type="button" class="btn btn--ghost btn--sm" id="farmsNext">التالي</button>
+</div>
+
     </section>
 
     <!-- 2) Contractors -->
@@ -359,7 +417,16 @@
 
   <div id="contractorsCards" class="cards"></div>
   <p id="contractorsEmpty" class="muted" hidden>لا توجد ملفات الآن.</p>
+    <div id="contractorsPager"
+       class="table-pager"
+       style="display:flex;align-items:center;gap:.5rem;margin-top:.75rem;">
+    <button type="button" class="btn btn--ghost btn--sm" id="contractorsPrev">السابق</button>
+    <span class="muted" id="contractorsInfo" style="font-size:.9rem"></span>
+    <button type="button" class="btn btn--ghost btn--sm" id="contractorsNext">التالي</button>
+  </div>
 </section>
+
+
     <!-- داخل .content في adminDashbord.ejs -->
 <section id="view-banners" class="panel">
   <div class="head"><h2>سلايدات الهيرو (Hero Swiper)</h2></div>
@@ -383,6 +450,25 @@
       <label class="muted">الوصف</label>
       <textarea class="input" name="lead" rows="3"></textarea>
     </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+  <div>
+    <label class="muted">نص الزر الأول</label>
+    <input class="input" name="btn1Text" placeholder="مثال: سجل الآن كبائع">
+  </div>
+  <div>
+    <label class="muted">رابط الزر الأول</label>
+    <input class="input" name="btn1Link" placeholder="/signup أو https://...">
+  </div>
+
+  <div>
+    <label class="muted">نص الزر الثاني</label>
+    <input class="input" name="btn2Text" placeholder="مثال: اكتشف المزارع">
+  </div>
+  <div>
+    <label class="muted">رابط الزر الثاني</label>
+    <input class="input" name="btn2Link" placeholder="/sale أو https://...">
+  </div>
+</div>
 
     <button class="btn btn--ok" type="submit">إضافة</button>
   </form>
@@ -558,14 +644,20 @@
     <option value="approved">مقبول</option>
   </select>
 </div>
-
-
+  
 
         <table>
           <thead><tr><th>الاسم</th><th>الإيميل</th><th>النوع</th><th>الصلاحيات</th><th style="width:180px">تحرير</th></tr></thead>
           <tbody id="subsBody"></tbody>
         </table>
       </div>
+      <div id="subsPager"
+       class="table-pager"
+       style="display:flex;align-items:center;gap:.5rem;margin-top:.75rem;">
+    <button type="button" class="btn btn--ghost btn--sm" id="subsPrev">السابق</button>
+    <span class="muted" id="subsInfo" style="font-size:.9rem"></span>
+    <button type="button" class="btn btn--ghost btn--sm" id="subsNext">التالي</button>
+  </div>
     </section>
 
     <!-- 5) History -->
@@ -625,30 +717,60 @@
 <% var _promo = (typeof promo !== 'undefined' && promo) ? promo : {}; %>
 
     <!-- 6) Admin settings -->
-   <!-- Users -->
-<section id="view-users" class="panel">
-  <div class="head">
-    <h2>جميع المستخدمين</h2>
-    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-      <input id="usersSearch" class="input" placeholder="بحث بالاسم/الإيميل" style="width:260px">
-      <select id="usersRole" class="input" style="width:180px">
-        <option value="all" selected>كل الأدوار</option>
-        <option value="owner">مالك</option>
-        <option value="contractor">مقاول</option>
-      </select>
+  <!-- 5) Users -->
+<section id="view-users" class="panel" hidden>
+   <header class="panel-head">
+    <div>
+      <h2>المستخدمون</h2>
+      <p class="muted">إدارة مستخدمي المنصّة بحسب الدور والخطة.</p>
     </div>
-  </div>
 
-  <div class="table-wrap">
-    <table class="users-table">
+    <div class="panel-actions">
+      <!-- الدور مع شكل input موحّد -->
+      <select id="usersRole" class="input">
+        <option value="all">كل الأدوار</option>
+        <option value="owner">ملاك الأراضي</option>
+        <option value="contractor">المقاولون</option>
+        
+      </select>
+
+      <!-- حقل البحث مع أيقونة عدسة -->
+      <div class="input-search">
+        <span class="input-search__icon">🔍</span>
+        <input
+          id="usersSearch"
+          type="search"
+          class="input input-search__field"
+          placeholder="بحث بالاسم أو الإيميل أو الهاتف…"
+        >
+      </div>
+    </div>
+  </header>
+  <div class="table-wrapper">
+    <table class="data-table">
       <thead>
-        <tr><th>الاسم</th><th>الإيميل</th><th>الدور</th><th>الخطة/الانتهاء</th><th>تاريخ الانضمام</th></tr>
+        <tr>
+          <th>الاسم</th>
+          <th>البريد</th>
+          <th>الدور</th>
+          <th>الاشتراك</th>
+          <th>تاريخ الانضمام</th>
+        </tr>
       </thead>
       <tbody id="usersBody"></tbody>
     </table>
+
+    <p id="usersEmpty" class="empty" hidden>لا يوجد مستخدمون بهذه المعايير.</p>
+
+    <!-- الباجينغ الخاص بالمستخدمين فقط -->
+    <div id="usersPager" class="table-pager" style="visibility:hidden">
+      <button type="button" id="usersPrev" class="btn btn-sm" disabled>السابق</button>
+      <span id="usersInfo" class="pager-info"></span>
+      <button type="button" id="usersNext" class="btn btn-sm" disabled>التالي</button>
+    </div>
   </div>
-  <p id="usersEmpty" class="muted" hidden>لا يوجد مستخدمون لعرضهم.</p>
 </section>
+
 
     <!-- 6) Admin settings -->
 <section id="view-settings" class="panel">
@@ -890,13 +1012,24 @@ const views = {
   /* =========================
      1) FARMS (Pending)
      ========================= */
-  const farmsWrap  = qs('#farmsWrap');
+    const farmsWrap  = qs('#farmsWrap');
   const farmsEmpty = qs('#farmsEmpty');
   const areaFilter = qs('#areaFilter');
 
+  // عناصر الـ pagination
+  const farmsPager = qs('#farmsPager');
+  const farmsPrev  = qs('#farmsPrev');
+  const farmsNext  = qs('#farmsNext');
+  const farmsInfo  = qs('#farmsInfo');
+
+  let farmsPage  = 1;
+  const FARMS_LIMIT = 20;
+  let farmsPages = 1;
+
   async function uniqueAreas(){
     try{
-      const res = await fetch('/admin/farms?status=pending', { headers:{'Accept':'application/json'} });
+      // نأخذ صفحة واحدة كبيرة فقط لاستخراج المناطق (يكفي)
+      const res = await fetch('/admin/farms?status=pending&limit=500', { headers:{'Accept':'application/json'} });
       const json = await res.json();
       const lands = json.ok ? (json.data||[]) : [];
       const a = Array.from(new Set(lands.map(l=>l.area).filter(Boolean)));
@@ -905,15 +1038,26 @@ const views = {
       areaFilter.innerHTML = '<option value="all">الكل</option>';
     }
   }
-  async function apiGetPendingFarms(area){
-    const params = new URLSearchParams({ status: 'pending' });
-    const res = await fetch('/admin/farms?' + params.toString(), { headers:{'Accept':'application/json'} });
+
+  async function apiGetPendingFarms(area, page = 1){
+    const params = new URLSearchParams({
+      status: 'pending',
+      page: String(page),
+      limit: String(FARMS_LIMIT)
+    });
+
+    if (area && area !== 'all') {
+      params.set('area', area);
+    }
+
+    const res = await fetch('/admin/farms?' + params.toString(), {
+      headers:{'Accept':'application/json'}
+    });
     const json = await res.json();
     if (!json.ok) throw new Error('Failed to load');
-    let items = json.data || [];
-    if (area && area !== 'all') items = items.filter(l => l.area === area);
-    return items;
+    return json; // { ok, data, total, page, pages, limit }
   }
+
   async function apiApproveFarm(id){
     const res = await fetch('/admin/farms/'+id+'/approve', { method:'PATCH' });
     return res.json();
@@ -1015,56 +1159,115 @@ ${(f.amenitiesDesc||'').trim() ? `
     L.marker([lat, lng]).addTo(map);
   }
 
-  async function renderFarms(){
+  async function renderFarms(page = 1){
+    if (!farmsWrap) return;
+
     farmsWrap.innerHTML = '';
-    let items = [];
+    farmsEmpty && (farmsEmpty.style.display = 'none');
+    farmsPager && (farmsPager.style.visibility = 'hidden');
+
+    const area = areaFilter ? areaFilter.value : 'all';
+
+    let json;
     try{
-      items = await apiGetPendingFarms(areaFilter.value);
-    }catch{}
-    
-   items.forEach(l=>{
-  const cover = (l.photos && l.photos[0]) || 'assets/rent/featured-03.jpg';
-  const loc = l.location ? ` • 📍 ${esc(l.location.address || (l.location.lat+', '+l.location.lng))}` : '';
-  const el = document.createElement('article');
-  el.className='land';
+      json = await apiGetPendingFarms(area, page);
+    }catch(err){
+      console.error(err);
+      if (farmsEmpty){
+        farmsEmpty.textContent = 'تعذر تحميل البيانات، حاول مجدداً.';
+        farmsEmpty.style.display = 'block';
+      }
+      return;
+    }
 
-  // 👇 هنا نحدد نص السعر حسب نوع الإيجار
-  const isRent   = String(l.kind || '').toLowerCase() === 'rent';
-  const isDaily  = String(l.rentPeriod || '').toLowerCase() === 'daily';
-  const priceStr = isRent
-    ? (moneySym(l.currency) + fmt.format(l.price) + (isDaily ? '/يوم' : '/شهر'))
-    : (moneySym(l.currency) + fmt.format(l.price));
+    const items = json.data || [];
+    farmsPage  = json.page || 1;
+    farmsPages = json.pages || 1;
+    const total = json.total || items.length;
 
-  el.innerHTML = `
-    <div class="land__media"><img src="${cover}" alt=""></div>
-    <div>
-      <h3 class="title" style="margin:.1rem 0">${esc(l.title)}</h3>
-      <div class="meta">
-        ${l.kind==='sale'?'بيع':'إيجار'} • ${esc(l.area)} — ${esc(l.city||'')}${loc}
-        • ${priceStr} • ${fmt.format(l.size)} م²
-        <span class="pill p--pending">بانتظار المراجعة</span>
-      </div>
+    if (!items.length){
+      if (farmsEmpty){
+        farmsEmpty.textContent = 'لا توجد أراضٍ بانتظار الموافقة.';
+        farmsEmpty.style.display = 'block';
+      }
+      farmsWrap.innerHTML = '';
+    } else {
+      items.forEach(l=>{
+        const cover = (l.photos && l.photos[0]) || 'assets/rent/featured-03.jpg';
+        const loc = l.location ? ` • 📍 ${esc(l.location.address || (l.location.lat+', '+l.location.lng))}` : '';
+        const el = document.createElement('article');
+        el.className='land';
 
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem">
-        <button class="btn btn--ghost btn--sm" data-act="preview" data-id="${l._id}">معاينة</button>
+        const isRent   = String(l.kind || '').toLowerCase() === 'rent';
+        const isDaily  = String(l.rentPeriod || '').toLowerCase() === 'daily';
+        const priceStr = isRent
+          ? (moneySym(l.currency) + fmt.format(l.price) + (isDaily ? '/يوم' : '/شهر'))
+          : (moneySym(l.currency) + fmt.format(l.price));
 
-        <form action="/admin/farms/${l._id}/approve?_method=PATCH" method="post" style="display:inline">
-          <button class="btn btn--ok btn--sm" type="submit">موافقة</button>
-        </form>
+        el.innerHTML = `
+          <div class="land__media"><img src="${cover}" alt=""></div>
+          <div>
+            <h3 class="title" style="margin:.1rem 0">${esc(l.title)}</h3>
+            <div class="meta">
+              ${l.kind==='sale'?'بيع':'إيجار'} • ${esc(l.area)} — ${esc(l.city||'')}${loc}
+              • ${priceStr} • ${fmt.format(l.size)} م²
+              <span class="pill p--pending">بانتظار المراجعة</span>
+            </div>
 
-        <form action="/admin/farms/${l._id}/reject?_method=PATCH" method="post" style="display:inline-flex;gap:.35rem;align-items:center">
-          <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:200px;padding:.3rem .5rem"/>
-          <button class="btn btn--danger btn--sm" type="submit">رفض</button>
-        </form>
-      </div>
-    </div>`;
-  farmsWrap.appendChild(el);
-});
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem">
+              <button class="btn btn--ghost btn--sm" data-act="preview" data-id="${l._id}">معاينة</button>
 
-    farmsEmpty.hidden = items.length>0;
+              <form action="/admin/farms/${l._id}/approve?_method=PATCH" method="post" style="display:inline">
+                <button class="btn btn--ok btn--sm" type="submit">موافقة</button>
+              </form>
+
+              <form action="/admin/farms/${l._id}/reject?_method=PATCH" method="post" style="display:inline-flex;gap:.35rem;align-items:center">
+                <input type="text" name="note" placeholder="سبب الرفض (اختياري)" style="min-width:140px" />
+                <button class="btn btn--warn btn--sm" type="submit">رفض</button>
+              </form>
+            </div>
+          </div>
+        `;
+        farmsWrap.appendChild(el);
+      });
+    }
+
+    // تحديث معلومات الـ pagination + الأزرار
+    if (farmsInfo){
+      const start = total ? ((farmsPage - 1) * FARMS_LIMIT) + 1 : 0;
+      const end   = total ? (start + items.length - 1) : 0;
+      farmsInfo.textContent = total
+        ? `عرض ${start}–${end} من ${total}`
+        : '';
+    }
+
+    if (farmsPrev) farmsPrev.disabled = (farmsPage <= 1);
+    if (farmsNext) farmsNext.disabled = (farmsPage >= farmsPages);
+
+    if (farmsPager){
+      farmsPager.style.visibility = (farmsPages > 1 ? 'visible' : 'hidden');
+    }
   }
+  // تغيير المنطقة يعيدنا لأول صفحة
+  areaFilter?.addEventListener('change', ()=>{
+    farmsPage = 1;
+    renderFarms(1);
+  });
 
-  areaFilter.addEventListener('change', renderFarms);
+  // أزرار السابق / التالي
+  farmsPrev?.addEventListener('click', ()=>{
+    if (farmsPage > 1){
+      renderFarms(farmsPage - 1);
+    }
+  });
+
+  farmsNext?.addEventListener('click', ()=>{
+    if (farmsPage < farmsPages){
+      renderFarms(farmsPage + 1);
+    }
+  });
+
+ 
 
   farmsWrap.addEventListener('click', async (e)=>{
     const btn = e.target.closest('button[data-act]'); if(!btn) return;
@@ -1087,13 +1290,20 @@ ${(f.amenitiesDesc||'').trim() ? `
   /* =========================
      2) CONTRACTORS (API)
      ========================= */
-  async function apiGetContractors(status){
-    const params = new URLSearchParams({ status: status || 'pending' });
-    const res = await fetch('/admin/contractors?' + params.toString(), { headers:{'Accept':'application/json'} });
+  async function apiGetContractors(status, page = 1){
+    const params = new URLSearchParams({
+      status: status || 'pending',
+      page:   String(page),
+      limit:  String(CONTRACTORS_LIMIT),
+    });
+    const res  = await fetch('/admin/contractors?' + params.toString(), {
+      headers:{ 'Accept':'application/json' }
+    });
     const json = await res.json();
     if (!json.ok) throw new Error(json.msg || 'failed');
-    return json.data || [];
+    return json; // { ok, data, total, page, pages, limit }
   }
+
   async function apiApproveContractor(id){
     const res = await fetch('/admin/contractors/'+id+'/approve', { method:'PATCH' });
     return res.json();
@@ -1249,22 +1459,50 @@ function contractorDetailsHTML(c){
   const contractorStatus  = qs('#contractorStatus');
   const contractorsCards  = qs('#contractorsCards');
   const contractorsEmpty  = qs('#contractorsEmpty');
+    const contractorsPager = qs('#contractorsPager');
+  const contractorsPrev  = qs('#contractorsPrev');
+  const contractorsNext  = qs('#contractorsNext');
+  const contractorsInfo  = qs('#contractorsInfo');
+
+  let contractorsPage  = 1;
+  const CONTRACTORS_LIMIT = 20;
+  let contractorsPages = 1;
+
   function pill(status){
     if (status==='approved') return '<span class="pill p--approved">مقبول</span>';
     if (status==='rejected') return '<span class="pill p--rejected">مرفوض</span>';
     return '<span class="pill p--pending">قيد المراجعة</span>';
   }
 
-  async function renderContractorCards(){
+  async function renderContractorCards(page = 1){
     contractorsCards.innerHTML = '';
-    let rows = [];
-    try { rows = await apiGetContractors(contractorStatus.value); } catch { rows = []; }
+    contractorsEmpty.hidden = true;
+    if (contractorsPager) contractorsPager.style.visibility = 'hidden';
 
-    contractorsEmpty.hidden = rows.length>0;
+    let json;
+    try {
+      json = await apiGetContractors(contractorStatus.value, page);
+    } catch (e) {
+      console.error(e);
+      contractorsEmpty.textContent = 'تعذر تحميل بيانات المقاولين.';
+      contractorsEmpty.hidden = false;
+      return;
+    }
 
-    rows.forEach(c=>{
-      const avatar = c.avatar || '/assets/contractor-1.jpg';
+    const rows   = json.data || [];
+    const total  = json.total || 0;
+    contractorsPage  = json.page  || 1;
+    contractorsPages = json.pages || 1;
+
+    if (!rows.length){
+      contractorsEmpty.textContent = 'لا توجد ملفات الآن.';
+      contractorsEmpty.hidden = false;
+    }
+
+    rows.forEach(c => {
+      const avatar   = c.avatar || '/assets/contractor-1.jpg';
       const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services||'');
+
       const card = document.createElement('article');
       card.className = 'card';
       card.innerHTML = `
@@ -1298,7 +1536,24 @@ function contractorDetailsHTML(c){
       `;
       contractorsCards.appendChild(card);
     });
+
+    // تحديث معلومات الـ Pagination
+    if (contractorsInfo){
+      const start = total ? ((contractorsPage - 1) * CONTRACTORS_LIMIT) + 1 : 0;
+      const end   = total ? (start + rows.length - 1) : 0;
+      contractorsInfo.textContent = total
+        ? `عرض ${start}–${end} من ${total}`
+        : '';
+    }
+
+    if (contractorsPrev) contractorsPrev.disabled = (contractorsPage <= 1);
+    if (contractorsNext) contractorsNext.disabled = (contractorsPage >= contractorsPages);
+
+    if (contractorsPager){
+      contractorsPager.style.visibility = (contractorsPages > 1 ? 'visible' : 'hidden');
+    }
   }
+
 document.addEventListener('click', async (e)=>{
     const btn = e.target.closest('button[data-act="view-contractor"][data-id]');
     if(!btn) return;
@@ -1325,8 +1580,19 @@ document.addEventListener('click', async (e)=>{
     toast('تعذر تحميل تفاصيل المقاول','warn');
   }
 });
+  contractorStatus?.addEventListener('change', () => {
+    contractorsPage = 1;
+    renderContractorCards(1);
+  });
 
-  contractorStatus?.addEventListener('change', renderContractorCards);
+  contractorsPrev?.addEventListener('click', () => {
+    if (contractorsPage > 1) renderContractorCards(contractorsPage - 1);
+  });
+
+  contractorsNext?.addEventListener('click', () => {
+    if (contractorsPage < contractorsPages) renderContractorCards(contractorsPage + 1);
+  });
+
 
   /* =========================
      3) Banners (Demo)
@@ -1335,19 +1601,36 @@ document.addEventListener('click', async (e)=>{
   /* =========================
      4) Subscriptions (Demo)
      ========================= */
+     const subsStatus = qs('#subsStatus');
+
   const subsBody = qs('#subsBody');
+    const subsPager = qs('#subsPager');
+  const subsPrev  = qs('#subsPrev');
+  const subsNext  = qs('#subsNext');
+  const subsInfo  = qs('#subsInfo');
+
+  let subsPage  = 1;
+  const SUBS_LIMIT = 20;
+  let subsPages = 1;
+
   let users = [
     {id:'U-OWN', name:'مالك',      email:'owner@example.com',      plan: 'Basic',  perms:['بيع','إيجار','بانر']},
     {id:'U-CON', name:'مقاول (API)', email:'contractor@example.com', plan: 'Basic', perms:['مقاول','بانر']},
   ];
-async function apiGetSubs(status){
-  const params = new URLSearchParams({ status: status || 'pending' });
-  const res = await fetch('/admin/subscriptions?' + params.toString(), { headers:{'Accept':'application/json'} });
+async function apiGetSubs(status, page = 1){
+  const params = new URLSearchParams({
+    status: status || 'pending',
+    page:   String(page),
+    limit:  String(SUBS_LIMIT),
+  });
+  const res  = await fetch('/admin/subscriptions?' + params.toString(), {
+    headers:{ 'Accept':'application/json' }
+  });
   const json = await res.json();
   if (!json.ok) throw new Error(json.msg || 'failed');
-   console.log('subs rows:', json.data); // ← شوف هل user.subscriptionExpiresAt واصل
-  return json.data || [];
+  return json; // { ok, data, total, page, pages, limit }
 }
+
 async function apiApproveSub(id){
   const res = await fetch('/admin/subscriptions/'+id+'/approve', { method:'PATCH' });
   return res.json();
@@ -1384,74 +1667,106 @@ function dedupeLatestApproved(rows){
     return Array.from(pick.values());
   }
 
-  async function renderSubs(){
+   async function renderSubs(page = 1){
     subsBody.innerHTML = '';
-    let rows = [];
+    if (subsPager) subsPager.style.visibility = 'hidden';
+
     const state = (subsStatus?.value || 'pending');
 
-    try { rows = await apiGetSubs(state); } catch { rows = []; }
-
-    // لو الحالة "مقبول"؛ أظهر فقط أحدث طلب مقبول لكل مستخدم
-    if (state === 'approved') {
-      rows = dedupeLatestApproved(rows);
-    }
-
-    if (!rows.length){
-      subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك لهذه الحالة.</td></tr>`;
+    let json;
+    try {
+      json = await apiGetSubs(state, page);
+    } catch (e) {
+      console.error(e);
+      subsBody.innerHTML = `<tr><td colspan="5" class="muted">تعذر تحميل بيانات الاشتراكات.</td></tr>`;
       return;
     }
 
-    const fmt = (d)=>{
-      try{
-        const x = new Date(d);
-        if (isNaN(x)) return '—';
-        return x.toLocaleDateString('ar-EG', { year:'numeric', month:'2-digit', day:'2-digit' });
-      }catch{ return '—'; }
-    };
+    const rows  = json.data || [];
+    const total = json.total || 0;
+    subsPage  = json.page  || 1;
+    subsPages = json.pages || 1;
 
-    rows.forEach(r=>{
-      const tr = document.createElement('tr');
-      const uname  = r.user?.name  || r.name  || '—';
-      const email  = r.user?.email || '—';
-      const plan   = r.plan || r.user?.subscriptionTier || '—';
-      const expAt  = r.user?.subscriptionExpiresAt ? fmt(r.user.subscriptionExpiresAt) : '—';
+    if (!rows.length){
+      subsBody.innerHTML = `<tr><td colspan="5" class="muted">لا توجد طلبات اشتراك لهذه الحالة.</td></tr>`;
+    } else {
+      const fmt = d => {
+        try{
+          const x = new Date(d);
+          if (isNaN(x)) return '—';
+          return x.toLocaleDateString('ar-EG', { year:'numeric', month:'2-digit', day:'2-digit' });
+        }catch{ return '—'; }
+      };
 
-      if (state === 'approved') {
-        // عند "مقبول": أظهر الخطة + تاريخ الانتهاء فقط (لا أزرار)
-        tr.innerHTML = `
-          <td>${esc(uname)}</td>
-          <td>${esc(email)}</td>
-          <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
-          <td class="muted">ينتهي في: <strong>${esc(expAt)}</strong></td>
-          <td class="muted">—</td>
-        `;
-      } else {
-        // عند "تحت المراجعة": أزرار + اختيار المدة
-        tr.innerHTML = `
-          <td>${esc(uname)}</td>
-          <td>${esc(email)}</td>
-          <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
-          <td>${esc(r.notes || '')}</td>
-          <td style="display:flex;gap:.4rem;align-items:center">
-            <select class="input" data-dur="${r._id}" style="width:120px">
-              <option value="month" selected>شهر</option>
-              <option value="year">سنة</option>
-            </select>
-            <button class="btn btn--ok btn--sm" data-sub="${r._id}" data-act="sub-approve">موافقة</button>
-            <form class="inline-reject" data-sub="${r._id}" style="display:inline-flex;gap:.35rem;align-items:center">
-              <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:180px;padding:.3rem .5rem"/>
-              <button class="btn btn--danger btn--sm" type="submit">رفض</button>
-            </form>
-          </td>
-        `;
-      }
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        const uname  = r.user?.name  || r.name  || '—';
+        const email  = r.user?.email || '—';
+        const plan   = r.plan || r.user?.subscriptionTier || '—';
+        const expAt  = r.user?.subscriptionExpiresAt ? fmt(r.user.subscriptionExpiresAt) : '—';
 
-      subsBody.appendChild(tr);
-    });
+        if (state === 'approved') {
+          tr.innerHTML = `
+            <td>${esc(uname)}</td>
+            <td>${esc(email)}</td>
+            <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
+            <td class="muted">ينتهي في: <strong>${esc(expAt)}</strong></td>
+            <td class="muted">—</td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td>${esc(uname)}</td>
+            <td>${esc(email)}</td>
+            <td><span class="pill ${plan==='VIP'?'p--approved':'p--pending'}">${esc(plan)}</span></td>
+            <td>${esc(r.notes || '')}</td>
+            <td style="display:flex;gap:.4rem;align-items:center">
+              <select class="input" data-dur="${r._id}" style="width:120px">
+                <option value="month" selected>شهر</option>
+                <option value="year">سنة</option>
+              </select>
+              <button class="btn btn--ok btn--sm" data-sub="${r._id}" data-act="sub-approve">موافقة</button>
+              <form class="inline-reject" data-sub="${r._id}" style="display:inline-flex;gap:.35rem;align-items:center">
+                <input type="text" name="note" placeholder="سبب الرفض (اختياري)" class="input" style="width:180px;padding:.3rem .5rem"/>
+                <button class="btn btn--danger btn--sm" type="submit">رفض</button>
+              </form>
+            </td>
+          `;
+        }
+
+        subsBody.appendChild(tr);
+      });
+    }
+
+    // معلومات الـ Pagination
+    if (subsInfo){
+      const start = total ? ((subsPage - 1) * SUBS_LIMIT) + 1 : 0;
+      const end   = total ? (start + (json.data || []).length - 1) : 0;
+      subsInfo.textContent = total
+        ? `عرض ${start}–${end} من ${total}`
+        : '';
+    }
+
+    if (subsPrev) subsPrev.disabled = (subsPage <= 1);
+    if (subsNext) subsNext.disabled = (subsPage >= subsPages);
+
+    if (subsPager){
+      subsPager.style.visibility = (subsPages > 1 ? 'visible' : 'hidden');
+    }
   }
 
+subsStatus?.addEventListener('change', () => {
+  subsPage = 1;
+  renderSubs(1);
+});
 
-subsStatus?.addEventListener('change', renderSubs);
+subsPrev?.addEventListener('click', () => {
+  if (subsPage > 1) renderSubs(subsPage - 1);
+});
+
+subsNext?.addEventListener('click', () => {
+  if (subsPage < subsPages) renderSubs(subsPage + 1);
+});
+
 subsBody?.addEventListener('click', async (e)=>{
   const btn = e.target.closest('button[data-act="sub-approve"][data-sub]');
   if (!btn) return;
@@ -1490,26 +1805,37 @@ subsBody?.addEventListener('submit', async (e)=>{
     const j = await r.json();
     if(!j.ok) throw 0;
     toast('تم الرفض','ok');
-    renderSubs();
+    renderSubs(1);
   }catch(_){ toast('تعذر الرفض','warn'); }
 });
 // ===== Users (API + Render) =====
-async function apiGetUsers({ q = '', role = 'all' } = {}) {
+async function apiGetUsers({ q = '', role = 'all', page = 1 } = {}) {
   const params = new URLSearchParams();
-  if (q) params.set('q', q);
+  if (q)    params.set('q', q);
   if (role) params.set('role', role);
+  params.set('page',  String(page));
+  params.set('limit', String(USERS_LIMIT));
+
   const r = await fetch('/admin/users?' + params.toString(), {
     headers: { 'Accept': 'application/json' }
   });
   const j = await r.json();
   if (!j.ok) throw new Error(j.msg || 'failed');
-  return j.data || [];
+  return j; // { ok, data, total, page, pages, limit }
 }
 
 const usersBody   = qs('#usersBody');
 const usersEmpty  = qs('#usersEmpty');
 const usersSearch = qs('#usersSearch');
 const usersRole   = qs('#usersRole');
+const usersPager = qs('#usersPager');
+const usersPrev  = qs('#usersPrev');
+const usersNext  = qs('#usersNext');
+const usersInfo  = qs('#usersInfo');
+
+let usersPage  = 1;
+const USERS_LIMIT = 20;
+let usersPages = 1;
 
   function dateFmt(d){
     const dt = new Date(d);
@@ -1532,16 +1858,26 @@ function roleAr(role){
   if (v === 'user') return 'مستخدم';
   return 'مستخدم';
 }
-async function renderUsers(){
+async function renderUsers(page = 1){
   if (!usersBody) return;
   usersBody.innerHTML = '';
-  let rows = [];
-  try{
-    rows = await apiGetUsers({
+  if (usersPager) usersPager.style.visibility = 'hidden';
+
+  let json;
+  try {
+    json = await apiGetUsers({
       role: usersRole?.value || 'all',
-      q: usersSearch?.value?.trim() || ''
+      q:    usersSearch?.value?.trim() || '',
+      page
     });
-  }catch(_){ rows = []; }
+  } catch (_) {
+    json = { data: [], total: 0, page: 1, pages: 1 };
+  }
+
+  const rows  = json.data  || [];
+  const total = json.total || 0;
+  usersPage   = json.page  || 1;
+  usersPages  = json.pages || 1;
 
   usersEmpty.hidden = rows.length > 0;
 
@@ -1550,27 +1886,57 @@ async function renderUsers(){
     const name   = u.name || '—';
     const email  = u.email || '—';
     const role   = u.role || u.type || 'user';
-const plan   = u.subscriptionTier || u.plan || 'Basic';
-// دعم اسم قديم محتمل مثل subscriptionUntil إضافةً إلى subscriptionExpiresAt
-const expRaw = u.subscriptionExpiresAt || u.subscriptionUntil;
-const exp    = expRaw ? dateFmt(expRaw) : '—';
-const joined = u.createdAt ? dateFmt(u.createdAt) : '—';
+    const plan   = u.subscriptionTier || u.plan || 'Basic';
+    const expRaw = u.subscriptionExpiresAt || u.subscriptionUntil;
+    const exp    = expRaw ? dateFmt(expRaw) : '—';
+    const joined = u.createdAt ? dateFmt(u.createdAt) : '—';
 
     tr.innerHTML = `
       <td>${esc(name)}</td>
       <td dir="ltr">${esc(email)}</td>
       <td>${roleAr(role)}</td>
-
       <td>${planBadge(plan)} ${exp!=='—' ? `<small class="muted">حتى ${esc(exp)}</small>` : ''}</td>
       <td>${joined}</td>
     `;
     usersBody.appendChild(tr);
   });
-}
 
-usersSearch?.addEventListener('input', debounce(renderUsers, 300));
-usersRole?.addEventListener('change', renderUsers);
-document.addEventListener('DOMContentLoaded', renderUsers);
+  // تحديث معلومات الباجينغ
+  if (usersInfo){
+    const start = total ? ((usersPage - 1) * USERS_LIMIT) + 1 : 0;
+    const end   = total ? (start + rows.length - 1) : 0;
+    usersInfo.textContent = total
+      ? `عرض ${start}–${end} من ${total}`
+      : '';
+  }
+
+  if (usersPrev) usersPrev.disabled = (usersPage <= 1);
+  if (usersNext) usersNext.disabled = (usersPage >= usersPages);
+
+  if (usersPager){
+    usersPager.style.visibility = (usersPages > 1 ? 'visible' : 'hidden');
+  }
+}
+usersSearch?.addEventListener('input', debounce(() => {
+  usersPage = 1;
+  renderUsers(1);
+}, 300));
+
+usersRole?.addEventListener('change', () => {
+  usersPage = 1;
+  renderUsers(1);
+});
+
+usersPrev?.addEventListener('click', () => {
+  if (usersPage > 1) renderUsers(usersPage - 1);
+});
+
+usersNext?.addEventListener('click', () => {
+  if (usersPage < usersPages) renderUsers(usersPage + 1);
+});
+
+// الاستدعاء الأول
+document.addEventListener('DOMContentLoaded', () => renderUsers(1));
 
   /* =========================
      5) History
@@ -1624,13 +1990,14 @@ document.addEventListener('DOMContentLoaded', renderUsers);
   /* ---------- Init ---------- */
   function init(){
     uniqueAreas();
-    renderFarms();
+    renderFarms(1);
+
 
     // المقاولون (بالـAPI)
-    renderContractorCards();
+    renderContractorCards(1);
 
     // الديمو
-    renderSubs();
+    renderSubs(1);
     renderHistory();
     fillPrefs();
     renderUsers();
@@ -2096,6 +2463,8 @@ if (!form || !itemsB || !addBtn || !viewB) return;
       subs:         document.querySelector('#view-subs'),
       history:      document.querySelector('#view-history'),
       settings:     document.querySelector('#view-settings'),
+        users:        document.querySelector('#view-users'),
+
     };
 
     function activateView(name){

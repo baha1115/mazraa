@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>المزارع - مزارع للبيع والإيجار</title>
-  <meta name="description" content="Farmers: List your farm, reach buyers and renters, and grow your business." />
-  <link rel="stylesheet" href="../Public/styles/homestyle.css">
+<link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
+ <title>مزرعتي — مزارع للبيع والإيجار في سوريا</title>
+<meta name="description" content="منصة مزرعتي تساعدك في بيع وشراء واستئجار المزارع في سوريا، مع عروض مزارع في دمشق، ريف دمشق، حلب، حمص وباقي المحافظات، إضافة إلى مقاولي إنشاءات متخصصين.">
+<link rel="stylesheet" href="../Public/styles/homestyle.css">
   <!-- داخل <head> -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
@@ -19,10 +20,7 @@
 <%- include('partials/navbar') %>
   <!-- Floating WhatsApp Button (position with CSS later) -->
 <%- include('partials/whatsapp') %>
-<%- include('partials/mobile-nav', { 
-  activeTab: 'home',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
-  isAuth, isAdmin, isContractor, isOwner,
-}) %>
+
 
 
 
@@ -64,10 +62,19 @@
               <p class="hero-lead"><%= s.lead %></p>
 
               <!-- الأزرار تبقى ثابتة كما طلبت -->
-              <div class="hero-actions">
-                <a class="btn btn-primary" href="/signup">سجل الآن كبائع</a>
-                <a class="btn btn-outline" href="/sale">اكتشف المزارع</a>
-              </div>
+            <div class="hero-actions">
+  <%
+    const b1Text = (s.btn1Text && s.btn1Text.trim()) ? s.btn1Text : 'سجل الآن كبائع';
+    const b1Link = (s.btn1Link && s.btn1Link.trim()) ? s.btn1Link : '/signup';
+
+    const b2Text = (s.btn2Text && s.btn2Text.trim()) ? s.btn2Text : 'اكتشف المزارع';
+    const b2Link = (s.btn2Link && s.btn2Link.trim()) ? s.btn2Link : '/sale';
+  %>
+
+  <a class="btn btn-primary" href="<%= b1Link %>"><%= b1Text %></a>
+  <a class="btn btn-outline" href="<%= b2Link %>"><%= b2Text %></a>
+</div>
+
             </div>
           </div>
         </div>
@@ -98,37 +105,55 @@ const _rentImg   = assetPath(_ql.rentImg        || '/Public/assests/farm4k1.jpg'
 const _contImg   = assetPath(_ql.contractorsImg || '/Public/assests/farm4k1.jpg');
 %>
 
-<section id="quick-links" class="section quick-links" aria-labelledby="quick-links-title">
+<section id="quick-links" class="section qlicon" aria-labelledby="quick-links-title">
   <div class="container">
-    <h2 id="quick-links-title" class="section-title" style="text-align: center;">تصفح الأقسام الشائعة</h2>
+    <h2 id="quick-links-title" class="section-title" style="text-align:center;margin-bottom:1rem">تصفّح الأقسام الشائعة</h2>
 
-    <div class="cards-row" role="list">
-      <!-- Card 1: مزارع للبيع -->
-      <article class="ql-card" role="listitem">
-        <a class="ql-link" href="/sale" aria-label="اذهب إلى مزارع للبيع">
-          <div class="ql-media">
-            <img src="<%= _saleImg %>" alt="مزارع للبيع" loading="lazy" />
-            <div class="ql-badge">مزارع للبيع</div>
+    <div class="row" role="list" dir="rtl">
+      <!-- بيع -->
+      <article class="cell" role="listitem">
+        <a class="link" href="/sale" aria-label="مزارع للبيع">
+          <span class="shine" aria-hidden="true"></span>
+          <div class="inner">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 10.5l8-8h6l3 3v6l-8 8-9-9z" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="8" r="1.6" fill="currentColor"/></svg>
+            </div>
+            <div>
+              <h3>مزارع للبيع</h3>
+              <p>اكتشف أفضل العروض المناسبة لميزانيتك.</p>
+            </div>
           </div>
         </a>
       </article>
 
-      <!-- Card 2: مزارع للإيجار -->
-      <article class="ql-card" role="listitem">
-        <a class="ql-link" href="/rent" aria-label="اذهب إلى مزارع للإيجار">
-          <div class="ql-media">
-            <img src="<%= _rentImg %>" alt="مزارع للإيجار" loading="lazy" />
-            <div class="ql-badge">مزارع للإيجار</div>
+      <!-- إيجار -->
+      <article class="cell" role="listitem">
+        <a class="link" href="/rent" aria-label="مزارع للإيجار">
+          <span class="shine" aria-hidden="true"></span>
+          <div class="inner">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 12l9-8 9 8" stroke="currentColor" stroke-width="1.5"/><path d="M10 14h4v6h-4z" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div>
+              <h3>مزارع للإيجار</h3>
+              <p>خيارات مرنة لمساحات جاهزة للاستثمار.</p>
+            </div>
           </div>
         </a>
       </article>
 
-      <!-- Card 3: المقاولون -->
-      <article class="ql-card" role="listitem">
-        <a class="ql-link" href="/contractors" aria-label="اذهب إلى المقاولون">
-          <div class="ql-media">
-            <img src="<%= _contImg %>" alt="المقاولون" loading="lazy" />
-            <div class="ql-badge">المقاولون</div>
+      <!-- المقاولون -->
+      <article class="cell" role="listitem">
+        <a class="link" href="/contractors" aria-label="المقاولون">
+          <span class="shine" aria-hidden="true"></span>
+          <div class="inner">
+            <div class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M7 21v-4a5 5 0 015-5 5 5 0 015 5v4" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div>
+              <h3>المقاولون</h3>
+              <p>نفّذ مزرعتك مع شركائنا المعتمدين.</p>
+            </div>
           </div>
         </a>
       </article>
@@ -394,6 +419,41 @@ const _contImg   = assetPath(_ql.contractorsImg || '/Public/assests/farm4k1.jpg'
       if(document.querySelector(s)) mk(s);
     });
   });
+  
+/* Mobile-first animations: in-view + touch ripple */
+(function(){
+  const sec = document.querySelector('#quick-links.qlicon'); if(!sec) return;
+  // 1) Reveal on view
+  const cells = sec.querySelectorAll('.cell');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        en.target.classList.add('is-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, {threshold:.15});
+  cells.forEach(c=> io.observe(c));
+
+  // 2) Touch ripple (works on mobile tap)
+  sec.addEventListener('click', function(e){
+    const link = e.target.closest('.link'); if(!link) return;
+    const r = link.getBoundingClientRect();
+    const x = (e.touches?.[0]?.clientX ?? e.clientX) - r.left;
+    const y = (e.touches?.[0]?.clientY ?? e.clientY) - r.top;
+    const span = document.createElement('span');
+    span.className = 'ripple';
+    span.style.left = x + 'px';
+    span.style.top  = y + 'px';
+    link.appendChild(span);
+    setTimeout(()=> span.remove(), 650);
+  }, {passive:true});
+})();
+
 </script>
+<%- include('partials/mobile-nav', { 
+  activeTab: 'home',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
+  isAuth, isAdmin, isContractor, isOwner,
+}) %>
 </body>
 </html>

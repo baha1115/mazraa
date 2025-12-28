@@ -72,6 +72,31 @@ async function applyPlanLimitsForUser(userId, tier) {
     { $set: { isSuspended: true, suspendedReason: 'limit' } }
   );
 }
+// داخل adminRouter.js قبل الراوتات (helper بسيط)
+function safeUrl(u){
+  u = String(u || '').trim();
+  if (!u) return '';
+  // امنع javascript: و data: و vbscript:
+  if (/^(javascript:|data:|vbscript:)/i.test(u)) return '';
+  // اسمح بـ /path أو http(s)
+  if (u.startsWith('/')) return u;
+  if (/^https?:\/\//i.test(u)) return u;
+  return ''; // غير ذلك اعتبره غير صالح
+}
+
+// داخل POST /hero/slides
+const btn1Text = (req.body.btn1Text || '').trim();
+const btn1Link = safeUrl(req.body.btn1Link);
+const btn2Text = (req.body.btn2Text || '').trim();
+const btn2Link = safeUrl(req.body.btn2Link);
+
+const row = await HeroSlide.create({
+  img, title, lead,
+  btn1Text, btn1Link,
+  btn2Text, btn2Link,
+  order: (max?.order ?? -1) + 1,
+  enabled: true
+});
 
 // --- أعلى adminRouter.js ---
 const path = require('path');
@@ -100,11 +125,6 @@ function bannerKey(req) {
   return (req.query.key || req.params.key || 'home-banners');
 }
 
-// مفتاح البانر السفلي (sale | rent | contractors)
-function bottomKey(req) {
-  return (req.query.key || req.body.__key__ || 'sale');
-}
-
 
 // حارس: يجب أن يكون المستخدم أدمن
 function requireAdmin(req, res, next) {
@@ -125,14 +145,50 @@ function wantsJSON(req) {
 // GET /admin/farms?status=pending|approved|rejected
 router.get('/farms', requireAdmin, async (req, res) => {
   try {
-    const status = req.query.status || 'pending';
-    const farms = await Farm.find({ status }).sort({ createdAt: -1 }).lean();
-    return res.json({ ok: true, data: farms });
+    let {
+      status = 'pending',
+      page = 1,
+      limit = 20,
+      area
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const lim = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
+    const filter = { status };
+
+    // فلترة حسب المنطقة (لو أرسلتها من الفرونت)
+    if (area && area !== 'all') {
+      filter.area = area;
+    }
+
+    const skip = (pageNum - 1) * lim;
+
+    const [rows, total] = await Promise.all([
+      Farm.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(lim)
+        .lean(),
+      Farm.countDocuments(filter)
+    ]);
+
+    const pages = Math.max(1, Math.ceil(total / lim) || 1);
+
+    res.json({
+      ok: true,
+      data: rows,
+      total,
+      page: pageNum,
+      pages,
+      limit: lim
+    });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ ok: false, msg: 'Server error' });
+    console.error('GET /admin/farms pagination error', err);
+    res.status(500).json({ ok: false, message: 'Server error' });
   }
 });
+
 
 // GET /admin/farms/:id  (تفاصيل للمعاينة)
 router.get('/farms/:id', requireAdmin, async (req, res) => {
@@ -274,16 +330,47 @@ router.patch('/farms/:id/reject', requireAdmin, async (req, res) => {
    ========================= */
 
 // GET /admin/contractors?status=pending|approved|rejected
+// GET /admin/contractors?status=pending|approved|rejected&page=1&limit=20
 router.get('/contractors', requireAdmin, async (req, res) => {
   try {
-    const status = req.query.status || 'pending';
-    const rows = await ContractorRequest.find({ status }).sort({ updatedAt: -1 }).lean();
-    return res.json({ ok: true, data: rows });
+    let {
+      status = 'pending',
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const lim     = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
+    const filter = { status };
+
+    const skip = (pageNum - 1) * lim;
+
+    const [rows, total] = await Promise.all([
+      ContractorRequest.find(filter)
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(lim)
+        .lean(),
+      ContractorRequest.countDocuments(filter),
+    ]);
+
+    const pages = Math.max(1, Math.ceil(total / lim) || 1);
+
+    return res.json({
+      ok: true,
+      data: rows,
+      total,
+      page: pageNum,
+      pages,
+      limit: lim,
+    });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ ok: false, msg: 'Server error' });
   }
 });
+
 
 // GET /admin/contractors/:id  (تفاصيل للمعاينة)
 router.get('/contractors/:id', requireAdmin, async (req, res) => {
@@ -311,7 +398,13 @@ router.patch('/contractors/:id/approve', requireAdmin, async (req, res) => {
     if (userId) {
       await enforceExpiry(userId);
 
-      const { ok, used, limit, tier } = await checkQuota(userId, 'contractor');
+      const { ok, used, limit, tier } = await checkQuota(
+  userId,
+  'contractor',
+  null,
+  { mode: 'approve' }   // 🔹 مهم
+);
+
       if (!ok) {
         // ارفض بدل الموافقة
         await ContractorRequest.findByIdAndUpdate(doc._id, {
@@ -406,14 +499,42 @@ router.get('/', requireAdmin, (req, res) => {
 
 
 // GET /admin/subscriptions?status=pending|approved|rejected
-router.get('/subscriptions', requireAdmin, async (req,res)=>{
-  try{
-    const status = (req.query.status || 'pending');
-    const rows = await SubscriptionRequest.find({ status })
-      .populate('user', 'name email subscriptionTier subscriptionExpiresAt subscriptionGraceUntil role')
-      .lean();
-    res.json({ ok:true, data: rows });
-  }catch(e){
+// GET /admin/subscriptions?status=pending|approved|rejected&page=1&limit=20
+router.get('/subscriptions', requireAdmin, async (req, res) => {
+  try {
+    let {
+      status = 'pending',
+      page   = 1,
+      limit  = 20,
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const lim     = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
+    const filter = { status };
+    const skip   = (pageNum - 1) * lim;
+
+    const [rows, total] = await Promise.all([
+      SubscriptionRequest.find(filter)
+        .populate('user', 'name email subscriptionTier subscriptionExpiresAt subscriptionGraceUntil role')
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(lim)
+        .lean(),
+      SubscriptionRequest.countDocuments(filter),
+    ]);
+
+    const pages = Math.max(1, Math.ceil(total / lim) || 1);
+
+    res.json({
+      ok: true,
+      data: rows,
+      total,
+      page: pageNum,
+      pages,
+      limit: lim,
+    });
+  } catch (e) {
     console.error(e);
     res.status(500).json({ ok:false, msg:'Server error' });
   }
@@ -472,28 +593,50 @@ router.patch('/subscriptions/:id/approve', requireAdmin, async (req,res)=>{
 });
 
 // PATCH /admin/subscriptions/:id/reject
+// PATCH /admin/subscriptions/:id/reject
 router.patch('/subscriptions/:id/reject', requireAdmin, async (req, res) => {
-  const note = (req.body?.note || '').toString();
-  const r = await SubscriptionRequest.findByIdAndUpdate(
-    req.params.id,
-    { status:'rejected', rejectedAt:new Date(), reviewNote: note },
-    { new:true }
-  ).populate('user', 'email name');
+  try {
+    const note = (req.body?.note || '').toString();
+    const r = await SubscriptionRequest.findByIdAndUpdate(
+      req.params.id,
+      { status: 'rejected', rejectedAt: new Date(), reviewNote: note },
+      { new: true }
+    ).populate('user', 'email name');
 
-  if (!r) return res.status(404).json({ ok:false, msg:'Not found' });
-  res.json({ ok:true, msg:'Rejected', data:r });
+    if (!r) {
+      return res.status(404).json({ ok: false, msg: 'Not found' });
+    }
+
+    return res.json({ ok: true, msg: 'Rejected', data: r });
+  } catch (e) {
+    console.error('PATCH /admin/subscriptions/:id/reject error:', e);
+    return res.status(500).json({ ok: false, msg: 'Server error' });
+  }
 });
 
 // صفحة إدارة برومو (إن وجدت)
-router.get('/promo/contractors', requireAdmin, async (req,res)=>{
-  const Promo = require('../models/PromoConfig');
-  const promo = await Promo.findOne({ key:'contractors' }).lean();
-  // اعرض نفس الداشبورد أو صفحة خاصة — الأهم تمرير promo
-  res.render('adminDashbord', {
-    user: req.session.user,
-    promo: promo || {}
-  });
+// صفحة إدارة برومو (إن وجدت)
+router.get('/promo/contractors', requireAdmin, async (req, res) => {
+  try {
+    const Promo = require('../models/PromoConfig');
+    const promo = await Promo.findOne({ key: 'contractors' }).lean();
+
+    res.render('adminDashbord', {
+      user: req.session.user,
+      promo: promo || {}
+    });
+  } catch (e) {
+    console.error('GET /admin/promo/contractors error:', e);
+    // إمّا ترجع JSON لو الواجهة تستعمل fetch، أو رندر مع رسالة
+    res.status(500).render('adminDashbord', {
+      user: req.session.user,
+      promo: {},
+      msg: 'تعذر تحميل إعدادات البرومو',
+      type: 'danger'
+    });
+  }
 });
+
 
 // حفظ إعدادات البرومو
 // حفظ إعدادات البرومو (البنر السفلي) — يدعم رفع صورة
@@ -791,9 +934,15 @@ router.patch('/hero/slides/reorder', requireAdmin, async (req,res)=>{
 });
 
 // جلب كل الأقسام (للداشبورد)
-router.get('/home/showcase', async (req,res) => {
-  const rows = await HomeShowcase.find({}).lean();
-  res.json({ ok:true, data: rows });
+// جلب كل الأقسام (للداشبورد)
+router.get('/home/showcase', async (req, res) => {
+  try {
+    const rows = await HomeShowcase.find({}).lean();
+    res.json({ ok: true, data: rows });
+  } catch (e) {
+    console.error('GET /admin/home/showcase error:', e);
+    res.status(500).json({ ok: false, msg: 'Server error' });
+  }
 });
 
 // إنشاء/تحديث سكشن (upsert)
@@ -844,17 +993,28 @@ router.post(
 
 
 // حذف عنصر داخل سكشن بالاندكس (اختياري)
-router.delete('/home/showcase/:key/item/:idx', async (req,res)=>{
-  const { key, idx } = req.params;
-  const doc = await HomeShowcase.findOne({ key });
-  if(!doc) return res.json({ ok:false, msg:'Not found' });
-  const i = Number(idx);
-  if (Number.isInteger(i) && i>=0 && i<doc.items.length){
-    doc.items.splice(i,1);
-    await doc.save();
+// حذف عنصر داخل سكشن بالاندكس (اختياري)
+router.delete('/home/showcase/:key/item/:idx', async (req, res) => {
+  try {
+    const { key, idx } = req.params;
+    const doc = await HomeShowcase.findOne({ key });
+    if (!doc) {
+      return res.json({ ok: false, msg: 'Not found' });
+    }
+
+    const i = Number(idx);
+    if (Number.isInteger(i) && i >= 0 && i < doc.items.length) {
+      doc.items.splice(i, 1);
+      await doc.save();
+    }
+
+    return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error('DELETE /admin/home/showcase/:key/item/:idx error:', e);
+    return res.status(500).json({ ok: false, msg: 'Server error' });
   }
-  res.json({ ok:true, data:doc });
 });
+
 // --- Promo Bottom (page-specific) ---
 // key values: 'sale' | 'rent' | 'contractors'
 function bottomKey(req) {
@@ -1004,31 +1164,39 @@ router.post('/site/footer', requireAdmin,uploadMem.none(), async (req, res) => {
 // GET /admin/users
 router.get('/users', requireAdmin, async (req, res) => {
   try {
-    const { q = '', role = 'all', limit = 200, page = 1, verified } = req.query;
+    const {
+      q = '',
+      role = 'all',
+      limit = 20,
+      page = 1,
+      verified,
+    } = req.query;
 
-    // الأدوار المسموح عرضها
     const allowed = ['contractor', 'owner', 'landowner', 'admin'];
     const filter = {};
 
     // فلترة الدور
     if (role && role !== 'all') {
-      filter.role = (role === 'owner') ? { $in: ['owner', 'landowner'] } : role;
+      filter.role =
+        role === 'owner'
+          ? { $in: ['owner', 'landowner'] }
+          : role;
     } else {
       filter.role = { $in: allowed };
     }
 
-    // تفعيل البريد (اختياري عبر ?verified=1)
+    // تفعيل البريد إن طلبت (?verified=1)
     if (String(verified) === '1') filter.emailVerified = true;
 
-    // بحث نصي
+    // بحث نصّي على الاسم/الإيميل/الهاتف
     if (q && q.trim()) {
       const esc = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const rx = new RegExp(esc(q.trim()), 'i');
       filter.$or = [{ name: rx }, { email: rx }, { phone: rx }];
     }
 
-    const lim  = Math.max(1, Math.min(1000, parseInt(limit)));
-    const pg   = Math.max(1, parseInt(page));
+    const lim = Math.max(1, Math.min(100, parseInt(limit) || 20)); // 20 في الصفحة
+    const pg  = Math.max(1, parseInt(page) || 1);
     const skip = (pg - 1) * lim;
 
     const [items, total] = await Promise.all([
@@ -1038,13 +1206,22 @@ router.get('/users', requireAdmin, async (req, res) => {
         .skip(skip)
         .limit(lim)
         .lean(),
-      User.countDocuments(filter)
+      User.countDocuments(filter),
     ]);
 
-    res.json({ ok: true, data: items, total, page: pg, limit: lim });
+    const pages = Math.max(1, Math.ceil(total / lim) || 1);
+
+    return res.json({
+      ok: true,
+      data: items,
+      total,
+      page: pg,
+      pages,
+      limit: lim,
+    });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ ok: false, error: 'users_list_failed' });
+    return res.status(500).json({ ok: false, error: 'users_list_failed' });
   }
 });
 

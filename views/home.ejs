@@ -62,10 +62,19 @@
               <p class="hero-lead"><%= s.lead %></p>
 
               <!-- الأزرار تبقى ثابتة كما طلبت -->
-              <div class="hero-actions">
-                <a class="btn btn-primary" href="/signup">سجل الآن كبائع</a>
-                <a class="btn btn-outline" href="/sale">اكتشف المزارع</a>
-              </div>
+            <div class="hero-actions">
+  <%
+    const b1Text = (s.btn1Text && s.btn1Text.trim()) ? s.btn1Text : 'سجل الآن كبائع';
+    const b1Link = (s.btn1Link && s.btn1Link.trim()) ? s.btn1Link : '/signup';
+
+    const b2Text = (s.btn2Text && s.btn2Text.trim()) ? s.btn2Text : 'اكتشف المزارع';
+    const b2Link = (s.btn2Link && s.btn2Link.trim()) ? s.btn2Link : '/sale';
+  %>
+
+  <a class="btn btn-primary" href="<%= b1Link %>"><%= b1Text %></a>
+  <a class="btn btn-outline" href="<%= b2Link %>"><%= b2Text %></a>
+</div>
+
             </div>
           </div>
         </div>
