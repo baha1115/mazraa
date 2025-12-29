@@ -438,16 +438,10 @@ router.get('/api/contractors', async (req, res) => {
       .lean();
 
     // ✅ فقط أول صورة من الأعمال
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-  : u;
-
-rows = rows.map(r => ({
-  ...r,
-  avatar: r.avatar ? small(r.avatar) : r.avatar,
-  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-}));
-
+    rows = rows.map(r => ({
+      ...r,
+      photos: Array.isArray(r.photos) && r.photos.length ? [r.photos[0]] : []
+    }));
 
     res.set('Cache-Control', 'public, max-age=30');
     return res.json({ ok: true, data: rows });

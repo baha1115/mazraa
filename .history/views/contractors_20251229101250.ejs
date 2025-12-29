@@ -450,7 +450,7 @@
 
   // ✅ avatar: اسمح بـ data: فقط إذا كانت قصيرة (صغيرة) — حتى ما تقتل الأداء
   const avatarOK = rawAvatar && (
-    !/^data:/i.test(rawAvatar) || rawAvatar.length < 500000   // ~ 35KB تقريباً
+    !/^data:/i.test(rawAvatar) || rawAvatar.length < 250000   // ~ 35KB تقريباً
   );
 
   // ✅ لا نسمح base64 لصور الأعمال أبداً
@@ -534,59 +534,6 @@ if (/^https?:\/\//i.test(u)) return tweakCloudinary(u);
       if (u.startsWith('/')) return '/public'+u;
       return '/uploads/'+u;
     }
-async function compressDataUrlToBlobUrl(dataUrl, size = 160, quality = 0.72){
-  // يقبل data:image فقط
-  if (!/^data:image\//i.test(dataUrl)) return dataUrl;
-
-  // تحميل الصورة
-  const img = new Image();
-  img.decoding = 'async';
-
-  const loaded = new Promise((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = reject;
-  });
-  img.src = dataUrl;
-  await loaded;
-
-  // Canvas مربع
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d', { alpha: false });
-
-  // قصّ مركزي cover
-  const iw = img.naturalWidth || img.width;
-  const ih = img.naturalHeight || img.height;
-  const s = Math.min(iw, ih);
-  const sx = Math.floor((iw - s) / 2);
-  const sy = Math.floor((ih - s) / 2);
-
-  ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-
-  const blob = await new Promise(resolve =>
-    canvas.toBlob(resolve, 'image/jpeg', quality)
-  );
-  if (!blob) return dataUrl;
-
-  return URL.createObjectURL(blob);
-}
-
-// طبّق الضغط فقط على الصور الظاهرة (مثلاً أول 12 صورة)
-async function compressVisibleAvatars(max = 12){
-  const imgs = Array.from(document.querySelectorAll('.contractor-card .avatar img'))
-    .slice(0, max);
-
-  for (const el of imgs){
-    const src = el.getAttribute('src') || '';
-    if (/^data:image\//i.test(src)) {
-      try{
-        const blobUrl = await compressDataUrlToBlobUrl(src, 160, 0.72);
-        el.src = blobUrl;
-      }catch(_){}
-    }
-  }
-}
 
     const form       = $('#contractor-filters');
     const listWrap   = $('#contractorsWrapper');
@@ -769,7 +716,6 @@ allContractors = ssr;
 //renderVip(vipOnlyList);
 // 1) اعتمد على SSR ولا تعيد بناء DOM
 initListSwiper();
-compressVisibleAvatars(12);
 
 // 2) VIP section (لو تريد) اتركه مخفيًا أولًا، أو املأه لاحقًا في idle
 // vipSection.hidden = true;

@@ -391,7 +391,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
 })
 .populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
 .lean();
-
+console.time('contractors.query');
     // 2) اشتق الخطة الفعالة وضعها داخل subscriptionTier لضمان التوافق مع القالب الحالي
     const contractors = contractorsRaw.map(c => {
       const userTier = c?.user?.subscriptionTier;
@@ -406,13 +406,17 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
     const weight = t => (t === 'VIP' ? 3 : t === 'Premium' ? 2 : 1);
     contractors.sort((a, b) => weight(b.subscriptionTier || 'Basic') - weight(a.subscriptionTier || 'Basic'));
    
+console.timeEnd('contractors.query');
 
+
+
+console.time('contractors.render');
     // 4) الرندر (لا تغييرات على القالب)
     res.render('contractors', {
       contractors,
       bannersDoc,promoBottom,
     });
-    
+    console.timeEnd('contractors.render');
   } catch (err) {
     next(err);
   }
@@ -438,16 +442,10 @@ router.get('/api/contractors', async (req, res) => {
       .lean();
 
     // ✅ فقط أول صورة من الأعمال
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-  : u;
-
-rows = rows.map(r => ({
-  ...r,
-  avatar: r.avatar ? small(r.avatar) : r.avatar,
-  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-}));
-
+    rows = rows.map(r => ({
+      ...r,
+      photos: Array.isArray(r.photos) && r.photos.length ? [r.photos[0]] : []
+    }));
 
     res.set('Cache-Control', 'public, max-age=30');
     return res.json({ ok: true, data: rows });

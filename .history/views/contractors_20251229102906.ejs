@@ -835,7 +835,7 @@ nonVipList  = allContractors.filter(c => ((c.userTier || c.subscriptionTier || '
   });
 
   // افتح الحارس دائمًا عند كل زيارة/تحميل
- setTimeout(openGate, 800);
+// setTimeout(openGate, 800);
 
   // وعند الرجوع من الكاش الخلفي (BFCache) افتحه أيضًا
   window.addEventListener('pageshow', (e)=>{ if (e.persisted) openGate(); });

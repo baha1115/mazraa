@@ -376,7 +376,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   status: 'approved',
   isSuspended: { $ne: true },
   deletedAt: null
-}).limit(24) 
+}).limit() 
 .select({
   name: 1,
   services: 1,
@@ -409,7 +409,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
 
     // 4) الرندر (لا تغييرات على القالب)
     res.render('contractors', {
-      contractors,
+      contractors:[],
       bannersDoc,promoBottom,
     });
     

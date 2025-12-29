@@ -49,24 +49,15 @@ const _enabled = !!_doc.enabled && _items.length > 0;
         <% _items.forEach(function(b){ %>
           <div class="swiper-slide">
             <article class="promo-slide">
-       <div class="promo-medi">
-  <%
-    const imgRaw = (b && b.img) ? String(b.img).trim() : '';
-    const safeImg = (/^data:/i.test(imgRaw)) ? '' : imgRaw; // امنع base64
-    const bannerImg = (safeImg && safeImg.includes('res.cloudinary.com') && safeImg.includes('/upload/'))
-      ? safeImg.replace('/upload/','/upload/f_auto,q_auto,w_900/')
-      : safeImg;
-  %>
-
-  <img
-    src="<%= bannerImg || '/Public/assets/contractors/default.jpg' %>"
-    alt="<%= (b.title || '') %>"
-    loading="lazy"
-    decoding="async"
-    fetchpriority="low"
-  >
-</div>
-
+              <div class="promo-medi">
+               <%
+  const imgRaw = (b && b.img) ? String(b.img).trim() : '';
+  const safeImg = (/^data:/i.test(imgRaw)) ? '' : imgRaw; // ✅ امنع base64
+%>
+<img src="<%= safeImg || '/Public/assets/contractors/default.jpg' %>"
+     alt="<%= (b.title||'') %>"
+     loading="lazy" decoding="async" fetchpriority="low">
+              </div>
               <div class="promo-overlay"></div>
 
               <div class="promo-body">

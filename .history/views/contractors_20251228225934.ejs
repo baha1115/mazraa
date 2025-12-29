@@ -441,33 +441,18 @@
 
       <div class="swiper contractor-swiper" dir="rtl">
         <div class="swiper-wrapper" id="contractorsWrapper">
-        <% if (Array.isArray(contractors) && contractors.length) { contractors.forEach(function(c){ 
-    const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '');
+          <% if (Array.isArray(contractors) && contractors.length) { contractors.forEach(function(c){ 
+              const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '');
+              const rawImg = c.avatar || (Array.isArray(c.photos) && c.photos[0]) || '/Public/assets/contractors/default.jpg';
+const img = (typeof rawImg === 'string' && rawImg.includes('res.cloudinary.com') && rawImg.includes('/upload/'))
+  ? rawImg.replace('/upload/','/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
+  : rawImg;
+               const region = c.region || '';
+              
+               const tier = c.userTier || c.subscriptionTier || 'Basic';
+               if (tier === 'VIP') { return; } // ← لا نرسم VIP في السلايدر العام
 
-    // 1️⃣ نأخذ الصورة الخام
-    const rawAvatar = (c.avatar || '').toString().trim();
-  const rawWork   = (Array.isArray(c.photos) && c.photos[0]) ? String(c.photos[0]).trim() : '';
-
-  // ✅ avatar: اسمح بـ data: فقط إذا كانت قصيرة (صغيرة) — حتى ما تقتل الأداء
-  const avatarOK = rawAvatar && (
-    !/^data:/i.test(rawAvatar) || rawAvatar.length < 500000   // ~ 35KB تقريباً
-  );
-
-  // ✅ لا نسمح base64 لصور الأعمال أبداً
-  const workOK = rawWork && !/^data:/i.test(rawWork);
-
-  const chosen = avatarOK ? rawAvatar : (workOK ? rawWork : '');
-
-  const img =
-    (chosen && chosen.includes('res.cloudinary.com') && chosen.includes('/upload/'))
-      ? chosen.replace('/upload/','/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-      : (chosen || '/Public/assets/contractors/default.jpg');
-
-    const region = c.region || '';
-    const tier = c.userTier || c.subscriptionTier || 'Basic';
-    if (tier === 'VIP') { return; }
-%>
-
+            %>
               <div class="swiper-slide">
                 <article class="contractor-card">
                   <% if (String(tier||'Basic').toLowerCase() !== 'basic') { %>
@@ -475,10 +460,7 @@
 <% } %>
 
                   <div class="card-row">
-                    <div class="avatar"><img src="<%= img %>" alt="صورة <%= c.name || 'مقاول' %>"
-     loading="lazy" decoding="async" fetchpriority="low"
-     onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'">
-</div>
+                    <div class="avatar"><img src="<%= img %>" alt="صورة <%= c.name || 'مقاول' %>" loading="lazy" onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'"></div>
                     <div class="info-stack">
                       <h3 class="name"><%= c.name || '—' %></h3>
                       <p class="specialization"><%= services || '—' %></p>
@@ -534,59 +516,6 @@ if (/^https?:\/\//i.test(u)) return tweakCloudinary(u);
       if (u.startsWith('/')) return '/public'+u;
       return '/uploads/'+u;
     }
-async function compressDataUrlToBlobUrl(dataUrl, size = 160, quality = 0.72){
-  // يقبل data:image فقط
-  if (!/^data:image\//i.test(dataUrl)) return dataUrl;
-
-  // تحميل الصورة
-  const img = new Image();
-  img.decoding = 'async';
-
-  const loaded = new Promise((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = reject;
-  });
-  img.src = dataUrl;
-  await loaded;
-
-  // Canvas مربع
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d', { alpha: false });
-
-  // قصّ مركزي cover
-  const iw = img.naturalWidth || img.width;
-  const ih = img.naturalHeight || img.height;
-  const s = Math.min(iw, ih);
-  const sx = Math.floor((iw - s) / 2);
-  const sy = Math.floor((ih - s) / 2);
-
-  ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-
-  const blob = await new Promise(resolve =>
-    canvas.toBlob(resolve, 'image/jpeg', quality)
-  );
-  if (!blob) return dataUrl;
-
-  return URL.createObjectURL(blob);
-}
-
-// طبّق الضغط فقط على الصور الظاهرة (مثلاً أول 12 صورة)
-async function compressVisibleAvatars(max = 12){
-  const imgs = Array.from(document.querySelectorAll('.contractor-card .avatar img'))
-    .slice(0, max);
-
-  for (const el of imgs){
-    const src = el.getAttribute('src') || '';
-    if (/^data:image\//i.test(src)) {
-      try{
-        const blobUrl = await compressDataUrlToBlobUrl(src, 160, 0.72);
-        el.src = blobUrl;
-      }catch(_){}
-    }
-  }
-}
 
     const form       = $('#contractor-filters');
     const listWrap   = $('#contractorsWrapper');
@@ -734,19 +663,19 @@ function initListSwiper(){
      const ssr = <%- JSON.stringify((typeof contractors!=='undefined' && Array.isArray(contractors)) ? contractors : []) %>;
 allContractors = ssr;
 
-//requestIdleCallback(async () => {
- // try {
-   //const first = await fetchJSON('/api/contractors?limit=60');
+requestIdleCallback(async () => {
+  try {
+   const first = await fetchJSON('/api/contractors?limit=60');
 // حمّل أكثر لاحقًا
-  //  allContractors = Array.isArray(first) ? first : allContractors;
+    allContractors = Array.isArray(first) ? first : allContractors;
 
     // حضّر القوائم وحدث العرض مرة واحدة فقط
-    //vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
-  //  nonVipList  = allContractors.filter(c => ((c.userTier || c.subscriptionTier || 'Basic') !== 'VIP'));
+    vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
+    nonVipList  = allContractors.filter(c => ((c.userTier || c.subscriptionTier || 'Basic') !== 'VIP'));
    // renderList(nonVipList);
     //renderVip(vipOnlyList);
- // } catch(_) {}
-//});
+  } catch(_) {}
+});
 
       try {
         vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
@@ -769,7 +698,6 @@ allContractors = ssr;
 //renderVip(vipOnlyList);
 // 1) اعتمد على SSR ولا تعيد بناء DOM
 initListSwiper();
-compressVisibleAvatars(12);
 
 // 2) VIP section (لو تريد) اتركه مخفيًا أولًا، أو املأه لاحقًا في idle
 // vipSection.hidden = true;
@@ -835,7 +763,7 @@ nonVipList  = allContractors.filter(c => ((c.userTier || c.subscriptionTier || '
   });
 
   // افتح الحارس دائمًا عند كل زيارة/تحميل
- setTimeout(openGate, 800);
+  openGate();
 
   // وعند الرجوع من الكاش الخلفي (BFCache) افتحه أيضًا
   window.addEventListener('pageshow', (e)=>{ if (e.persisted) openGate(); });

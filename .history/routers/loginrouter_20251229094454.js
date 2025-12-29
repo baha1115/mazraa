@@ -815,20 +815,9 @@ router.patch(
           { folder:'contractors', publicId: 'avatar_'+Date.now() }
         );
         update.avatar = up?.secure_url || '';
-     } else if (req.body.avatar != null) {
-  const v = String(req.body.avatar).trim();
-  if (v.startsWith('data:image/')) {
-    const buf = dataURLtoBuffer(v);
-    const up  = await uploadBufferToCloudinary(
-      buf,
-      { folder:'contractors', publicId: 'avatar_'+Date.now() }
-    );
-    update.avatar = up?.secure_url || '';
-  } else {
-    update.avatar = v;
-  }
-}
-
+      } else if (req.body.avatar != null) {
+        update.avatar = String(req.body.avatar).trim();
+      }
       // ===== فحص إجمالي حجم الصور قبل المعالجة (مثل POST /contractor/profile) =====
       let totalBytes = 0;
 

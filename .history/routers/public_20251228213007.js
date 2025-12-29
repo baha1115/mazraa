@@ -405,14 +405,12 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
     // 3) ترتيب يدعم VIP ثم Premium ثم Basic
     const weight = t => (t === 'VIP' ? 3 : t === 'Premium' ? 2 : 1);
     contractors.sort((a, b) => weight(b.subscriptionTier || 'Basic') - weight(a.subscriptionTier || 'Basic'));
-   
 
     // 4) الرندر (لا تغييرات على القالب)
     res.render('contractors', {
       contractors,
       bannersDoc,promoBottom,
     });
-    
   } catch (err) {
     next(err);
   }
@@ -438,16 +436,10 @@ router.get('/api/contractors', async (req, res) => {
       .lean();
 
     // ✅ فقط أول صورة من الأعمال
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-  : u;
-
-rows = rows.map(r => ({
-  ...r,
-  avatar: r.avatar ? small(r.avatar) : r.avatar,
-  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-}));
-
+    rows = rows.map(r => ({
+      ...r,
+      photos: Array.isArray(r.photos) && r.photos.length ? [r.photos[0]] : []
+    }));
 
     res.set('Cache-Control', 'public, max-age=30');
     return res.json({ ok: true, data: rows });

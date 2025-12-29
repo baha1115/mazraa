@@ -441,55 +441,27 @@
 
       <div class="swiper contractor-swiper" dir="rtl">
         <div class="swiper-wrapper" id="contractorsWrapper">
-        <% if (Array.isArray(contractors) && contractors.length) { contractors.forEach(function(c){ 
-    const services = Array.isArray(c.services) ? c.services.join('، ') : (c.services || '');
-
-    // 1️⃣ نأخذ الصورة الخام
-    const rawAvatar = (c.avatar || '').toString().trim();
-  const rawWork   = (Array.isArray(c.photos) && c.photos[0]) ? String(c.photos[0]).trim() : '';
-
-  // ✅ avatar: اسمح بـ data: فقط إذا كانت قصيرة (صغيرة) — حتى ما تقتل الأداء
-  const avatarOK = rawAvatar && (
-    !/^data:/i.test(rawAvatar) || rawAvatar.length < 500000   // ~ 35KB تقريباً
-  );
-
-  // ✅ لا نسمح base64 لصور الأعمال أبداً
-  const workOK = rawWork && !/^data:/i.test(rawWork);
-
-  const chosen = avatarOK ? rawAvatar : (workOK ? rawWork : '');
-
-  const img =
-    (chosen && chosen.includes('res.cloudinary.com') && chosen.includes('/upload/'))
-      ? chosen.replace('/upload/','/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-      : (chosen || '/Public/assets/contractors/default.jpg');
-
-    const region = c.region || '';
-    const tier = c.userTier || c.subscriptionTier || 'Basic';
-    if (tier === 'VIP') { return; }
-%>
-
-              <div class="swiper-slide">
-                <article class="contractor-card">
-                  <% if (String(tier||'Basic').toLowerCase() !== 'basic') { %>
-  <span class="tier-badge"><%= tier %></span>
-<% } %>
-
-                  <div class="card-row">
-                    <div class="avatar"><img src="<%= img %>" alt="صورة <%= c.name || 'مقاول' %>"
-     loading="lazy" decoding="async" fetchpriority="low"
-     onerror="this.onerror=null;this.src='/Public/assets/contractors/default.jpg'">
+  <!-- skeletons (4) -->
+  <% for (let i=0;i<4;i++){ %>
+    <div class="swiper-slide">
+      <article class="contractor-card" style="opacity:.75">
+        <span class="tier-badge">...</span>
+        <div class="card-row">
+          <div class="avatar" style="background:#e5e7eb"></div>
+          <div class="info-stack" style="width:100%">
+            <h3 class="name" style="background:#e5e7eb;height:14px;border-radius:8px"></h3>
+            <p class="specialization" style="background:#e5e7eb;height:12px;border-radius:8px"></p>
+            <p class="region" style="background:#e5e7eb;height:12px;border-radius:8px"></p>
+          </div>
+        </div>
+        <div class="rating" style="background:#e5e7eb;height:12px;border-radius:8px"></div>
+        <span class="card-cta" style="background:#e5e7eb;border-color:#e5e7eb;color:transparent">...</span>
+      </article>
+    </div>
+  <% } %>
 </div>
-                    <div class="info-stack">
-                      <h3 class="name"><%= c.name || '—' %></h3>
-                      <p class="specialization"><%= services || '—' %></p>
-                      <p class="region"><%= region || '—' %></p>
-                    </div>
-                  </div>
-                  <div class="rating"><small>(<%= c.ratingCount || 0 %>)</small><span><%= Number(c.ratingAvg||0).toFixed(2) %></span><span>⭐</span></div>
-                  <a class="card-cta" href="/contractor/<%= c._id %>">صفحة المقاول</a>
-                </article>
-              </div>
-          <% }) } %>
+
+          
         </div>
         <div class="swiper-button-prev" aria-label="السابق"></div>
         <div class="swiper-button-next" aria-label="التالي"></div>
@@ -731,45 +703,60 @@ function initListSwiper(){
 
 
     (async function init(){
-     const ssr = <%- JSON.stringify((typeof contractors!=='undefined' && Array.isArray(contractors)) ? contractors : []) %>;
+    const ssr = <%- JSON.stringify([]) %>;
 allContractors = ssr;
 
-//requestIdleCallback(async () => {
- // try {
-   //const first = await fetchJSON('/api/contractors?limit=60');
-// حمّل أكثر لاحقًا
-  //  allContractors = Array.isArray(first) ? first : allContractors;
+initListSwiper(); // شغّل السويبر حتى مع skeleton
 
-    // حضّر القوائم وحدث العرض مرة واحدة فقط
-    //vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
-  //  nonVipList  = allContractors.filter(c => ((c.userTier || c.subscriptionTier || 'Basic') !== 'VIP'));
-   // renderList(nonVipList);
-    //renderVip(vipOnlyList);
- // } catch(_) {}
-//});
+// 1) اجلب قائمة المقاولين (60 أو 96 حسب رغبتك)
+let fetched = [];
+try {
+  fetched = await fetchJSON('/api/contractors?limit=60');
+} catch(_) {
+  fetched = [];
+}
 
-      try {
-        vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
+// 2) حضّر القوائم
+allContractors = Array.isArray(fetched) ? fetched : [];
+vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
+nonVipList  = allContractors.filter(c => ((c.userTier || c.subscriptionTier || 'Basic') !== 'VIP'));
 
-      } catch(_) {
-        vipOnlyList = allContractors.filter(c => (c.subscriptionTier||'') === 'VIP');
-      }
-
-      // ترتيب العرض: VIP ثم Premium ثم Basic
-      const rank = { VIP:0, Premium:1, Basic:2 };
-     // allContractors.sort((a,b)=>(rank[a.subscriptionTier||'Basic']??9)-(rank[b.subscriptionTier||'Basic']??9));
-
-      // بعد الترتيب:
-//nonVipList = allContractors.filter(c => ((c.userTier || c.subscriptionTier || 'Basic') !== 'VIP'));
-
-// السلايدر العام يعرض غير الـ VIP فقط
-//renderList(nonVipList);
-
-// سلايدر الـ VIP كما هو
-//renderVip(vipOnlyList);
-// 1) اعتمد على SSR ولا تعيد بناء DOM
-initListSwiper();
+// 3) اعرض أول 4 بسرعة
+const firstChunk = nonVipList.slice(0, 4);
+renderList(firstChunk);
 compressVisibleAvatars(12);
+
+// 4) ثم أكمل الباقي على دفعات (مثلاً 12 كل مرة)
+let idx = 4;
+const CHUNK = 12;
+
+function appendChunk(){
+  const next = nonVipList.slice(idx, idx + CHUNK);
+  if (!next.length) return;
+
+  // أضف بدل إعادة بناء كل شيء: (سريع)
+  const html = next.map(contractorSlide).join('');
+  listWrap.insertAdjacentHTML('beforeend', html);
+
+  initListSwiper(); // تحديث السويبر بعد الإضافة
+  compressVisibleAvatars(12);
+
+  idx += CHUNK;
+
+  // خفف الضغط على المتصفح
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(appendChunk, { timeout: 1200 });
+  } else {
+    setTimeout(appendChunk, 180);
+  }
+}
+
+if ('requestIdleCallback' in window) {
+  requestIdleCallback(appendChunk, { timeout: 1200 });
+} else {
+  setTimeout(appendChunk, 180);
+}
+
 
 // 2) VIP section (لو تريد) اتركه مخفيًا أولًا، أو املأه لاحقًا في idle
 // vipSection.hidden = true;

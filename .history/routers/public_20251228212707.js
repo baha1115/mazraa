@@ -405,55 +405,14 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
     // 3) ترتيب يدعم VIP ثم Premium ثم Basic
     const weight = t => (t === 'VIP' ? 3 : t === 'Premium' ? 2 : 1);
     contractors.sort((a, b) => weight(b.subscriptionTier || 'Basic') - weight(a.subscriptionTier || 'Basic'));
-   
 
     // 4) الرندر (لا تغييرات على القالب)
     res.render('contractors', {
       contractors,
       bannersDoc,promoBottom,
     });
-    
   } catch (err) {
     next(err);
-  }
-});
-// GET /api/contractors?vipOnly=1|0&limit=40
-router.get('/api/contractors', async (req, res) => {
-  try {
-    const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit = Math.min(parseInt(req.query.limit || '40', 10), 96);
-
-    const q = {
-      status: 'approved',
-      isSuspended: { $ne: true },
-      deletedAt: null,
-      ...(vipOnly ? { subscriptionTier: 'VIP' } : {})
-    };
-
-    // ✅ select خفيف + slice للصور
-    let rows = await Contractor.find(q)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount')
-      .lean();
-
-    // ✅ فقط أول صورة من الأعمال
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-  : u;
-
-rows = rows.map(r => ({
-  ...r,
-  avatar: r.avatar ? small(r.avatar) : r.avatar,
-  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-}));
-
-
-    res.set('Cache-Control', 'public, max-age=30');
-    return res.json({ ok: true, data: rows });
-  } catch (e) {
-    console.error('api/contractors', e);
-    return res.status(500).json({ ok: false, data: [] });
   }
 });
 
