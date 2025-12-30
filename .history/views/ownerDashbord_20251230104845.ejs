@@ -716,59 +716,13 @@ toggleRentPeriod();
 if (kindSelect) {
   kindSelect.addEventListener('change', toggleRentPeriod);
 }
-// ===== Best Practices Guard (Owner) =====
-const BP_OWNER_KEY = 'bp_ack_owner_land_v1';
-
-function bpLsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
-function bpLsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
-
-function openBpModalOnce(key){
-  return new Promise((resolve)=>{
-    if (bpLsGet(key) === '1') return resolve(true);
-
-    const modal = document.getElementById('bpModal');
-    const btn   = document.getElementById('bpContinue');
-
-    if (!modal || !btn) return resolve(true);
-
-    // open
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden','false');
-
-    const close = (ok) => {
-      modal.hidden = true;
-      modal.setAttribute('aria-hidden','true');
-      if (ok) bpLsSet(key,'1');
-      resolve(ok);
-      cleanup();
-    };
-
-    const onClick = (e)=>{
-      const t = e.target;
-      if (t && (t.id === 'bpContinue')) return close(true);
-      if (t && t.dataset && t.dataset.bpClose) return close(false);
-    };
-
-    const cleanup = ()=>{
-      modal.removeEventListener('click', onClick);
-    };
-
-    modal.addEventListener('click', onClick);
-  });
-}
-
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
- 
-
+   
   if (!landForm || !submitBtnPrimary) return;
 
   // لا نسمح بالضغط المتكرر أثناء الإرسال
   if (isLandSubmitting) return;
-  // هنا أضفهم 👇
-  const ok = await openBpModalOnce(BP_OWNER_KEY);
-  if (!ok) return;
-
 
   // 1) فحص إجمالي حجم الصور (DataURL فقط)
   const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
@@ -841,11 +795,6 @@ landForm.addEventListener('submit', async (e)=>{
  // فحص الواتساب (اختياري) + تطبيع SY
 const waRaw  = (fd.get('ownerWhatsapp')||'').toString();
 const waNorm = normalizeSyWhatsapp(waRaw);
-document.addEventListener('blur', (e)=>{
-  const inp = e.target;
-  if (!inp || inp.name !== 'ownerWhatsapp') return;
-  inp.value = normalizeSyWhatsapp(inp.value);
-}, true);
 
 // خلّي المستخدم يشوف الرقم المصحّح داخل الحقل
 landForm.querySelector('[name="ownerWhatsapp"]').value = waNorm;
@@ -1019,10 +968,7 @@ function normalizeSyWhatsapp(raw){
           const plan   = fd.get('plan') || 'Premium';
           const first  = (fd.get('ownerFirst')||'').toString().trim();
           const last   = (fd.get('ownerLast')||'').toString().trim();
-        const waRaw  = (fd.get('ownerWhatsapp')||'').toString();
-const wa     = normalizeSyWhatsapp(waRaw);
-subscribeForm.querySelector('[name="ownerWhatsapp"]').value = wa;
-
+          const wa     = (fd.get('ownerWhatsapp')||'').toString().trim();
           const notes  = (fd.get('notes')||'').toString().trim();
 
           if (!first || !last){ toast('املأ الاسم واللقب', 'warn'); return; }
@@ -1139,43 +1085,6 @@ refreshQuota();
 
     })();
   </script>
- <!-- Best Practices Modal (Owner) -->
-<div id="bpModal" class="bpModal" hidden aria-hidden="true" role="dialog" aria-labelledby="bpTitle">
-  <div class="bpModal__backdrop" data-bp-close="1"></div>
-  <div class="bpModal__card" role="document">
-    <h3 id="bpTitle" style="margin:0 0 .5rem 0">قبل نشر الإعلان</h3>
-
-    <p class="muted" style="margin:.25rem 0 .75rem 0">
-      ننصحك بمراجعة “الممارسات النموذجية” لتجنب رفض الإعلان. يمكنك فتح الصفحة أو المتابعة مباشرة.
-    </p>
-
-    <ul style="margin:.2rem 0 .8rem 1.1rem;line-height:1.7">
-      <li>عنوان واضح + مدينة/منطقة + السعر/المساحة.</li>
-      <li>صور واضحة ومرتبة (بدون بيانات ناقصة).</li>
-      <li>طرق تواصل صحيحة (واتساب بصيغة دولية).</li>
-    </ul>
-
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end">
-      <a class="btn btn--ghost" href="/best-practices" target="_blank" rel="noopener">فتح الصفحة (اختياري)</a>
-      <button class="btn btn--primary" type="button" id="bpContinue">متابعة النشر</button>
-    </div>
-  </div>
-</div>
-
-<style>
-  .bpModal[hidden]{display:none}
-  .bpModal{position:fixed;inset:0;z-index:9999}
-  .bpModal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
-  .bpModal__card{
-    position:relative;
-    max-width:520px;
-    margin:10vh auto;
-    background:#fff;
-    border-radius:14px;
-    padding:14px 14px 12px;
-    box-shadow:0 15px 40px rgba(0,0,0,.25);
-  }
-</style>
-
+ 
 </body>
 </html>

@@ -716,59 +716,13 @@ toggleRentPeriod();
 if (kindSelect) {
   kindSelect.addEventListener('change', toggleRentPeriod);
 }
-// ===== Best Practices Guard (Owner) =====
-const BP_OWNER_KEY = 'bp_ack_owner_land_v1';
-
-function bpLsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
-function bpLsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
-
-function openBpModalOnce(key){
-  return new Promise((resolve)=>{
-    if (bpLsGet(key) === '1') return resolve(true);
-
-    const modal = document.getElementById('bpModal');
-    const btn   = document.getElementById('bpContinue');
-
-    if (!modal || !btn) return resolve(true);
-
-    // open
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden','false');
-
-    const close = (ok) => {
-      modal.hidden = true;
-      modal.setAttribute('aria-hidden','true');
-      if (ok) bpLsSet(key,'1');
-      resolve(ok);
-      cleanup();
-    };
-
-    const onClick = (e)=>{
-      const t = e.target;
-      if (t && (t.id === 'bpContinue')) return close(true);
-      if (t && t.dataset && t.dataset.bpClose) return close(false);
-    };
-
-    const cleanup = ()=>{
-      modal.removeEventListener('click', onClick);
-    };
-
-    modal.addEventListener('click', onClick);
-  });
-}
-
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
- 
-
+   
   if (!landForm || !submitBtnPrimary) return;
 
   // لا نسمح بالضغط المتكرر أثناء الإرسال
   if (isLandSubmitting) return;
-  // هنا أضفهم 👇
-  const ok = await openBpModalOnce(BP_OWNER_KEY);
-  if (!ok) return;
-
 
   // 1) فحص إجمالي حجم الصور (DataURL فقط)
   const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);

@@ -1043,11 +1043,6 @@ renderVip(filteredVip);
 
 }
 
-  const ric = window.requestIdleCallback || function(cb){
-    return setTimeout(() => cb({ timeRemaining: () => 0, didTimeout: true }), 1);
-  };
-
-
 /* ======= بدء ======= */
 async function init(){
   try {
@@ -1059,7 +1054,7 @@ async function init(){
   } catch(e){ console.warn('sale fetch error (first):', e); renderSale([]); }
 
   // أكمل لاحقًا بهدوء
-  ric(async () => {
+  requestIdleCallback(async () => {
     try{
       const rest = await fetchJSON('/api/farms/sale?limit=60');
       allSale = Array.isArray(rest) ? rest : [];

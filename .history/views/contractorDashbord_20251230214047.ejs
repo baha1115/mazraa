@@ -652,8 +652,6 @@ const BP_CONTRACTOR_KEY = 'bp_ack_contractor_profile_v1';
      /* ============== حفظ الملف (POST أو PATCH) ============== */
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-const ok = await openBpModalOnce(BP_CONTRACTOR_KEY);
-if (!ok) return;
 
     // لا نسمح بالضغط المتكرر أثناء الإرسال
     if (isProfileSubmitting) return;

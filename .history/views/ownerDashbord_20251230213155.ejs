@@ -759,16 +759,11 @@ function openBpModalOnce(key){
 
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
- 
-
+   
   if (!landForm || !submitBtnPrimary) return;
 
   // لا نسمح بالضغط المتكرر أثناء الإرسال
   if (isLandSubmitting) return;
-  // هنا أضفهم 👇
-  const ok = await openBpModalOnce(BP_OWNER_KEY);
-  if (!ok) return;
-
 
   // 1) فحص إجمالي حجم الصور (DataURL فقط)
   const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);

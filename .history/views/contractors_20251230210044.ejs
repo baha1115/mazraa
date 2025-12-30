@@ -711,14 +711,12 @@ function initListSwiper(){
     function renderList(list){
       listWrap.innerHTML = (list&&list.length) ? list.map(contractorSlide).join('') : `<div class="empty muted">لا توجد نتائج مطابقة.</div>`;
       initListSwiper();
-      compressVisibleAvatars(12);
     }
     function renderVip(list){
       const has = Array.isArray(list) && list.length>0;
       vipSection.hidden = !has;
       vipWrap.innerHTML = has ? list.map(vipSlide).join('') : '';
       if (has) initVipSwiper(); else destroySwiper(vipSwiper);
-        compressVisibleAvatars(12);
     }
 
    function applyFilters(){

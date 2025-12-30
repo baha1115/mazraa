@@ -718,7 +718,6 @@ function initListSwiper(){
       vipSection.hidden = !has;
       vipWrap.innerHTML = has ? list.map(vipSlide).join('') : '';
       if (has) initVipSwiper(); else destroySwiper(vipSwiper);
-        compressVisibleAvatars(12);
     }
 
    function applyFilters(){

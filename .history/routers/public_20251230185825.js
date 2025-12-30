@@ -580,11 +580,4 @@ router.get('/plans',(req,res)=>{
 router.get('/about',(req,res)=>{
 res.render('aboutUs')
 })
-router.get('/best-practices', (req, res) => {
-  res.render('best-practice', {
-    user: req.session?.user || null,
-    isAuth: !!req.session?.user
-  });
-});
-
 module.exports = router;

@@ -580,11 +580,26 @@ router.get('/plans',(req,res)=>{
 router.get('/about',(req,res)=>{
 res.render('aboutUs')
 })
-router.get('/best-practices', (req, res) => {
-  res.render('best-practice', {
-    user: req.session?.user || null,
-    isAuth: !!req.session?.user
-  });
+router.get('/debug/rent-counts', async (req, res) => {
+  try {
+    const total = await Farm.countDocuments({ kind: { $regex: /^rent$/i } });
+
+    const approved = await Farm.countDocuments({
+      kind: { $regex: /^rent$/i },
+      status: { $in: ['approved', 'Approved'] }
+    });
+
+    const visibleLikeApi = await Farm.countDocuments({
+      kind: { $regex: /^rent$/i },
+      status: { $in: ['approved', 'Approved'] },
+      isSuspended: { $ne: true },
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }]
+    });
+
+    res.json({ ok: true, total, approved, visibleLikeApi });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 module.exports = router;

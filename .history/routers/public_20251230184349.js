@@ -131,8 +131,7 @@ router.get('/api/farms/sale', async (req, res) => {
       { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'u' } },
       { $addFields: { ownerTier: { $ifNull: [{ $arrayElemAt: ['$u.subscriptionTier', 0] }, 'Basic'] } } },
 
-      ...(vipOnly ? [{ $match: { ownerTier: { $regex: /^vip$/i } } }
-, { $limit: limit }] : []),
+      ...(vipOnly ? [{ $match: { ownerTier: 'VIP' } }, { $limit: limit }] : []),
 
       { $project: {
           _id: 1, title: 1, area: 1, city: 1, size: 1, price: 1, currency: 1,
@@ -187,8 +186,7 @@ router.get('/api/farms/rent', async (req, res) => {
       { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'u' } },
       { $addFields: { ownerTier: { $ifNull: [{ $arrayElemAt: ['$u.subscriptionTier', 0] }, 'Basic'] } } },
 
-      ...(vipOnly ? [{ $match: { ownerTier: { $regex: /^vip$/i } } }
-, { $limit: limit }] : []),
+      ...(vipOnly ? [{ $match: { ownerTier: 'VIP' } }, { $limit: limit }] : []),
 
       { $project: {
           _id: 1, title: 1, area: 1, city: 1, size: 1, price: 1, rentPeriod: 1, currency: 1,
@@ -580,11 +578,4 @@ router.get('/plans',(req,res)=>{
 router.get('/about',(req,res)=>{
 res.render('aboutUs')
 })
-router.get('/best-practices', (req, res) => {
-  res.render('best-practice', {
-    user: req.session?.user || null,
-    isAuth: !!req.session?.user
-  });
-});
-
 module.exports = router;
