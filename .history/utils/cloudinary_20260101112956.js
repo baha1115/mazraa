@@ -24,15 +24,15 @@ function uploadBufferToCloudinary(
       transformation.push({
         overlay: {
           font_family: "Arial",     // لو ظهر مربعات جرّب خط يدعم العربية
-          font_size: 78,
+          font_size: 60,
           font_weight: "bold",
           text: watermarkText
         },
         color: "#ffffff",
-        opacity: 28,               // شفافية
-        gravity: "south",     // أسفل يمين
-        x: 0,
-        y: 26
+        opacity: 30,               // شفافية
+        gravity: "south_east",     // أسفل يمين
+        x: 18,
+        y: 18
       });
     }
 

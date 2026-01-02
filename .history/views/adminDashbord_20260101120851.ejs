@@ -1970,36 +1970,6 @@ usersPrev?.addEventListener('click', () => {
 usersNext?.addEventListener('click', () => {
   if (usersPage < usersPages) renderUsers(usersPage + 1);
 });
-usersBody?.addEventListener('click', async (e) => {
-  const btn = e.target.closest('[data-act="user-delete"]');
-  if (!btn) return;
-
-  const userId = btn.dataset.id;
-  const label = btn.dataset.label || 'هذا المستخدم';
-
-  const ok = confirm(`هل تريد حذف ${label} نهائياً؟\nسيتم أيضاً إخفاء محتواه المرتبط (مزارع/مقاولين).`);
-  if (!ok) return;
-
-  btn.disabled = true;
-
-  try {
-    const r = await fetch(`/admin/users/${userId}`, {
-      method: 'DELETE',
-      headers: { 'Accept': 'application/json' }
-    });
-
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || j.ok === false) throw new Error(j.msg || 'delete_failed');
-
-    // أعد تحميل نفس الصفحة من المستخدمين
-    await renderUsers(usersPage);
-    toast('تم حذف المستخدم بنجاح ✅', 'success');
-  } catch (err) {
-    console.error(err);
-    btn.disabled = false;
-    toast('تعذر حذف المستخدم ❌', 'error');
-  }
-});
 
 // الاستدعاء الأول
 document.addEventListener('DOMContentLoaded', () => renderUsers(1));

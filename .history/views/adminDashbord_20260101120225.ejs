@@ -359,7 +359,6 @@
   #usersRole{ min-width:170px; }
   #usersSearch{ min-width:220px; }
 }
-.users-table td:nth-child(6)::before{ content:'حذف: '; color:#64748b; font-weight:700; }
 
 </style>
 
@@ -1910,30 +1909,13 @@ async function renderUsers(page = 1){
     const exp    = expRaw ? dateFmt(expRaw) : '—';
     const joined = u.createdAt ? dateFmt(u.createdAt) : '—';
 
-   const isAdmin = String(role).toLowerCase() === 'admin';
-
-tr.innerHTML = `
-  <td>${name}</td>
-  <td>${email}</td>
-  <td><span class="badge ${badgeClass}">${roleLabel}</span></td>
-  <td>${tierLabel}</td>
-  <td>${createdAt}</td>
-
-  <td>
-    ${
-      isAdmin
-        ? `<span class="muted">—</span>`
-        : `<button type="button"
-                   class="btn btn--danger btn--sm"
-                   data-act="user-delete"
-                   data-id="${u._id}"
-                   data-label="${esc((u.name || 'بدون اسم') + ' • ' + (u.email || 'بدون ايميل'))}">
-              حذف
-           </button>`
-    }
-  </td>
-`;
-
+    tr.innerHTML = `
+      <td>${esc(name)}</td>
+      <td dir="ltr">${esc(email)}</td>
+      <td>${roleAr(role)}</td>
+      <td>${planBadge(plan)} ${exp!=='—' ? `<small class="muted">حتى ${esc(exp)}</small>` : ''}</td>
+      <td>${joined}</td>
+    `;
     usersBody.appendChild(tr);
   });
 
@@ -1969,36 +1951,6 @@ usersPrev?.addEventListener('click', () => {
 
 usersNext?.addEventListener('click', () => {
   if (usersPage < usersPages) renderUsers(usersPage + 1);
-});
-usersBody?.addEventListener('click', async (e) => {
-  const btn = e.target.closest('[data-act="user-delete"]');
-  if (!btn) return;
-
-  const userId = btn.dataset.id;
-  const label = btn.dataset.label || 'هذا المستخدم';
-
-  const ok = confirm(`هل تريد حذف ${label} نهائياً؟\nسيتم أيضاً إخفاء محتواه المرتبط (مزارع/مقاولين).`);
-  if (!ok) return;
-
-  btn.disabled = true;
-
-  try {
-    const r = await fetch(`/admin/users/${userId}`, {
-      method: 'DELETE',
-      headers: { 'Accept': 'application/json' }
-    });
-
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || j.ok === false) throw new Error(j.msg || 'delete_failed');
-
-    // أعد تحميل نفس الصفحة من المستخدمين
-    await renderUsers(usersPage);
-    toast('تم حذف المستخدم بنجاح ✅', 'success');
-  } catch (err) {
-    console.error(err);
-    btn.disabled = false;
-    toast('تعذر حذف المستخدم ❌', 'error');
-  }
 });
 
 // الاستدعاء الأول

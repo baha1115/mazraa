@@ -150,7 +150,7 @@ async function buildPhotosArrayCloud(req, { folder='farms' } = {}){
     for (const item of bodyPhotos){
       if (typeof item === 'string' && item.startsWith('data:image/')){
         const buf = dataURLtoBuffer(item);
-        const r = await uploadBufferToCloudinary(buf, { folder, watermark: true, watermarkText: 'مزرعة' });
+        const r = await uploadBufferToCloudinary(buf, { folder });
         if (r?.secure_url) out.push(r.secure_url);
       } else if (typeof item === 'string' && /^https?:\/\//.test(item)){
         // رابط خارجي/Cloudinary جاهز — أبقه كما هو
