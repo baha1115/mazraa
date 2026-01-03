@@ -229,8 +229,7 @@ router.post('/owner/lands', requireAuth, uploadMem.array('photos', 12), async (r
     // ===== نهاية فحص الحصة =====
 
     // صور Cloudinary
-  const photos = await buildPhotosArrayCloud(req, { folder:'farms', watermark:true, watermarkText:'مزرعتي' });
-
+    const photos = await buildPhotosArrayCloud(req, { folder: 'farms' });
 
     // الحقول الأخرى كما هي
     const ownerInfo = {
@@ -394,8 +393,7 @@ router.patch('/owner/lands/:id', requireAuth, uploadMem.array('photos', 12), asy
     // ===== نهاية فحص الحجم =====
 
     // إبقِ الروابط الموجودة + أضف أي ملفات/داتا-URL جديدة (كلاوديناري)
-   const photos = await buildPhotosArrayCloud(req, { folder:'farms', watermark:true, watermarkText:'مزرعتي' });
-
+    const photos = await buildPhotosArrayCloud(req, { folder: 'farms' });
 
     const update = {
       title: (b.title||'').trim(),

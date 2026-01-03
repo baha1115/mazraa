@@ -808,6 +808,12 @@ landForm.addEventListener('submit', async (e)=>{
     toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
     return;
   }
+// ✅ Best Practices (مرة واحدة فقط)
+const proceed = await openBpModalOnce(BP_OWNER_KEY);
+if (!proceed) {
+  toast('تم إلغاء النشر. راجع الممارسات النموذجية ثم أعد المحاولة.', 'warn');
+  return;
+}
 
 
   // ✅ السعر إجباري (> 0)

@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
   <title>لوحة المالك — أراضي + خريطة + رفع صور + طلب اشتراك</title>
   <meta name="description" content="لوحة مالك الأرض لإضافة الإعلانات وتحديد الموقع على خريطة OpenStreetMap مع رفع الصور وطلب ترقية الاشتراك عبر واتساب.">
 
@@ -608,12 +609,18 @@ map.on('click', async (e) => {
 
 function dataUrlBytes(src){
   if (typeof src !== 'string') return 0;
+
+  // ✅ لو ليست data:image (يعني رابط https قديم جاهز) نعتبرها 0
+  if (!src.startsWith('data:image')) return 0;
+
   const i = src.indexOf(',');
-  const b64 = i >= 0 ? src.slice(i+1) : src;
-  // تحويل طول الـ base64 إلى bytes بدقّة جيدة
+  if (i < 0) return 0;
+
+  const b64 = src.slice(i + 1);
   const pad = b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0;
   return Math.max(0, Math.floor(b64.length * 3 / 4) - pad);
 }
+
       pickBtn.addEventListener('click', ()=> fileInput.click());
       fileInput.addEventListener('change', (e)=> handleFiles(e.target.files));
 
@@ -679,11 +686,15 @@ function dataUrlBytes(src){
 
       // حفظ نموذج الأرض
 const landForm = qs('#landForm');
-const submitBtnPrimary = landForm.querySelector('button[type="submit"]');
+const submitBtnPrimary = landForm?.querySelector('button[type="submit"]');
+const defaultLandLabel = submitBtnPrimary?.textContent || 'حفظ وارسال';
+let isLandSubmitting = false;
+
 if (submitBtnPrimary) {
   submitBtnPrimary.disabled = true;            // زر مغلق إلى أن نجلب الحصّة
   submitBtnPrimary.title = 'جارِ التحقق من حصتك…';
 }
+
 
 // إظهار/إخفاء نوع الإيجار حسب kind
 const kindSelect       = landForm.querySelector('[name="kind"]');
@@ -705,22 +716,107 @@ toggleRentPeriod();
 if (kindSelect) {
   kindSelect.addEventListener('change', toggleRentPeriod);
 }
+// ===== Best Practices Guard (Owner) =====
+const BP_OWNER_KEY = 'bp_ack_owner_land_v1';
+
+function bpLsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function bpLsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+
+function openBpModalOnce(key){
+  return new Promise((resolve)=>{
+    if (bpLsGet(key) === '1') return resolve(true);
+
+    const modal = document.getElementById('bpModal');
+    const btn   = document.getElementById('bpContinue');
+
+    if (!modal || !btn) return resolve(true);
+
+    // open
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden','false');
+
+    const close = (ok) => {
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden','true');
+      if (ok) bpLsSet(key,'1');
+      resolve(ok);
+      cleanup();
+    };
+
+    const onClick = (e)=>{
+      const t = e.target;
+      if (t && (t.id === 'bpContinue')) return close(true);
+      if (t && t.dataset && t.dataset.bpClose) return close(false);
+    };
+
+    const cleanup = ()=>{
+      modal.removeEventListener('click', onClick);
+    };
+
+    modal.addEventListener('click', onClick);
+  });
+}
 
 landForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  // فحص إجمالي حجم الـ DataURL قبل الإرسال
-const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
-if (totalBytes > MAX_TOTAL_BYTES){
-  toast('إجمالي حجم الصور يتجاوز 5MB. قلّل عدد/حجم الصور.', 'warn');
-  return; // منع الإرسال
-}
+ 
 
-if (!_quotaReady) {
-    toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
-    return; // منع الإرسال حتى تُحمّل الحصّة
+  if (!landForm || !submitBtnPrimary) return;
+
+  // لا نسمح بالضغط المتكرر أثناء الإرسال
+  if (isLandSubmitting) return;
+  // هنا أضفهم 👇
+  const ok = await openBpModalOnce(BP_OWNER_KEY);
+  if (!ok) return;
+
+  
+  // 1) فحص إجمالي حجم الصور (DataURL فقط)
+  const totalBytes = (pendingPhotos||[]).reduce((sum,src)=> sum + dataUrlBytes(src), 0);
+  if (totalBytes > MAX_TOTAL_BYTES){
+    toast('إجمالي حجم الصور يتجاوز 5MB. قلّل عدد/حجم الصور.', 'warn');
+    return;
   }
   const fd = new FormData(landForm);
-    // ✅ السعر إجباري (> 0)
+
+  const idForEdit = (fd.get('id') || '').toString().trim();
+  const isEdit    = !!idForEdit;
+  // قراءة الحقول المطلوبة
+  const area    = (fd.get('area') || '').toString().trim();   // المنطقة
+  const city    = (fd.get('city') || '').toString().trim();   // المحافظة
+  const sizeStr = (fd.get('size') || '').toString().trim();   // المساحة كنص
+  const sizeNum = Number(sizeStr);                            // المساحة كرقم
+  // ✅ المنطقة إجباري
+  if (!area){
+    toast('اكتب اسم المنطقة','warn');
+    return;
+  }
+
+  // ✅ المحافظة إجبارية
+  if (!city){
+    toast('اختر المحافظة','warn');
+    return;
+  }
+
+  // ✅ المساحة إجبارية (> 0)
+  if (!sizeStr || !Number.isFinite(sizeNum) || sizeNum <= 0){
+    toast('المساحة إجبارية — أدخل مساحة أكبر من صفر بالمتر المربع','warn');
+    return;
+  }
+
+  // 2) التحقق من الحصّة (للإضافة الجديدة فقط، التعديل مسموح دائماً)
+  if (!isEdit && !_quotaReady){
+    toast('انتظر لحظات… جاري التحقق من الحصّة', 'warn');
+    return;
+  }
+// ✅ Best Practices (مرة واحدة فقط)
+const proceed = await openBpModalOnce(BP_OWNER_KEY);
+if (!proceed) {
+  toast('تم إلغاء النشر. راجع الممارسات النموذجية ثم أعد المحاولة.', 'warn');
+  return;
+}
+
+
+  // ✅ السعر إجباري (> 0)
   const rawPrice = (fd.get('price') || '').toString().trim();
   const priceNum = Number(rawPrice);
 
@@ -735,20 +831,36 @@ if (!_quotaReady) {
     return;
   }
 
-const idForEdit = (fd.get('id') || '').toString().trim();
-const isEdit = !!idForEdit;
-// ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
-if (!isEdit) {
-  const left = _quotaState?.left;
-  const unlimited = _quotaState?.unlimited === true || left === Infinity;
-  if (!unlimited && Number(left) <= 0) {
-    toast('بلغت حد النشر المسموح به في خطتك. قم بالترقية للنشر أكثر.', 'warn');
-    return; // ← ← ← إيقاف الإرسال نهائيًا
+ 
+
+  // ⛔️ لو إضافة جديدة والخطّة وصلت الحد — امنع الإرسال
+  if (!isEdit) {
+    const left      = _quotaState?.left;
+    const unlimited = _quotaState?.unlimited === true || left === Infinity;
+    if (!unlimited && Number(left) <= 0) {
+      toast('بلغت حد النشر المسموح به في خطتك. قم بالترقية للنشر أكثر.', 'warn');
+      return;
+    }
   }
+
+  // فحص الواتساب (اختياري)
+ // فحص الواتساب (اختياري) + تطبيع SY
+const waRaw  = (fd.get('ownerWhatsapp')||'').toString();
+const waNorm = normalizeSyWhatsapp(waRaw);
+document.addEventListener('blur', (e)=>{
+  const inp = e.target;
+  if (!inp || inp.name !== 'ownerWhatsapp') return;
+  inp.value = normalizeSyWhatsapp(inp.value);
+}, true);
+
+// خلّي المستخدم يشوف الرقم المصحّح داخل الحقل
+landForm.querySelector('[name="ownerWhatsapp"]').value = waNorm;
+
+if (waNorm && !/^\+?\d{6,15}$/.test(waNorm)){
+  toast('رقم واتساب غير صحيح','warn');
+  return;
 }
-  // فحص الواتساب
-  const wa = (fd.get('ownerWhatsapp')||'').toString().trim().replace(/\s+/g,'');
-  if (wa && !/^\+?\d{6,15}$/.test(wa)){ toast('رقم واتساب غير صحيح','warn'); return; }
+
 
   const lat = parseFloat(fd.get('lat'));
   const lng = parseFloat(fd.get('lng'));
@@ -756,57 +868,63 @@ if (!isEdit) {
   const payload = {
     ownerFirst:    (fd.get('ownerFirst')    || '').toString().trim(),
     ownerLast:     (fd.get('ownerLast')     || '').toString().trim(),
-    ownerWhatsapp: (fd.get('ownerWhatsapp') || '').toString().trim(),
-    title: (fd.get('title')||'').toString().trim(),
-    kind: fd.get('kind') || 'sale',
-    area: (fd.get('area')||'').toString().trim(),
-    city: (fd.get('city')||'').toString().trim(),
-    size: parseInt(fd.get('size')||0,10),
-        price: priceNum,
-
-    currency: (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
-      rentPeriod: (fd.get('rentPeriod') || '').toString(),
-
-    photos: [...pendingPhotos],
-      poolDesc:      (fd.get('poolDesc')      || '').toString().trim(),
-  amenitiesDesc: (fd.get('amenitiesDesc') || '').toString().trim(),
-  buildingDesc:  (fd.get('buildingDesc')  || '').toString().trim(),
-    description: (fd.get('desc')||'').toString().trim(),
-    videoUrl: (fd.get('videoUrl') || '').toString().trim(),
+    ownerWhatsapp: waNorm,
+    title:         (fd.get('title')         || '').toString().trim(),
+    kind:          fd.get('kind') || 'sale',
+    area:          (fd.get('area') || '').toString().trim(),
+    city:          (fd.get('city') || '').toString().trim(),
+    size:          sizeNum,
+    price:         priceNum,
+    currency:      (fd.get('currency') === 'SYP' ? 'SYP' : 'USD'),
+    rentPeriod:    (fd.get('rentPeriod') || '').toString(),
+    photos:        [...pendingPhotos], // مزيج من روابط قديمة + صور جديدة
+    poolDesc:      (fd.get('poolDesc')      || '').toString().trim(),
+    amenitiesDesc: (fd.get('amenitiesDesc') || '').toString().trim(),
+    buildingDesc:  (fd.get('buildingDesc')  || '').toString().trim(),
+    description:   (fd.get('desc')          || '').toString().trim(),
+    videoUrl:      (fd.get('videoUrl')      || '').toString().trim(),
     location: (Number.isFinite(lat)&&Number.isFinite(lng))
       ? {lat,lng,address:(fd.get('address')||'').toString()}
       : null
   };
 
-  const url = isEdit ? `/owner/lands/${idForEdit}` : '/owner/lands';
+  const url    = isEdit ? `/owner/lands/${idForEdit}` : '/owner/lands';
   const method = isEdit ? 'PATCH' : 'POST';
 
+  // 👈 من هنا يبدأ "جارِ الإرسال" فعلياً
+  isLandSubmitting = true;
   submitBtnPrimary.disabled = true;
   submitBtnPrimary.textContent = 'جارِ الإرسال…';
 
   try{
-    const res = await fetch(url, {
+    const res  = await fetch(url, {
       method,
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
 
-    if (!data.ok) {
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = { ok:false, msg:'رد غير صالح من الخادم' };
+    }
+
+    if (!data.ok){
       toast(data.msg || 'تعذّر الإرسال', 'warn');
       return;
     }
 
     toast(isEdit ? 'تم التعديل وإرسال الإعلان للمراجعة' : 'تم الإرسال للمراجعة','ok');
 
-    // إعادة الوضع لإضافة جديدة
- const ft2 = document.getElementById('formTitle');
-if (ft2) ft2.textContent = 'إضافة أرض';
-
+    // إعادة النموذج لوضع إضافة جديدة
+    const ft2 = document.getElementById('formTitle');
+    if (ft2) ft2.textContent = 'إضافة أرض';
 
     landForm.querySelector('[name="id"]').value = '';
     landForm.reset();
-    pendingPhotos = []; renderThumbs?.();
+    pendingPhotos = [];
+    renderThumbs?.();
     marker?.setOpacity?.(0);
 
     // حدّث القائمة والحصّة
@@ -815,12 +933,14 @@ if (ft2) ft2.textContent = 'إضافة أرض';
 
   }catch(err){
     console.error(err);
-    toast('خطأ بالشبكة','warn');
+    toast('خطأ بالشبكة أو في الخادم','warn');
   }finally{
+    isLandSubmitting = false;
     submitBtnPrimary.disabled = false;
-    submitBtnPrimary.textContent = 'حفظ وارسال';
+    submitBtnPrimary.textContent = defaultLandLabel;
   }
 });
+
 
       // ====== طلب ترقية الاشتراك عبر واتساب ======
       // عدّل الأرقام التالية حسب نظامك
@@ -831,6 +951,49 @@ if (ft2) ft2.textContent = 'إضافة أرض';
         const n = (num||'').toString().trim().replace(/\s+/g,'');
         return /^\+?\d{6,15}$/.test(n);
       }
+// تحويل الأرقام العربية/الهندية إلى إنجليزية
+function normalizeDigits(str){
+  const map = {
+    '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
+    '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
+  };
+  return (str || '').replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => map[d] || d);
+}
+
+// ✅ تطبيع رقم واتساب السوري: 0xxxxxxxxx -> +963xxxxxxxxx
+function normalizeSyWhatsapp(raw){
+  let s = normalizeDigits(raw).toString().trim();
+  if (!s) return '';
+
+  // شيل فراغات/شرطات/أقواس
+  s = s.replace(/[()\-\s]/g, '');
+
+  // 00xxxx -> +xxxx
+  if (s.startsWith('00')) s = '+' + s.slice(2);
+
+  const hadPlus = s.startsWith('+');
+  let digits = s.replace(/\D/g, ''); // أرقام فقط
+
+  if (!digits) return '';
+
+  // +9630xxxxxxxx -> +963xxxxxxxx
+  if (digits.startsWith('9630')) digits = '963' + digits.slice(4);
+
+  // 0xxxxxxxxx (محلي) -> xxxxxxxxx
+  if (!hadPlus && digits.startsWith('0')) digits = digits.slice(1);
+
+  // لو صار يبدأ بـ963 -> رجّع +963...
+  if (digits.startsWith('963')) return '+' + digits;
+
+  // لو محلي سوري (بعد إزالة 0) يبدأ بـ9 -> +963
+  if (!hadPlus && digits.startsWith('9')) return '+963' + digits;
+
+  // دول أخرى: لو كان فيه + نخليه بصيغة دولية
+  if (hadPlus) return '+' + digits;
+
+  // غير ذلك: رجعه كما هو (يخضع للفاليديشن بعدين)
+  return digits;
+}
 
      function prefillSubscribe(){
    const f = document.getElementById('subscribeForm');
@@ -862,7 +1025,10 @@ if (ft2) ft2.textContent = 'إضافة أرض';
           const plan   = fd.get('plan') || 'Premium';
           const first  = (fd.get('ownerFirst')||'').toString().trim();
           const last   = (fd.get('ownerLast')||'').toString().trim();
-          const wa     = (fd.get('ownerWhatsapp')||'').toString().trim();
+        const waRaw  = (fd.get('ownerWhatsapp')||'').toString();
+const wa     = normalizeSyWhatsapp(waRaw);
+subscribeForm.querySelector('[name="ownerWhatsapp"]').value = wa;
+
           const notes  = (fd.get('notes')||'').toString().trim();
 
           if (!first || !last){ toast('املأ الاسم واللقب', 'warn'); return; }
@@ -905,12 +1071,7 @@ try {
       }
 
       // لغة/اتجاه
-      qs('#langToggle').addEventListener('click', ()=>{
-        const rtl = document.documentElement.getAttribute('dir')==='rtl';
-        document.documentElement.setAttribute('dir', rtl?'ltr':'rtl');
-        qs('#langToggle').textContent = rtl ? 'العربية' : 'English';
-        setTimeout(()=> map.invalidateSize(), 100);
-      });
+     
 
  // === الحصة وحدود النشر ===
 async function refreshQuota(){
@@ -952,26 +1113,30 @@ async function refreshQuota(){
     </span>
   `;
 _quotaReady = true;
-  if (submitBtn) {
-    if (!unlimited && leftNum <= 0) {
-      submitBtn.disabled = true;
-      submitBtn.title = 'بلغتَ حد النشر المسموح به في خطتك';
-    } else {
-      submitBtn.disabled = false;
-      submitBtn.title = '';
-    }
+if (submitBtn) {
+  // ✅ دائماً خلي الزر مفعّل، لأننا سنمنع "الإضافة" فقط من داخل الـ submit
+  submitBtn.disabled = false;
+
+  if (!unlimited && leftNum <= 0) {
+    // رسالة توضيح فقط: لا تمنع التعديل
+    submitBtn.title = 'بلغت حد النشر المسموح به في خطتك — يمكنك تعديل إعلاناتك الحالية فقط';
+  } else {
+    submitBtn.title = '';
   }
+}
 
 }catch(e){
   console.warn(e);
-  info.innerHTML = `<span class="muted">تعذّر جلب معلومات الحصّة.</span>`;
-    // في catch:
-_quotaReady = false;
-if (submitBtn) {
-  submitBtn.disabled = true;
-  submitBtn.title = 'تعذّر جلب الحصّة';
+  info.innerHTML = `<span class="muted">تعذّر جلب معلومات الحصّة — سيتم السماح بالنشر مؤقتاً.</span>`;
+
+  // نسمح بالإرسال حتى لو ما قدرنا نجلب الحصّة
+  _quotaReady = true;
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.title = '';
+  }
 }
-}
+
 
 }
 
@@ -980,6 +1145,43 @@ refreshQuota();
 
     })();
   </script>
- 
+ <!-- Best Practices Modal (Owner) -->
+<div id="bpModal" class="bpModal" hidden aria-hidden="true" role="dialog" aria-labelledby="bpTitle">
+  <div class="bpModal__backdrop" data-bp-close="1"></div>
+  <div class="bpModal__card" role="document">
+    <h3 id="bpTitle" style="margin:0 0 .5rem 0">قبل نشر الإعلان</h3>
+
+    <p class="muted" style="margin:.25rem 0 .75rem 0">
+      ننصحك بمراجعة “الممارسات النموذجية” لتجنب رفض الإعلان. يمكنك فتح الصفحة أو المتابعة مباشرة.
+    </p>
+
+    <ul style="margin:.2rem 0 .8rem 1.1rem;line-height:1.7">
+      <li>عنوان واضح + مدينة/منطقة + السعر/المساحة.</li>
+      <li>صور واضحة ومرتبة (بدون بيانات ناقصة).</li>
+      <li>طرق تواصل صحيحة (واتساب بصيغة دولية).</li>
+    </ul>
+
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end">
+      <a class="btn btn--ghost" href="/best-practices" target="_blank" rel="noopener">فتح الصفحة (اختياري)</a>
+      <button class="btn btn--primary" type="button" id="bpContinue">متابعة النشر</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bpModal[hidden]{display:none}
+  .bpModal{position:fixed;inset:0;z-index:9999}
+  .bpModal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+  .bpModal__card{
+    position:relative;
+    max-width:520px;
+    margin:10vh auto;
+    background:#fff;
+    border-radius:14px;
+    padding:14px 14px 12px;
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+  }
+</style>
+
 </body>
 </html>

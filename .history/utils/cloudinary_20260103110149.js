@@ -24,7 +24,7 @@ function uploadBufferToCloudinary(
       transformation.push({
         overlay: {
           font_family: "Arial",     // لو ظهر مربعات جرّب خط يدعم العربية
-          font_size: 90,
+          font_size: 78,
           font_weight: "bold",
           text: watermarkText
         },
