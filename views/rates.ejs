@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>الليرة السورية الجديدة - حاسبة</title>
+
+  <!-- (اختياري) لو عندك ستايل عام للموقع -->
+  <!-- <link rel="stylesheet" href="/Public/styles/site.css"> -->
+
+  <style>
+    :root{
+      --bg:#efe9dc;
+      --card:#ffffff;
+      --accent:#0f5b4f;
+      --accent2:#1aa37a;
+      --muted:#6b7280;
+      --soft:#f5f6f7;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+      --radius:18px;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Kufi Arabic", "Noto Sans Arabic", sans-serif;
+      background: var(--bg);
+      color:#111827;
+    }
+    header{
+      background: #0b4e45;
+      color:#fff;
+      padding: 18px 14px 14px;
+      text-align:center;
+    }
+    header h1{ margin:0; font-size: 22px; letter-spacing:.2px;}
+    header p{ margin:8px 0 0; opacity:.9; font-size:13px;}
+    .wrap{ max-width: 920px; margin: 18px auto; padding: 0 14px 28px; }
+    .card{
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .back{
+      text-decoration:none; font-weight:800;
+      background:#fff; border:1px solid rgba(0,0,0,.08);
+      padding:8px 12px; border-radius:12px; color:#0b4e45;
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+    }
+    .row{ display:grid; grid-template-columns: 1fr; gap:14px; }
+    @media(min-width:720px){
+      .row.two{ grid-template-columns: 1fr 1fr; }
+      .row.three{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .label{ font-size:14px; color:#111827; margin-bottom:8px; font-weight:800;}
+    .input{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background: #f2efe7;
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .input input{
+      border:0;
+      outline:0;
+      background:transparent;
+      width:100%;
+      font-size: 22px;
+      font-weight:900;
+      color:#0b4e45;
+    }
+    .badge{
+      font-size: 13px;
+      background: #e9f3f1;
+      border:1px solid rgba(15,91,79,.18);
+      color:#0b4e45;
+      padding:6px 10px;
+      border-radius: 999px;
+      white-space:nowrap;
+      font-weight:800;
+    }
+
+    .stat{
+      background: var(--soft);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 84px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .stat.green{
+      background: #dff6ea;
+      border-color: rgba(26,163,122,.35);
+    }
+    .stat .k{ color: var(--muted); font-size:13px; font-weight:800; }
+    .stat .v{ font-size:26px; font-weight:1000; margin-top:6px; }
+    .stat .v small{ font-size:15px; font-weight:900; color:#111827; opacity:.85; }
+
+    .tabs{
+      display:flex;
+      background:#f2efe7;
+      border-radius: 14px;
+      padding: 6px;
+      gap: 6px;
+      border:1px solid rgba(0,0,0,.06);
+    }
+    .tab{
+      flex:1;
+      padding: 10px 8px;
+      border-radius: 12px;
+      border:0;
+      background: transparent;
+      cursor:pointer;
+      font-weight:1000;
+      color:#334155;
+      font-size:14px;
+    }
+    .tab.active{
+      background:#ffffff;
+      color:#0b4e45;
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    }
+
+    .hint{
+      font-size: 12px;
+      color:#334155;
+      margin-top:10px;
+      text-align:center;
+      font-weight:800;
+      opacity:.9;
+    }
+
+    h2{
+      margin: 18px 0 8px;
+      font-size: 18px;
+      color:#0b4e45;
+    }
+    .sub{ margin:0 0 12px; color:var(--muted); font-size:13px; font-weight:700; }
+
+    .bills{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media(min-width:720px){
+      .bills{ grid-template-columns: repeat(6, 1fr); }
+    }
+    .bill{
+      background:#fff;
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 16px;
+      padding: 10px 8px;
+      text-align:center;
+      position:relative;
+      user-select:none;
+    }
+    .bill .denom{
+      font-size: 16px;
+      font-weight: 1000;
+      margin-top: 6px;
+      color:#0b4e45;
+    }
+    .bill .unit{ font-size: 12px; color: var(--muted); margin-top:6px; font-weight:800; }
+
+    .bill .controls{
+      display:flex; gap:8px; justify-content:center; margin-top:10px;
+    }
+    .bill button{
+      border:0; cursor:pointer; font-weight:1000;
+      padding:6px 10px; border-radius:10px;
+      background:#f2efe7;
+    }
+    .bill .count{
+      min-width:36px;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-weight:1000; color:#0b4e45;
+      background:#e9f3f1;
+      border:1px solid rgba(15,91,79,.18);
+      border-radius:10px;
+      padding:6px 8px;
+    }
+
+    .divider{ height:1px; background:rgba(0,0,0,.08); margin:14px 0; border-radius:999px; }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .btn{
+      border:0; cursor:pointer; font-weight:1000;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size:14px;
+    }
+    .btn.primary{ background:#0b4e45; color:#fff; }
+    .btn.ghost{ background:#fff; color:#0b4e45; border:1px solid rgba(0,0,0,.08); }
+    .note{
+      text-align:center;
+      margin-top:10px;
+      color: var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+    .small{
+      font-size:12px; color:var(--muted); font-weight:800;
+    }
+    .right{
+      text-align:right;
+    }
+    /* ✅ Mobile Fix */
+*, *::before, *::after { box-sizing: border-box; }
+body { overflow-x: hidden; }
+
+@media (max-width: 480px){
+  header{ padding:14px 12px 12px; }
+  header h1{ font-size:18px; }
+  header p{ font-size:12px; }
+
+  .wrap{ margin:10px auto; padding:0 10px 18px; }
+  .card{ padding:12px; } /* كانت 18px :contentReference[oaicite:2]{index=2} */
+
+  /* topbar: خلي الرجوع و حالة الـ API تحت بعض */
+  .topbar{ flex-direction: column; align-items: stretch; }
+  .back{ width:100%; text-align:center; }
+  #apiStatus{ text-align:center; }
+
+  /* tabs أصغر */
+  .tab{ padding:8px 6px; font-size:13px; }
+
+  /* inputs أصغر */
+  .input{ padding:10px 12px; gap:8px; }
+  .input input{ font-size:18px; }
+  .badge{ font-size:12px; padding:5px 8px; }
+
+  /* stats أصغر */
+  .stat{ padding:12px; min-height:76px; }
+  .stat .v{ font-size:22px; }
+
+  /* ✅ أهم نقطة: خلي شبكة الأوراق عمودين بدل 3 */
+  .bills{
+    grid-template-columns: repeat(2, 1fr); /* كانت repeat(3,1fr) :contentReference[oaicite:3]{index=3} */
+    gap:10px;
+  }
+
+  /* كرت الورقة */
+  .bill{ padding:10px 8px; border-radius:14px; }
+  .bill .controls{ gap:6px; } /* :contentReference[oaicite:4]{index=4} */
+  .bill button{ padding:8px 10px; min-width:40px; }
+  .bill .count{ min-width:44px; padding:8px 10px; }
+
+  /* أزرار (تحديث/تصفير) تحت بعض */
+  .actions{ flex-direction: column; } /* كانت flex-wrap :contentReference[oaicite:5]{index=5} */
+  .btn{ width:100%; }
+}
+
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>الليرة السورية الجديدة</h1>
+  <p>حاسبة تحويل + سعر صرف USD / EUR / TRY + طريقة الدفع بعدد الأوراق</p>
+</header>
+
+<div class="wrap">
+  <div class="card">
+
+    <div class="topbar">
+      <a class="back" href="/contractors">← رجوع للمقاولين</a>
+      <div class="small right" id="apiStatus">جاهز</div>
+    </div>
+
+    <div class="row">
+      <div>
+        <div class="label">أدخل المبلغ القديم</div>
+        <div class="input">
+          <span class="badge">ل.س قديم</span>
+          <input id="oldAmount" inputmode="numeric" placeholder="مثال: 895000" value="895000" />
+        </div>
+        <div class="small" style="margin-top:8px">
+          عامل التحويل مضبوط على: <b id="factorLabel">100</b> (يعني: 100 قديم = 1 جديد)
+        </div>
+      </div>
+
+      <div class="row two" style="margin-top:12px;">
+        <div class="stat">
+          <div class="k">تقريباً بالعملة المختارة</div>
+          <div class="v" id="approxCurrency">≈ 0.00 $</div>
+        </div>
+        <div class="stat green">
+          <div class="k">المبلغ الآن (جديد)</div>
+          <div class="v" id="newAmount">0 <small>ل.س</small></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="tabs" role="tablist" aria-label="Currencies">
+          <button class="tab" data-cur="TRY">TR TRY</button>
+          <button class="tab" data-cur="EUR">EU EUR</button>
+          <button class="tab active" data-cur="USD">US USD</button>
+        </div>
+
+
+        <div>
+          <div class="label">سعر الصرف (ل.س لكل 1 من العملة)</div>
+          <div class="input">
+            <span class="badge" id="rateLabel">USD</span>
+            <input id="rate" inputmode="decimal" placeholder="مثال: 11800" value="11800" />
+            <span class="badge">ل.س / 1</span>
+          </div>
+          <div class="small" style="margin-top:8px">
+            يمكنك تعديل السعر يدوياً أيضاً.
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="fetchRateBtn">تحديث </button>
+            <button class="btn ghost" id="resetBillsBtn">تصفير عدّ الأوراق</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div>
+        <h2>طريقة الدفع (عدد الأوراق)</h2>
+        <p class="sub">اختر فئات الأوراق للعملة المختارة، وحدد الكمية (+ / -)</p>
+
+        <div class="bills" id="bills"></div>
+
+        <div class="row two" style="margin-top:12px;">
+          <div class="stat">
+            <div class="k">إجمالي الأوراق (بالعملة)</div>
+            <div class="v" id="billsTotalCur">0.00</div>
+          </div>
+          <div class="stat green">
+            <div class="k">تعادل تقريباً (بالليرة الجديدة)</div>
+            <div class="v" id="billsTotalSyp">0 <small>ل.س</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">تنبيه: أسعار الصرف تقريبية وتتغير حسب السوق</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 100 قديم = 1 جديد (غيره إذا احتجت)
+  const CONVERSION_FACTOR = 100;
+
+  const DENOMS = {
+    USD: [1, 5, 10, 20, 50, 100],
+    EUR: [5, 10, 20, 50, 100, 200, 500],
+    TRY: [5, 10, 20, 50, 100, 200]
+  };
+
+  const state = {
+    currency: 'USD',
+    rateSypPer1: 11800,
+    billsCount: {}, // { denom: count }
+    lastApiUtc: null
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  function fmt(n, digits=2){
+    const x = Number(n || 0);
+    return x.toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  }
+  function fmtInt(n){
+    const x = Math.round(Number(n || 0));
+    return x.toLocaleString('en-US');
+  }
+
+  function getOldAmount(){
+    const raw = ($('oldAmount').value || '').replace(/[^\d]/g,'');
+    return Number(raw || 0);
+  }
+
+  function recalc(){
+    const oldAmount = getOldAmount();
+    const newAmount = oldAmount / CONVERSION_FACTOR; // ل.س جديد
+    $('newAmount').innerHTML = `${fmtInt(newAmount)} <small>ل.س</small>`;
+
+    const rate = Number(($('rate').value || '0').replace(/[^\d.]/g,'')) || 0;
+    state.rateSypPer1 = rate;
+
+    const approx = rate > 0 ? (newAmount / rate) : 0;
+    const sym = state.currency === 'USD' ? '$' : (state.currency === 'EUR' ? '€' : '₺');
+    $('approxCurrency').textContent = `≈ ${fmt(approx, 2)} ${sym}`;
+
+    // bills totals
+    const denoms = DENOMS[state.currency] || [];
+    let totalCur = 0;
+    denoms.forEach(d => { totalCur += (d * (state.billsCount[d] || 0)); });
+
+    $('billsTotalCur').textContent = `${fmt(totalCur, 2)} ${sym}`;
+    const totalSyp = totalCur * rate;
+    $('billsTotalSyp').innerHTML = `${fmtInt(totalSyp)} <small>ل.س</small>`;
+  }
+
+  function renderBills(){
+    const wrap = $('bills');
+    const denoms = DENOMS[state.currency] || [];
+    wrap.innerHTML = '';
+
+    denoms.forEach((d) => {
+      const count = state.billsCount[d] || 0;
+
+      const el = document.createElement('div');
+      el.className = 'bill';
+      el.innerHTML = `
+        <div class="denom">${d}</div>
+        <div class="unit">${state.currency}</div>
+        <div class="controls">
+          <button type="button" data-act="minus" data-den="${d}">-</button>
+          <span class="count" id="c_${d}">${count}</span>
+          <button type="button" data-act="plus" data-den="${d}">+</button>
+        </div>
+      `;
+      wrap.appendChild(el);
+    });
+
+    wrap.onclick = (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      const act = btn.dataset.act;
+      const den = Number(btn.dataset.den);
+      if(!den) return;
+
+      const cur = state.billsCount[den] || 0;
+      if(act === 'plus') state.billsCount[den] = cur + 1;
+      if(act === 'minus') state.billsCount[den] = Math.max(0, cur - 1);
+
+      const span = document.getElementById(`c_${den}`);
+      if(span) span.textContent = state.billsCount[den];
+
+      recalc();
+    };
+
+    recalc();
+  }
+
+  function setCurrency(cur){
+    state.currency = cur;
+    $('rateLabel').textContent = cur;
+
+    document.querySelectorAll('.tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.cur === cur);
+    });
+
+    // لو عندنا آخر سعر مخزن محلياً
+    const cached = localStorage.getItem(`rate_${cur}_SYP`);
+    if(cached) $('rate').value = cached;
+
+    renderBills();
+    recalc();
+  }
+
+  async function fetchRateFromApi(){
+    const apiStatus = $('apiStatus');
+    apiStatus.textContent = 'جاري جلب السعر من API...';
+
+    try {
+      // خدمة مجانية بدون مفتاح API (Open Access)
+      const url = `https://open.er-api.com/v6/latest/${state.currency}`;
+      const r = await fetch(url, { headers: { 'Accept': 'application/json' }});
+      const j = await r.json();
+
+      if(!r.ok || j.result !== 'success' || !j.rates || !j.rates.SYP){
+        throw new Error('bad_api');
+      }
+
+      const rateSyp = Number(j.rates.SYP);
+      $('rate').value = rateSyp;
+      localStorage.setItem(`rate_${state.currency}_SYP`, String(rateSyp));
+
+      state.lastApiUtc = j.time_last_update_utc || null;
+      apiStatus.textContent = state.lastApiUtc ? `آخر تحديث: ${state.lastApiUtc}` : 'تم تحديث السعر ✅';
+
+      recalc();
+    } catch (err) {
+      console.error(err);
+      apiStatus.textContent = 'تعذر جلب السعر (استخدم التعديل اليدوي) ❌';
+    }
+  }
+
+  // Events
+  document.querySelector('.tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab');
+    if(!btn) return;
+    setCurrency(btn.dataset.cur);
+  });
+
+  $('oldAmount').addEventListener('input', recalc);
+  $('rate').addEventListener('input', recalc);
+
+  $('fetchRateBtn').addEventListener('click', fetchRateFromApi);
+  $('resetBillsBtn').addEventListener('click', () => {
+    state.billsCount = {};
+    renderBills();
+  });
+
+  // init
+  $('factorLabel').textContent = CONVERSION_FACTOR;
+  setCurrency('USD');
+</script>
+
+</body>
+</html>
