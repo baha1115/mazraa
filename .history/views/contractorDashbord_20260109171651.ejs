@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
   <title>لوحة المقاول — Farmers</title>
   <meta name="description" content="الملف الشخصي للمقاول، الخدمات والمناطق، المعرض، الاشتراك والإعدادات.">
 
@@ -111,6 +112,51 @@
 @keyframes btn-spin{
   to{ transform:rotate(1turn); }
 }
+/* ===== جعل قائمة الداشبورد شريطًا سفليًا على الموبايل ===== */
+@media (max-width: 640px){
+  /* نخلي المحتوى يأخذ مسافة تحت للشريط */
+  .layout{
+    grid-template-columns: 1fr;
+    margin-bottom: 4.5rem; /* مساحة للشريط السفلي */
+  }
+
+  /* نحول الـ sidebar إلى شريط مثبت أسفل الشاشة */
+  .sidebar{
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    border-radius: 16px 16px 0 0;
+    min-height: auto;
+    box-shadow: 0 -6px 20px rgba(15,23,42,.15);
+    border-top: 1px solid #e5e7eb;
+    border-inline: 0;
+    border-bottom: 0;
+    background:#fff;
+    padding: .35rem .5rem;
+    z-index: 40;
+  }
+
+  /* نخلي عناصر القائمة أفقية بدل عمودية */
+  .menu{
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    padding: 0;
+    gap: .35rem;
+  }
+
+  .menu__item{
+    text-align: center;
+    font-size: .78rem;
+    padding: .4rem .3rem;
+    white-space: nowrap;
+  }
+
+  /* نخفي الفوتر الصغير داخل الـ sidebar على الموبايل */
+  .sidebar__footer{
+    display: none;
+  }
+}
 
   </style>
 </head>
@@ -143,7 +189,7 @@
     <!-- المحتوى -->
     <section class="content">
       <!-- الطلبات المرسلة إلى الإدارة -->
-<section id="view-requests" class="panel is-visible">
+<section id="view-requests" class="panel">
   <header class="panel__head"><h2>طلباتي</h2></header>
   <div id="requestsList" class="cards"></div>
   <p id="requestsEmpty" class="muted" hidden>لا توجد طلبات.</p>
@@ -168,7 +214,7 @@
             <% if (safeErrors.email){ %><small class="muted" style="color:#b91c1c"><%= safeErrors.email %></small><% } %>
           </label>
 
-          <label class="field">
+         <label class="field">
   <span class="label">الهاتف</span>
   <input
     type="tel"
@@ -178,9 +224,8 @@
     maxlength="13"
     pattern="^\+963\d{9}$"
     autocomplete="off"
-    value="<%= safeProfile.phone || '' %>" />
+    value="<%= safeProfile.phone || '+963' %>" />
 </label>
-
 
     <label class="field">
   <span class="label">المحافظة</span>
@@ -211,7 +256,7 @@
           <!-- بيانات المؤسسة (بديل بطاقة المقاول) -->
           <label class="field">
             <span class="label">اسم المؤسسة</span>
-            <input maxlength="100" name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
+            <input autocomplete="off" maxlength="100" name="companyName" class="input" required value="<%= safeProfile.companyName || '' %>">
           </label>
 <% const selectedService = Array.isArray(safeProfile.services)
       ? (safeProfile.services[0] || '')
@@ -251,7 +296,7 @@
   <input
   name="region" maxlength="80"
   class="input"
-  placeholder="اكتب المنطقة"
+  placeholder="اكتب المنطقة" autocomplete="off"
   required
   value="<%= safeProfile?.region || '' %>"
 />
@@ -421,6 +466,37 @@
   const pickAvatar    = qs('#pickAvatar');
   const avatarPreview = qs('#avatarPreview');
 
+    // جعل +963 تلقائية في حقل هاتف المقاول
+  const phoneInput = form?.querySelector('input[name="phone"]');
+  if (phoneInput) {
+    const SY_PREFIX = '+963';
+
+    // لو الحقل فاضي عند التركيز نضيف +963
+    phoneInput.addEventListener('focus', () => {
+      const v = phoneInput.value.trim();
+      if (!v) phoneInput.value = SY_PREFIX;
+    });
+
+    // أثناء الكتابة: نضمن بقاء +963 في البداية وعدم تكرارها
+    phoneInput.addEventListener('input', () => {
+      let v = phoneInput.value.replace(/\s+/g, '');
+
+      // لو المستخدم حاول يمسح أو يكتب بدون البادئة
+      if (!v.startsWith(SY_PREFIX)) {
+        // نحذف أي + أو 963 مكررة في البداية
+        v = v.replace(/^\+?963/, '');
+        // نسمح فقط بأرقام بعد البادئة
+        v = v.replace(/\D/g, '');
+        phoneInput.value = SY_PREFIX + v;
+      } else {
+        // عندنا البادئة، ننظّف الجزء الباقي
+        let rest = v.slice(SY_PREFIX.length);
+        rest = rest.replace(/\D/g, '');
+        phoneInput.value = SY_PREFIX + rest;
+      }
+    });
+  }
+
   const photos = JSON.parse((qs('#initial-photos')?.textContent || '[]'));
   let   avatar = JSON.parse((qs('#initial-avatar')?.textContent || '""'));
   // زر الحفظ في نموذج المقاول
@@ -570,10 +646,82 @@
     avatar = await readAsDataURL(f);
     if (avatarPreview) avatarPreview.src = avatar;
   });
+    /* ============ Best Practices Modal helpers ============ */
+  function bpLsGet(key){
+    try { return localStorage.getItem(key) === '1'; }
+    catch { return false; }
+  }
+  function bpLsSet(key, val){
+    try { localStorage.setItem(key, val ? '1' : '0'); }
+    catch {}
+  }
+
+  function openBpModalOnce(storageKey){
+    return new Promise((resolve)=>{
+      // لو سبق ووافق المستخدم → اسمح بالإرسال فوراً
+      if (bpLsGet(storageKey)) return resolve(true);
+
+      const modal    = document.getElementById('bpModal');
+      const btnGo    = document.getElementById('bpContinue');
+      const backdrop = modal?.querySelector('[data-bp-close="1"]');
+
+      // لو المودال غير موجود لأي سبب → لا تمنع الإرسال
+      if (!modal || !btnGo) return resolve(true);
+
+      let done = false;
+      const finish = (ok)=>{
+        if (done) return;
+        done = true;
+        cleanup();
+        hide();
+        resolve(ok);
+      };
+
+      const show = ()=>{
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden','false');
+      };
+      const hide = ()=>{
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden','true');
+      };
+
+      const onContinue = ()=>{
+        bpLsSet(storageKey, true); // خزّن الموافقة
+        finish(true);
+      };
+
+      const onClose = ()=>{
+        // إغلاق = إلغاء الإرسال (حتى لا ينشر بدون موافقة)
+        finish(false);
+      };
+
+      const onKey = (e)=>{
+        if (e.key === 'Escape') onClose();
+      };
+
+      function cleanup(){
+        btnGo.removeEventListener('click', onContinue);
+        backdrop?.removeEventListener('click', onClose);
+        document.removeEventListener('keydown', onKey);
+      }
+
+      btnGo.addEventListener('click', onContinue);
+      backdrop?.addEventListener('click', onClose);
+      document.addEventListener('keydown', onKey);
+
+      show();
+    });
+  }
+
+// ===== Best Practices Guard (Contractor) =====
+const BP_CONTRACTOR_KEY = 'bp_ack_contractor_profile_v1';
 
      /* ============== حفظ الملف (POST أو PATCH) ============== */
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
+const ok = await openBpModalOnce(BP_CONTRACTOR_KEY);
+if (!ok) return;
 
     // لا نسمح بالضغط المتكرر أثناء الإرسال
     if (isProfileSubmitting) return;
@@ -869,11 +1017,22 @@ if (svcEl) {
 
   const ADMIN_WA_PREMIUM = '+21620353915';
   const ADMIN_WA_VIP     = '+21620353915';
+  // تحويل الأرقام العربية/الهندية إلى أرقام إنجليزية 0-9
+  function normalizeDigits(str){
+    const map = {
+      '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
+      '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
+      '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4',
+      '۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
+    };
+    return (str || '').replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => map[d] || d);
+  }
 
   function isValidWa(num){
-    const n = (num||'').toString().trim().replace(/\s+/g,'');
+    const n = normalizeDigits(num).toString().trim().replace(/\s+/g,'');
     return /^\+?\d{6,15}$/.test(n);
   }
+
   function waLink(to, text){
     const num = to.replace(/\D/g,'');
     return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
@@ -886,7 +1045,9 @@ if (svcEl) {
     const fd    = new FormData(form);
     const plan  = (fd.get('plan')||'Premium').toString();
     const name  = (fd.get('name')||'').toString().trim();
-    const wa    = (fd.get('whatsapp')||'').toString().trim();
+      const rawWa = (fd.get('whatsapp')||'').toString().trim();
+  const wa    = normalizeDigits(rawWa).replace(/\s+/g,'');  // ← رقم منظَّف
+
     const notes = (fd.get('notes')||'').toString().trim();
 
     if (!name){ return toastWarn('املأ الاسم'); }
@@ -923,6 +1084,43 @@ if (svcEl) {
   });
 })();
 </script>
+<!-- Best Practices Modal (Owner) -->
+<div id="bpModal" class="bpModal" hidden aria-hidden="true" role="dialog" aria-labelledby="bpTitle">
+  <div class="bpModal__backdrop" data-bp-close="1"></div>
+  <div class="bpModal__card" role="document">
+    <h3 id="bpTitle" style="margin:0 0 .5rem 0">قبل نشر الإعلان</h3>
+
+    <p class="muted" style="margin:.25rem 0 .75rem 0">
+      ننصحك بمراجعة “الممارسات النموذجية” لتجنب رفض الإعلان. يمكنك فتح الصفحة أو المتابعة مباشرة.
+    </p>
+
+    <ul style="margin:.2rem 0 .8rem 1.1rem;line-height:1.7">
+      <li>عنوان واضح + مدينة/منطقة + السعر/المساحة.</li>
+      <li>صور واضحة ومرتبة (بدون بيانات ناقصة).</li>
+      <li>طرق تواصل صحيحة (واتساب بصيغة دولية).</li>
+    </ul>
+
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end">
+      <a class="btn btn--ghost" href="/best-practices" target="_blank" rel="noopener">فتح الصفحة (اختياري)</a>
+      <button class="btn btn--primary" type="button" id="bpContinue">متابعة النشر</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bpModal[hidden]{display:none}
+  .bpModal{position:fixed;inset:0;z-index:9999}
+  .bpModal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+  .bpModal__card{
+    position:relative;
+    max-width:520px;
+    margin:10vh auto;
+    background:#fff;
+    border-radius:14px;
+    padding:14px 14px 12px;
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+  }
+</style>
 
 </body>
 </html>

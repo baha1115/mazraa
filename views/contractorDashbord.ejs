@@ -646,6 +646,74 @@
     avatar = await readAsDataURL(f);
     if (avatarPreview) avatarPreview.src = avatar;
   });
+    /* ============ Best Practices Modal helpers ============ */
+  function bpLsGet(key){
+    try { return localStorage.getItem(key) === '1'; }
+    catch { return false; }
+  }
+  function bpLsSet(key, val){
+    try { localStorage.setItem(key, val ? '1' : '0'); }
+    catch {}
+  }
+
+  function openBpModalOnce(storageKey){
+    return new Promise((resolve)=>{
+      // لو سبق ووافق المستخدم → اسمح بالإرسال فوراً
+      if (bpLsGet(storageKey)) return resolve(true);
+
+      const modal    = document.getElementById('bpModal');
+      const btnGo    = document.getElementById('bpContinue');
+      const backdrop = modal?.querySelector('[data-bp-close="1"]');
+
+      // لو المودال غير موجود لأي سبب → لا تمنع الإرسال
+      if (!modal || !btnGo) return resolve(true);
+
+      let done = false;
+      const finish = (ok)=>{
+        if (done) return;
+        done = true;
+        cleanup();
+        hide();
+        resolve(ok);
+      };
+
+      const show = ()=>{
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden','false');
+      };
+      const hide = ()=>{
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden','true');
+      };
+
+      const onContinue = ()=>{
+        bpLsSet(storageKey, true); // خزّن الموافقة
+        finish(true);
+      };
+
+      const onClose = ()=>{
+        // إغلاق = إلغاء الإرسال (حتى لا ينشر بدون موافقة)
+        finish(false);
+      };
+
+      const onKey = (e)=>{
+        if (e.key === 'Escape') onClose();
+      };
+
+      function cleanup(){
+        btnGo.removeEventListener('click', onContinue);
+        backdrop?.removeEventListener('click', onClose);
+        document.removeEventListener('keydown', onKey);
+      }
+
+      btnGo.addEventListener('click', onContinue);
+      backdrop?.addEventListener('click', onClose);
+      document.addEventListener('keydown', onKey);
+
+      show();
+    });
+  }
+
 // ===== Best Practices Guard (Contractor) =====
 const BP_CONTRACTOR_KEY = 'bp_ack_contractor_profile_v1';
 
