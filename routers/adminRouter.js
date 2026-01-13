@@ -1224,6 +1224,46 @@ router.get('/users', requireAdmin, async (req, res) => {
     return res.status(500).json({ ok: false, error: 'users_list_failed' });
   }
 });
+// تفاصيل مستخدم (لنافذة المعلومات في الداشبورد)
+router.get('/users/:id/details', requireAdmin, async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!id) return res.status(400).json({ ok: false, msg: 'bad_id' });
+
+    // بيانات المستخدم الأساسية (مثل اللي بتعرضها في جدول المستخدمين)
+    const u = await User.findById(id)
+      .select('name email phone role subscriptionTier subscriptionExpiresAt createdAt')
+      .lean();
+
+    if (!u) return res.status(404).json({ ok: false, msg: 'not_found' });
+
+    // هل عنده ملف مقاول؟
+    // ContractorRequest عنده user + status + deletedAt/isSuspended :contentReference[oaicite:1]{index=1}
+    const contractor = await ContractorRequest.findOne({ user: u._id })
+      .select('status companyName services region city createdAt deletedAt isSuspended')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // الأراضي/المزارع التابعة له (آخر 50 عنوان)
+    const farms = await Farm.find({ owner: u._id })
+      .select('title kind status createdAt deletedAt isSuspended')
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+
+    return res.json({
+      ok: true,
+      user: u,
+      isContractor: !!contractor,
+      contractor: contractor || null,
+      farms: farms || []
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, msg: 'user_details_failed' });
+  }
+});
+
 // حذف مستخدم (مع إخفاء محتواه المرتبط لتفادي كسر النظام)
 router.delete('/users/:id', requireAdmin, async (req, res) => {
   try {

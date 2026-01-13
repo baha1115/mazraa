@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="alternate icon" type="image/png" href="../public/assests/logo.png">
 <title>لوحة المشرف — Farmers</title>
 <meta name="description" content="لوحة تحكم Admin لمراجعة الأراضي والمقاولين والبانرات وإدارة الاشتراكات والسجل.">
 <link
@@ -307,6 +308,58 @@
 .badge--basic{background:#e5e7eb;color:#111827}
 .badge--premium{background:#2563eb;color:#fff}
 .badge--vip{background:#d97706;color:#111}
+/* ===== Users header & controls ===== */
+.panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:.75rem;
+  margin-bottom:.75rem;
+  flex-wrap:wrap;
+}
+
+.panel-head .panel-actions{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  flex-wrap:wrap;
+}
+
+/* شكل حبوب (pill) للـ select و input */
+.panel-head .panel-actions .input,
+.panel-head .panel-actions select,
+.panel-head .panel-actions input{
+  border-radius:999px;
+  border-color:#d1d5db;
+  box-shadow:0 4px 10px rgba(15,23,42,.04);
+  height:2.4rem;
+}
+
+/* حقل البحث مع أيقونة */
+.input-search{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.input-search__icon{
+  position:absolute;
+  inset-inline-start:.75rem;
+  color:#94a3b8;
+  font-size:.9rem;
+  pointer-events:none;
+}
+
+.input-search__field{
+  padding-inline-start:2rem; /* مساحة للأيقونة */
+}
+
+/* حجم منطقي على الديسكتوب */
+@media (min-width:981px){
+  #usersRole{ min-width:170px; }
+  #usersSearch{ min-width:220px; }
+}
+.users-table td:nth-child(6)::before{ content:'حذف: '; color:#64748b; font-weight:700; }
 
 </style>
 
@@ -374,7 +427,7 @@
   </div>
 </section>
 
-</section>
+
     <!-- داخل .content في adminDashbord.ejs -->
 <section id="view-banners" class="panel">
   <div class="head"><h2>سلايدات الهيرو (Hero Swiper)</h2></div>
@@ -398,6 +451,25 @@
       <label class="muted">الوصف</label>
       <textarea class="input" name="lead" rows="3"></textarea>
     </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+  <div>
+    <label class="muted">نص الزر الأول</label>
+    <input class="input" name="btn1Text" placeholder="مثال: سجل الآن كبائع">
+  </div>
+  <div>
+    <label class="muted">رابط الزر الأول</label>
+    <input class="input" name="btn1Link" placeholder="/signup أو https://...">
+  </div>
+
+  <div>
+    <label class="muted">نص الزر الثاني</label>
+    <input class="input" name="btn2Text" placeholder="مثال: اكتشف المزارع">
+  </div>
+  <div>
+    <label class="muted">رابط الزر الثاني</label>
+    <input class="input" name="btn2Link" placeholder="/sale أو https://...">
+  </div>
+</div>
 
     <button class="btn btn--ok" type="submit">إضافة</button>
   </form>
@@ -646,38 +718,61 @@
 <% var _promo = (typeof promo !== 'undefined' && promo) ? promo : {}; %>
 
     <!-- 6) Admin settings -->
-   <!-- Users -->
-<section id="view-users" class="panel">
-  <div class="head">
-    <h2>جميع المستخدمين</h2>
-    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-      <input id="usersSearch" class="input" placeholder="بحث بالاسم/الإيميل" style="width:260px">
-      <select id="usersRole" class="input" style="width:180px">
-        <option value="all" selected>كل الأدوار</option>
-        <option value="owner">مالك</option>
-        <option value="contractor">مقاول</option>
-      </select>
+  <!-- 5) Users -->
+<section id="view-users" class="panel" hidden>
+   <header class="panel-head">
+    <div>
+      <h2>المستخدمون</h2>
+      <p class="muted">إدارة مستخدمي المنصّة بحسب الدور والخطة.</p>
     </div>
-  </div>
 
-  <div class="table-wrap">
-    <table class="users-table">
+    <div class="panel-actions">
+      <!-- الدور مع شكل input موحّد -->
+      <select id="usersRole" class="input">
+        <option value="all">كل الأدوار</option>
+        <option value="owner">ملاك الأراضي</option>
+        <option value="contractor">المقاولون</option>
+        
+      </select>
+
+      <!-- حقل البحث مع أيقونة عدسة -->
+      <div class="input-search">
+        <span class="input-search__icon">🔍</span>
+        <input
+          id="usersSearch"
+          type="search"
+          class="input input-search__field"
+          placeholder="بحث بالاسم أو الإيميل أو الهاتف…"
+        >
+      </div>
+    </div>
+  </header>
+  <div class="table-wrapper">
+    <table class="data-table users-table">
       <thead>
-        <tr><th>الاسم</th><th>الإيميل</th><th>الدور</th><th>الخطة/الانتهاء</th><th>تاريخ الانضمام</th></tr>
+        <tr>
+          <th>الاسم</th>
+          <th>البريد</th>
+          <th>الدور</th>
+          <th>الاشتراك</th>
+          <th>تاريخ الانضمام</th>
+          <th>حذف</th>
+        </tr>
       </thead>
       <tbody id="usersBody"></tbody>
     </table>
-  </div>
-    <div id="usersPager"
-       class="table-pager"
-       style="display:flex;align-items:center;gap:.5rem;margin-top:.75rem;">
-    <button type="button" class="btn btn--ghost btn--sm" id="usersPrev">السابق</button>
-    <span class="muted" id="usersInfo" style="font-size:.9rem"></span>
-    <button type="button" class="btn btn--ghost btn--sm" id="usersNext">التالي</button>
-  </div>
 
-  <p id="usersEmpty" class="muted" hidden>لا يوجد مستخدمون لعرضهم.</p>
+    <p id="usersEmpty" class="empty" hidden>لا يوجد مستخدمون بهذه المعايير.</p>
+
+    <!-- الباجينغ الخاص بالمستخدمين فقط -->
+    <div id="usersPager" class="table-pager" style="visibility:hidden">
+      <button type="button" id="usersPrev" class="btn btn-sm" disabled>السابق</button>
+      <span id="usersInfo" class="pager-info"></span>
+      <button type="button" id="usersNext" class="btn btn-sm" disabled>التالي</button>
+    </div>
+  </div>
 </section>
+
 
     <!-- 6) Admin settings -->
 <section id="view-settings" class="panel">
@@ -989,6 +1084,21 @@ const views = {
 
   const isRent  = String(f.kind || '').toLowerCase() === 'rent';
   const isDaily = String(f.rentPeriod || '').toLowerCase() === 'daily';
+const owner = (f.owner && typeof f.owner === 'object') ? f.owner : null;
+const ownerName  = owner?.name  || '—';
+const ownerEmail = owner?.email || '—';
+const ownerPhone = owner?.phone || '—';
+
+const ownerBlock = `
+  <div style="border:1px solid #e5e7eb;border-radius:12px;padding:.6rem;margin-top:.35rem">
+    <h4 style="margin:.1rem 0 .35rem">بيانات صاحب الأرض</h4>
+    <div class="muted" style="display:grid;gap:.2rem">
+      <div><strong>الاسم:</strong> ${esc(ownerName)}</div>
+      <div><strong>الإيميل:</strong> ${esc(ownerEmail)}</div>
+      <div><strong>الهاتف:</strong> ${esc(ownerPhone)}</div>
+    </div>
+  </div>
+`;
 
   const priceText = isRent
     ? (moneySym(f.currency) + fmt.format(f.price) + (isDaily ? '/يوم' : '/شهر'))
@@ -1009,6 +1119,8 @@ const video = f.videoUrl ? videoBlock(f.videoUrl) : '';
     return `
       <div style="display:grid;gap:.55rem">
         <h3 style="margin:.2rem 0">${esc(f.title || '—')}</h3>
+        ${ownerBlock}
+
         <div class="muted">
           ${kindText} • ${esc(f.area || '—')} — ${esc(f.city || '—')} • ${fmt.format(f.size||0)} م² • ${priceText}
         </div>
@@ -1765,16 +1877,26 @@ function roleAr(role){
   if (v === 'user') return 'مستخدم';
   return 'مستخدم';
 }
-async function renderUsers(){
+async function renderUsers(page = 1){
   if (!usersBody) return;
   usersBody.innerHTML = '';
-  let rows = [];
-  try{
-    rows = await apiGetUsers({
+  if (usersPager) usersPager.style.visibility = 'hidden';
+
+  let json;
+  try {
+    json = await apiGetUsers({
       role: usersRole?.value || 'all',
-      q: usersSearch?.value?.trim() || ''
+      q:    usersSearch?.value?.trim() || '',
+      page
     });
-  }catch(_){ rows = []; }
+  } catch (_) {
+    json = { data: [], total: 0, page: 1, pages: 1 };
+  }
+
+  const rows  = json.data  || [];
+  const total = json.total || 0;
+  usersPage   = json.page  || 1;
+  usersPages  = json.pages || 1;
 
   usersEmpty.hidden = rows.length > 0;
 
@@ -1783,27 +1905,107 @@ async function renderUsers(){
     const name   = u.name || '—';
     const email  = u.email || '—';
     const role   = u.role || u.type || 'user';
-const plan   = u.subscriptionTier || u.plan || 'Basic';
-// دعم اسم قديم محتمل مثل subscriptionUntil إضافةً إلى subscriptionExpiresAt
-const expRaw = u.subscriptionExpiresAt || u.subscriptionUntil;
-const exp    = expRaw ? dateFmt(expRaw) : '—';
-const joined = u.createdAt ? dateFmt(u.createdAt) : '—';
+    const plan   = u.subscriptionTier || u.plan || 'Basic';
+    const expRaw = u.subscriptionExpiresAt || u.subscriptionUntil;
+    const exp    = expRaw ? dateFmt(expRaw) : '—';
+    const joined = u.createdAt ? dateFmt(u.createdAt) : '—';
+    const roleLabel = roleAr(role);
+const badgeClass = (String(role).toLowerCase() === 'admin') ? 'badge--vip' : 'badge--basic';
+const tierLabel = `${planBadge(plan)}${exp !== '—' ? `<div class="muted" style="font-size:.85rem">ينتهي: ${exp}</div>` : ''}`;
+const createdAt = joined;
 
-    tr.innerHTML = `
-      <td>${esc(name)}</td>
-      <td dir="ltr">${esc(email)}</td>
-      <td>${roleAr(role)}</td>
+   const isAdmin = String(role).toLowerCase() === 'admin';
 
-      <td>${planBadge(plan)} ${exp!=='—' ? `<small class="muted">حتى ${esc(exp)}</small>` : ''}</td>
-      <td>${joined}</td>
-    `;
+tr.innerHTML = `
+  <td>${name}</td>
+  <td>${email}</td>
+  <td><span class="badge ${badgeClass}">${roleLabel}</span></td>
+  <td>${tierLabel}</td>
+  <td>${createdAt}</td>
+
+ <td class="actions">
+  <button class="btn btn--outline btn--sm"
+          data-act="user-details"
+          data-id="${esc(u._id)}"
+          data-label="${esc(u.name || u.email || 'هذا المستخدم')}">
+    تفاصيل
+  </button>
+
+  ${isAdmin ? '' : `<button class="btn btn--danger btn--sm" data-act="user-delete"
+    data-id="${esc(u._id)}" data-label="${esc(u.name || u.email || 'هذا المستخدم')}">حذف</button>`}
+</td>
+
+`;
+
     usersBody.appendChild(tr);
   });
-}
 
-usersSearch?.addEventListener('input', debounce(renderUsers, 300));
-usersRole?.addEventListener('change', renderUsers);
-document.addEventListener('DOMContentLoaded', renderUsers);
+  // تحديث معلومات الباجينغ
+  if (usersInfo){
+    const start = total ? ((usersPage - 1) * USERS_LIMIT) + 1 : 0;
+    const end   = total ? (start + rows.length - 1) : 0;
+    usersInfo.textContent = total
+      ? `عرض ${start}–${end} من ${total}`
+      : '';
+  }
+
+  if (usersPrev) usersPrev.disabled = (usersPage <= 1);
+  if (usersNext) usersNext.disabled = (usersPage >= usersPages);
+
+  if (usersPager){
+    usersPager.style.visibility = (usersPages > 1 ? 'visible' : 'hidden');
+  }
+}
+usersSearch?.addEventListener('input', debounce(() => {
+  usersPage = 1;
+  renderUsers(1);
+}, 300));
+
+usersRole?.addEventListener('change', () => {
+  usersPage = 1;
+  renderUsers(1);
+});
+
+usersPrev?.addEventListener('click', () => {
+  if (usersPage > 1) renderUsers(usersPage - 1);
+});
+
+usersNext?.addEventListener('click', () => {
+  if (usersPage < usersPages) renderUsers(usersPage + 1);
+});
+usersBody?.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act="user-delete"]');
+  if (!btn) return;
+
+  const userId = btn.dataset.id;
+  const label = btn.dataset.label || 'هذا المستخدم';
+
+  const ok = confirm(`هل تريد حذف ${label} نهائياً؟\nسيتم أيضاً إخفاء محتواه المرتبط (مزارع/مقاولين).`);
+  if (!ok) return;
+
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(`/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.ok === false) throw new Error(j.msg || 'delete_failed');
+
+    // أعد تحميل نفس الصفحة من المستخدمين
+    await renderUsers(usersPage);
+    toast('تم حذف المستخدم بنجاح ✅', 'success');
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    toast('تعذر حذف المستخدم ❌', 'error');
+  }
+});
+
+// الاستدعاء الأول
+document.addEventListener('DOMContentLoaded', () => renderUsers(1));
 
   /* =========================
      5) History
@@ -2330,6 +2532,8 @@ if (!form || !itemsB || !addBtn || !viewB) return;
       subs:         document.querySelector('#view-subs'),
       history:      document.querySelector('#view-history'),
       settings:     document.querySelector('#view-settings'),
+        users:        document.querySelector('#view-users'),
+
     };
 
     function activateView(name){

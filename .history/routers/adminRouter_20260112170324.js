@@ -72,6 +72,19 @@ async function applyPlanLimitsForUser(userId, tier) {
     { $set: { isSuspended: true, suspendedReason: 'limit' } }
   );
 }
+// داخل adminRouter.js قبل الراوتات (helper بسيط)
+function safeUrl(u){
+  u = String(u || '').trim();
+  if (!u) return '';
+  // امنع javascript: و data: و vbscript:
+  if (/^(javascript:|data:|vbscript:)/i.test(u)) return '';
+  // اسمح بـ /path أو http(s)
+  if (u.startsWith('/')) return u;
+  if (/^https?:\/\//i.test(u)) return u;
+  return ''; // غير ذلك اعتبره غير صالح
+}
+
+
 
 // --- أعلى adminRouter.js ---
 const path = require('path');
@@ -168,7 +181,9 @@ router.get('/farms', requireAdmin, async (req, res) => {
 // GET /admin/farms/:id  (تفاصيل للمعاينة)
 router.get('/farms/:id', requireAdmin, async (req, res) => {
   try {
-    const farm = await Farm.findById(req.params.id).lean();
+     const farm = await Farm.findById(req.params.id)
+      .populate('owner', 'name email phone')
+      .lean();
     if (!farm) return res.status(404).json({ ok: false, msg: 'Not found' });
     return res.json({ ok: true, data: farm });
   } catch (e) {
@@ -590,15 +605,28 @@ router.patch('/subscriptions/:id/reject', requireAdmin, async (req, res) => {
 });
 
 // صفحة إدارة برومو (إن وجدت)
-router.get('/promo/contractors', requireAdmin, async (req,res)=>{
-  const Promo = require('../models/PromoConfig');
-  const promo = await Promo.findOne({ key:'contractors' }).lean();
-  // اعرض نفس الداشبورد أو صفحة خاصة — الأهم تمرير promo
-  res.render('adminDashbord', {
-    user: req.session.user,
-    promo: promo || {}
-  });
+// صفحة إدارة برومو (إن وجدت)
+router.get('/promo/contractors', requireAdmin, async (req, res) => {
+  try {
+    const Promo = require('../models/PromoConfig');
+    const promo = await Promo.findOne({ key: 'contractors' }).lean();
+
+    res.render('adminDashbord', {
+      user: req.session.user,
+      promo: promo || {}
+    });
+  } catch (e) {
+    console.error('GET /admin/promo/contractors error:', e);
+    // إمّا ترجع JSON لو الواجهة تستعمل fetch، أو رندر مع رسالة
+    res.status(500).render('adminDashbord', {
+      user: req.session.user,
+      promo: {},
+      msg: 'تعذر تحميل إعدادات البرومو',
+      type: 'danger'
+    });
+  }
 });
+
 
 // حفظ إعدادات البرومو
 // حفظ إعدادات البرومو (البنر السفلي) — يدعم رفع صورة
@@ -835,6 +863,12 @@ router.post('/hero/slides',
       const title = (req.body.title || '').trim();
       const lead  = (req.body.lead  || '').trim();
 
+      // داخل POST /hero/slides
+const btn1Text = (req.body.btn1Text || '').trim();
+const btn1Link = safeUrl(req.body.btn1Link);
+const btn2Text = (req.body.btn2Text || '').trim();
+const btn2Link = safeUrl(req.body.btn2Link);
+
       const uploadedUrl = await uploadImgIfAny(req.file, { folder: 'promo', publicIdPrefix: 'hero' });
       const imgFromUrl  = (req.body.img || '').trim();
       const img         = uploadedUrl || imgFromUrl;
@@ -842,11 +876,15 @@ router.post('/hero/slides',
       if (!img) return res.status(400).json({ ok:false, msg:'الصورة مطلوبة' });
 
       const max = await HeroSlide.findOne().sort({ order: -1 }).lean();
-      const row = await HeroSlide.create({
-        img, title, lead,
-        order: (max?.order ?? -1) + 1,
-        enabled: true
-      });
+
+      
+const row = await HeroSlide.create({
+  img, title, lead,
+  btn1Text, btn1Link,
+  btn2Text, btn2Link,
+  order: (max?.order ?? -1) + 1,
+  enabled: true
+});
 
       res.json({ ok:true, data: row });
     } catch (e) {
@@ -955,17 +993,28 @@ router.post(
 
 
 // حذف عنصر داخل سكشن بالاندكس (اختياري)
-router.delete('/home/showcase/:key/item/:idx', async (req,res)=>{
-  const { key, idx } = req.params;
-  const doc = await HomeShowcase.findOne({ key });
-  if(!doc) return res.json({ ok:false, msg:'Not found' });
-  const i = Number(idx);
-  if (Number.isInteger(i) && i>=0 && i<doc.items.length){
-    doc.items.splice(i,1);
-    await doc.save();
+// حذف عنصر داخل سكشن بالاندكس (اختياري)
+router.delete('/home/showcase/:key/item/:idx', async (req, res) => {
+  try {
+    const { key, idx } = req.params;
+    const doc = await HomeShowcase.findOne({ key });
+    if (!doc) {
+      return res.json({ ok: false, msg: 'Not found' });
+    }
+
+    const i = Number(idx);
+    if (Number.isInteger(i) && i >= 0 && i < doc.items.length) {
+      doc.items.splice(i, 1);
+      await doc.save();
+    }
+
+    return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error('DELETE /admin/home/showcase/:key/item/:idx error:', e);
+    return res.status(500).json({ ok: false, msg: 'Server error' });
   }
-  res.json({ ok:true, data:doc });
 });
+
 // --- Promo Bottom (page-specific) ---
 // key values: 'sale' | 'rent' | 'contractors'
 function bottomKey(req) {
@@ -1173,6 +1222,95 @@ router.get('/users', requireAdmin, async (req, res) => {
   } catch (e) {
     console.error(e);
     return res.status(500).json({ ok: false, error: 'users_list_failed' });
+  }
+});
+// تفاصيل مستخدم (لنافذة المعلومات في الداشبورد)
+router.get('/users/:id/details', requireAdmin, async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!id) return res.status(400).json({ ok: false, msg: 'bad_id' });
+
+    // بيانات المستخدم الأساسية (مثل اللي بتعرضها في جدول المستخدمين)
+    const u = await User.findById(id)
+      .select('name email phone role subscriptionTier subscriptionExpiresAt createdAt')
+      .lean();
+
+    if (!u) return res.status(404).json({ ok: false, msg: 'not_found' });
+
+    // هل عنده ملف مقاول؟
+    // ContractorRequest عنده user + status + deletedAt/isSuspended :contentReference[oaicite:1]{index=1}
+    const contractor = await ContractorRequest.findOne({ user: u._id })
+      .select('status companyName services region city createdAt deletedAt isSuspended')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // الأراضي/المزارع التابعة له (آخر 50 عنوان)
+    const farms = await Farm.find({ owner: u._id })
+      .select('title kind status createdAt deletedAt isSuspended')
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+
+    return res.json({
+      ok: true,
+      user: u,
+      isContractor: !!contractor,
+      contractor: contractor || null,
+      farms: farms || []
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, msg: 'user_details_failed' });
+  }
+});
+
+// حذف مستخدم (مع إخفاء محتواه المرتبط لتفادي كسر النظام)
+router.delete('/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    if (!id) return res.status(400).json({ ok: false, msg: 'bad_id' });
+
+    // منع حذف نفسك
+    const me = String(req.session?.user?._id || '');
+    if (me && me === id) {
+      return res.status(400).json({ ok: false, msg: 'cannot_delete_self' });
+    }
+
+    const user = await User.findById(id).select('_id role').lean();
+    if (!user) return res.status(404).json({ ok: false, msg: 'not_found' });
+
+    // منع حذف admin من هنا
+    if (String(user.role).toLowerCase() === 'admin') {
+      return res.status(403).json({ ok: false, msg: 'cannot_delete_admin' });
+    }
+
+    const now = new Date();
+
+    // 1) أخفِ محتوى المستخدم (حتى لا يبقى ظاهر في الموقع)
+    await Promise.allSettled([
+      // إخفاء المزارع/الأراضي
+      Farm.updateMany(
+        { owner: user._id, deletedAt: null },
+        { $set: { deletedAt: now, isSuspended: true, suspendedReason: 'user_deleted' } }
+      ),
+
+      // إخفاء/تعليق ملف المقاول
+      ContractorRequest.updateMany(
+        { user: user._id, deletedAt: null },
+        { $set: { deletedAt: now, isSuspended: true, suspendedReason: 'user_deleted' } }
+      ),
+
+      // حذف طلبات الاشتراك المرتبطة (أكثر أمانًا من تعديل حقول قد لا تكون في الـ schema)
+      SubscriptionRequest.deleteMany({ user: user._id })
+    ]);
+
+    // 2) احذف المستخدم نفسه
+    await User.findByIdAndDelete(user._id);
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('DELETE /dashboard/admin/users/:id', e);
+    return res.status(500).json({ ok: false, msg: 'server_error' });
   }
 });
 

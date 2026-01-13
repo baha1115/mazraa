@@ -1923,19 +1923,18 @@ tr.innerHTML = `
   <td>${tierLabel}</td>
   <td>${createdAt}</td>
 
-  <td>
-    ${
-      isAdmin
-        ? `<span class="muted">—</span>`
-        : `<button type="button"
-                   class="btn btn--danger btn--sm"
-                   data-act="user-delete"
-                   data-id="${u._id}"
-                   data-label="${esc((u.name || 'بدون اسم') + ' • ' + (u.email || 'بدون ايميل'))}">
-              حذف
-           </button>`
-    }
-  </td>
+ <td class="actions">
+  <button class="btn btn--outline btn--sm"
+          data-act="user-details"
+          data-id="${esc(u._id)}"
+          data-label="${esc(u.name || u.email || 'هذا المستخدم')}">
+    تفاصيل
+  </button>
+
+  ${isAdmin ? '' : `<button class="btn btn--danger btn--sm" data-act="user-delete"
+    data-id="${esc(u._id)}" data-label="${esc(u.name || u.email || 'هذا المستخدم')}">حذف</button>`}
+</td>
+
 `;
 
     usersBody.appendChild(tr);
@@ -1974,17 +1973,100 @@ usersPrev?.addEventListener('click', () => {
 usersNext?.addEventListener('click', () => {
   if (usersPage < usersPages) renderUsers(usersPage + 1);
 });
-usersBody?.addEventListener('click', async (e) => {
-  const btn = e.target.closest('[data-act="user-delete"]');
-  if (!btn) return;
+// ✅ 1) ضع هذه الدالة بعد renderUsers مباشرة
+async function openUserDetails(userId, label = 'تفاصيل المستخدم') {
+  // openDrawer(html, title) ✅
+  openDrawer(`<div style="padding:10px;color:#64748b;font-weight:800">جاري التحميل...</div>`, label);
 
-  const userId = btn.dataset.id;
-  const label = btn.dataset.label || 'هذا المستخدم';
+  try {
+    const r = await fetch(`/admin/users/${userId}/details`, {
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.ok === false) throw new Error(j.msg || 'details_failed');
+
+    const u = j.user || {};
+    const farms = Array.isArray(j.farms) ? j.farms : [];
+    const c = j.contractor;
+
+    const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ar') : '—';
+    const esc2 = (x) => String(x ?? '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+
+    const farmsHtml = farms.length
+      ? `<ul style="margin:8px 0 0; padding:0 18px; line-height:1.9">
+          ${farms.map(f => `<li><b>${esc2(f.title || 'بدون عنوان')}</b> — ${esc2(f.kind || '')} — ${esc2(f.status || '')}</li>`).join('')}
+        </ul>`
+      : `<div style="color:#64748b;font-weight:800;margin-top:6px">لا توجد أراضي/مزارع لهذا المستخدم.</div>`;
+
+    const contractorHtml = c
+      ? `<div style="margin-top:8px; line-height:1.9">
+          <div><b>الحالة:</b> ${esc2(c.status || '—')}</div>
+          <div><b>اسم الشركة:</b> ${esc2(c.companyName || '—')}</div>
+          <div><b>المنطقة:</b> ${esc2(c.region || c.city || '—')}</div>
+          <div><b>الخدمات:</b> ${(Array.isArray(c.services) && c.services.length) ? c.services.map(esc2).join('، ') : '—'}</div>
+          <div style="color:#64748b"><b>تاريخ الإرسال:</b> ${fmtDate(c.createdAt)}</div>
+        </div>`
+      : `<div style="color:#64748b;font-weight:800;margin-top:6px">ليس لديه ملف مقاول.</div>`;
+
+    const html = `
+      <div style="display:grid;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="stat"><div class="k">الاسم</div><div class="v">${esc2(u.name || '—')}</div></div>
+          <div class="stat"><div class="k">الدور</div><div class="v">${esc2(u.role || '—')}</div></div>
+          <div class="stat"><div class="k">الإيميل</div><div class="v">${esc2(u.email || '—')}</div></div>
+          <div class="stat"><div class="k">الهاتف</div><div class="v">${esc2(u.phone || '—')}</div></div>
+          <div class="stat"><div class="k">الاشتراك</div><div class="v">${esc2(u.subscriptionTier || '—')}</div></div>
+          <div class="stat"><div class="k">انتهاء الاشتراك</div><div class="v">${fmtDate(u.subscriptionExpiresAt)}</div></div>
+        </div>
+
+        <div style="height:1px;background:rgba(0,0,0,.08);border-radius:999px;margin:6px 0"></div>
+
+        <div>
+          <div style="font-weight:900;color:#0b4e45">الأراضي/المزارع (${farms.length})</div>
+          ${farmsHtml}
+        </div>
+
+        <div style="height:1px;background:rgba(0,0,0,.08);border-radius:999px;margin:6px 0"></div>
+
+        <div>
+          <div style="font-weight:900;color:#0b4e45">ملف المقاول</div>
+          ${contractorHtml}
+        </div>
+      </div>
+    `;
+
+    openDrawer(html, `معلومات المستخدم: ${esc2(u.name || u.email || '')}`);
+  } catch (err) {
+    console.error(err);
+    openDrawer(`<div style="padding:10px;color:#b42318;font-weight:900">تعذر تحميل التفاصيل ❌</div>`, label);
+  }
+}
+
+
+// ✅ 2) وهذا هو event listener الموحد (تفاصيل + حذف)
+usersBody?.addEventListener('click', async (e) => {
+  // تفاصيل
+  const detailsBtn = e.target.closest('[data-act="user-details"]');
+  if (detailsBtn) {
+    const userId = detailsBtn.dataset.id;
+    const label = detailsBtn.dataset.label || 'تفاصيل المستخدم';
+    return openUserDetails(userId, label);
+  }
+
+  // حذف
+  const delBtn = e.target.closest('[data-act="user-delete"]');
+  if (!delBtn) return;
+
+  const userId = delBtn.dataset.id;
+  const label = delBtn.dataset.label || 'هذا المستخدم';
 
   const ok = confirm(`هل تريد حذف ${label} نهائياً؟\nسيتم أيضاً إخفاء محتواه المرتبط (مزارع/مقاولين).`);
   if (!ok) return;
 
-  btn.disabled = true;
+  delBtn.disabled = true;
 
   try {
     const r = await fetch(`/admin/users/${userId}`, {
@@ -1995,15 +2077,15 @@ usersBody?.addEventListener('click', async (e) => {
     const j = await r.json().catch(() => ({}));
     if (!r.ok || j.ok === false) throw new Error(j.msg || 'delete_failed');
 
-    // أعد تحميل نفس الصفحة من المستخدمين
     await renderUsers(usersPage);
     toast('تم حذف المستخدم بنجاح ✅', 'success');
   } catch (err) {
     console.error(err);
-    btn.disabled = false;
+    delBtn.disabled = false;
     toast('تعذر حذف المستخدم ❌', 'error');
   }
 });
+
 
 // الاستدعاء الأول
 document.addEventListener('DOMContentLoaded', () => renderUsers(1));
