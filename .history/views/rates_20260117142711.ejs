@@ -552,16 +552,13 @@ function getRate(){
         throw new Error('bad_api');
       }
 
-      const rateOld = Number(json.rates.SYP);            // هذا "قديم" من الـ API
-const rateNew = normalizeRateToNewSyp(rateOld);    // نحوله "جديد"
-$('rate').value = rateNew ? String(rateNew) : '';
-saveRateCache(rateNew, state.lastUpdateUtc);
-
+      const rate = Number(json.rates.SYP);
+      $('rate').value = String(rate);
 
       state.lastUpdateUtc = json.time_last_update_utc || null;
       apiStatus.textContent = state.lastUpdateUtc ? `آخر تحديث: ${state.lastUpdateUtc}` : 'تم تحديث السعر ✅';
 
-      
+      saveRateCache(rate, state.lastUpdateUtc);
 
       // بعد تغيير السعر: حدّث من آخر خانة كان المستخدم يعدل فيها
       syncFrom(state.lastEdited);
