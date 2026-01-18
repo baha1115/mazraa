@@ -288,6 +288,7 @@
     <option value="فني شوادر ومظلات" <%= selectedService==='فني شوادر ومظلات' ? 'selected' : '' %>>فني شوادر ومظلات</option>
     <option value="تصميم ديكورات طين" <%= selectedService==='تصميم ديكورات طين' ? 'selected' : '' %>>تصميم ديكورات طين</option>
     <option value="مقاول / متعهد إنشاءات" <%= selectedService==='مقاول / متعهد إنشاءات' ? 'selected' : '' %>>مقاول / متعهد إنشاءات</option>
+    <option value="جلى بلاط" <%= selectedService==='جلى بلاط' ? 'selected' : '' %>>جلى بلاط</option>
   </select>
 </label>
 
@@ -466,6 +467,37 @@
   const pickAvatar    = qs('#pickAvatar');
   const avatarPreview = qs('#avatarPreview');
 
+    // جعل +963 تلقائية في حقل هاتف المقاول
+  const phoneInput = form?.querySelector('input[name="phone"]');
+  if (phoneInput) {
+    const SY_PREFIX = '+963';
+
+    // لو الحقل فاضي عند التركيز نضيف +963
+    phoneInput.addEventListener('focus', () => {
+      const v = phoneInput.value.trim();
+      if (!v) phoneInput.value = SY_PREFIX;
+    });
+
+    // أثناء الكتابة: نضمن بقاء +963 في البداية وعدم تكرارها
+    phoneInput.addEventListener('input', () => {
+      let v = phoneInput.value.replace(/\s+/g, '');
+
+      // لو المستخدم حاول يمسح أو يكتب بدون البادئة
+      if (!v.startsWith(SY_PREFIX)) {
+        // نحذف أي + أو 963 مكررة في البداية
+        v = v.replace(/^\+?963/, '');
+        // نسمح فقط بأرقام بعد البادئة
+        v = v.replace(/\D/g, '');
+        phoneInput.value = SY_PREFIX + v;
+      } else {
+        // عندنا البادئة، ننظّف الجزء الباقي
+        let rest = v.slice(SY_PREFIX.length);
+        rest = rest.replace(/\D/g, '');
+        phoneInput.value = SY_PREFIX + rest;
+      }
+    });
+  }
+
   const photos = JSON.parse((qs('#initial-photos')?.textContent || '[]'));
   let   avatar = JSON.parse((qs('#initial-avatar')?.textContent || '""'));
   // زر الحفظ في نموذج المقاول
@@ -615,10 +647,82 @@
     avatar = await readAsDataURL(f);
     if (avatarPreview) avatarPreview.src = avatar;
   });
+    /* ============ Best Practices Modal helpers ============ */
+  function bpLsGet(key){
+    try { return localStorage.getItem(key) === '1'; }
+    catch { return false; }
+  }
+  function bpLsSet(key, val){
+    try { localStorage.setItem(key, val ? '1' : '0'); }
+    catch {}
+  }
+
+  function openBpModalOnce(storageKey){
+    return new Promise((resolve)=>{
+      // لو سبق ووافق المستخدم → اسمح بالإرسال فوراً
+      if (bpLsGet(storageKey)) return resolve(true);
+
+      const modal    = document.getElementById('bpModal');
+      const btnGo    = document.getElementById('bpContinue');
+      const backdrop = modal?.querySelector('[data-bp-close="1"]');
+
+      // لو المودال غير موجود لأي سبب → لا تمنع الإرسال
+      if (!modal || !btnGo) return resolve(true);
+
+      let done = false;
+      const finish = (ok)=>{
+        if (done) return;
+        done = true;
+        cleanup();
+        hide();
+        resolve(ok);
+      };
+
+      const show = ()=>{
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden','false');
+      };
+      const hide = ()=>{
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden','true');
+      };
+
+      const onContinue = ()=>{
+        bpLsSet(storageKey, true); // خزّن الموافقة
+        finish(true);
+      };
+
+      const onClose = ()=>{
+        // إغلاق = إلغاء الإرسال (حتى لا ينشر بدون موافقة)
+        finish(false);
+      };
+
+      const onKey = (e)=>{
+        if (e.key === 'Escape') onClose();
+      };
+
+      function cleanup(){
+        btnGo.removeEventListener('click', onContinue);
+        backdrop?.removeEventListener('click', onClose);
+        document.removeEventListener('keydown', onKey);
+      }
+
+      btnGo.addEventListener('click', onContinue);
+      backdrop?.addEventListener('click', onClose);
+      document.addEventListener('keydown', onKey);
+
+      show();
+    });
+  }
+
+// ===== Best Practices Guard (Contractor) =====
+const BP_CONTRACTOR_KEY = 'bp_ack_contractor_profile_v1';
 
      /* ============== حفظ الملف (POST أو PATCH) ============== */
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
+const ok = await openBpModalOnce(BP_CONTRACTOR_KEY);
+if (!ok) return;
 
     // لا نسمح بالضغط المتكرر أثناء الإرسال
     if (isProfileSubmitting) return;
@@ -981,6 +1085,43 @@ if (svcEl) {
   });
 })();
 </script>
+<!-- Best Practices Modal (Owner) -->
+<div id="bpModal" class="bpModal" hidden aria-hidden="true" role="dialog" aria-labelledby="bpTitle">
+  <div class="bpModal__backdrop" data-bp-close="1"></div>
+  <div class="bpModal__card" role="document">
+    <h3 id="bpTitle" style="margin:0 0 .5rem 0">قبل نشر الإعلان</h3>
+
+    <p class="muted" style="margin:.25rem 0 .75rem 0">
+      ننصحك بمراجعة “الممارسات النموذجية” لتجنب رفض الإعلان. يمكنك فتح الصفحة أو المتابعة مباشرة.
+    </p>
+
+    <ul style="margin:.2rem 0 .8rem 1.1rem;line-height:1.7">
+      <li>عنوان واضح + مدينة/منطقة + السعر/المساحة.</li>
+      <li>صور واضحة ومرتبة (بدون بيانات ناقصة).</li>
+      <li>طرق تواصل صحيحة (واتساب بصيغة دولية).</li>
+    </ul>
+
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end">
+      <a class="btn btn--ghost" href="/best-practices" target="_blank" rel="noopener">فتح الصفحة (اختياري)</a>
+      <button class="btn btn--primary" type="button" id="bpContinue">متابعة النشر</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bpModal[hidden]{display:none}
+  .bpModal{position:fixed;inset:0;z-index:9999}
+  .bpModal__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+  .bpModal__card{
+    position:relative;
+    max-width:520px;
+    margin:10vh auto;
+    background:#fff;
+    border-radius:14px;
+    padding:14px 14px 12px;
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+  }
+</style>
 
 </body>
 </html>
