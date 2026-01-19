@@ -589,5 +589,21 @@ router.get('/best-practices', (req, res) => {
 router.get('/rates', (req, res) => {
   res.render('rates');
 });
+// تتبع نقرات واتساب للمقاول
+router.post('/contractor/:id/whatsapp-click', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    // زيادة العدّاد 1 بدون ما نجيب الدوك كامل
+    const updated = await Contractor.findByIdAndUpdate(
+      id,
+      { $inc: { whatsappClicks: 1 } },
+      { new: false }
+    );
+
+    if (!updated) return res.status(404).json({ ok:false, msg:'Contractor not found' });
+    return res.json({ ok:true });
+  } catch (e) { next(e); }
+});
 
 module.exports = router;

@@ -1057,23 +1057,6 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
   activeTab: 'contractors',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
-<script>
-document.addEventListener('click', (e) => {
-  const a = e.target.closest('[data-act="wa-click"]');
-  if (!a) return;
-
-  const id = a.dataset.id;
-  if (!id) return;
-
-  // نرسل “زيادة 1” بدون انتظار (حتى لا نعطل فتح واتساب)
-  fetch(`/contractor/${encodeURIComponent(id)}/whatsapp-click`, {
-    method: 'POST',
-    headers: { 'Accept': 'application/json' },
-    keepalive: true
-  }).catch(()=>{});
-});
-</script>
-
 </body>
 </html>
 

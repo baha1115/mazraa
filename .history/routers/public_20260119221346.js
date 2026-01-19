@@ -106,25 +106,34 @@ router.get('/sale', async (req, res) => {
 // ===== API: Farms for lists (used by client-side fetch) =====
 
 // GET /api/farms/sale?vipOnly=1|0
-// GET /api/farms/sale?vipOnly=1|0&limit=40
+// GET /api/farms/sale?vipOnly=1|0&limit=40// GET /api/farms/sale?vipOnly=1|0&limit=40
 router.get('/api/farms/sale', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
     const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
 
-    // 1) صفّي ورتّب وحدّد العدد أولاً
+    const match = {
+      kind: { $regex: /^sale$/i },
+      status: { $in: ['approved', 'Approved'] },
+      isSuspended: { $ne: true },
+     $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }]
+    };
+
+    // base: لا تعمل limit بدري لو vipOnly
     const base = [
-      { $match: { kind: 'sale', status: 'approved', isSuspended: { $ne: true }, deletedAt: null } },
-      { $sort:  { createdAt: -1 } },
-      { $limit: limit },
+      { $match: match },
+      { $sort: { createdAt: -1 } },
+      ...(vipOnly ? [] : [{ $limit: limit }]),
     ];
 
-    // 2) lookup لاشتقاق ownerTier ثم (اختياري) فلترة VIP
     const pipe = [
       ...base,
       { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'u' } },
       { $addFields: { ownerTier: { $ifNull: [{ $arrayElemAt: ['$u.subscriptionTier', 0] }, 'Basic'] } } },
-      ...(vipOnly ? [{ $match: { ownerTier: 'VIP' } }] : []),
+
+      ...(vipOnly ? [{ $match: { ownerTier: { $regex: /^vip$/i } } }
+, { $limit: limit }] : []),
+
       { $project: {
           _id: 1, title: 1, area: 1, city: 1, size: 1, price: 1, currency: 1,
           videoUrl: 1, views: 1, ownerTier: 1, kind: 1,
@@ -136,7 +145,6 @@ router.get('/api/farms/sale', async (req, res) => {
 
     let rows = await Farm.aggregate(pipe).allowDiskUse(true);
 
-    // 3) تصغير Cloudinary سيرفر-سايد
     const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
       ? u.replace('/upload/', '/upload/f_auto,q_auto,w_480/')
       : u;
@@ -146,7 +154,7 @@ router.get('/api/farms/sale', async (req, res) => {
       photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
     }));
 
-    res.set('Cache-Control', 'public, max-age=30');   // كاش بسيط
+    res.set('Cache-Control', 'public, max-age=30');
     return res.json({ ok: true, data: rows });
   } catch (e) {
     console.error('api/farms/sale', e);
@@ -154,27 +162,36 @@ router.get('/api/farms/sale', async (req, res) => {
   }
 });
 
-// GET /api/farms/rent?vipOnly=1|0&limit=40
+// GET /api/farms/rent?vipOnly=1|0&limit=40// GET /api/farms/rent?vipOnly=1|0&limit=40
 router.get('/api/farms/rent', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
     const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
 
-    // 1) صفّي ورتّب وحدّد العدد أولاً (يقلّل الضغط قبل الـlookup)
+    const match = {
+      kind: { $regex: /^rent$/i },
+      status: { $in: ['approved', 'Approved'] },
+      isSuspended: { $ne: true },
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }]
+
+    };
+
     const base = [
-      { $match: { kind: 'rent', status: 'approved', isSuspended: { $ne: true }, deletedAt: null } },
-      { $sort:  { createdAt: -1 } },
-      { $limit: limit },
+      { $match: match },
+      { $sort: { createdAt: -1 } },
+      ...(vipOnly ? [] : [{ $limit: limit }]),
     ];
 
-    // 2) lookup بسيط فقط لاشتقاق ownerTier ثم فلترة VIP (اختياري)
     const pipe = [
       ...base,
       { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'u' } },
       { $addFields: { ownerTier: { $ifNull: [{ $arrayElemAt: ['$u.subscriptionTier', 0] }, 'Basic'] } } },
-      ...(vipOnly ? [{ $match: { ownerTier: 'VIP' } }] : []),
+
+      ...(vipOnly ? [{ $match: { ownerTier: { $regex: /^vip$/i } } }
+, { $limit: limit }] : []),
+
       { $project: {
-          _id: 1, title: 1, area: 1, city: 1, size: 1, price: 1,rentPeriod: 1, currency: 1,
+          _id: 1, title: 1, area: 1, city: 1, size: 1, price: 1, rentPeriod: 1, currency: 1,
           videoUrl: 1, views: 1, ownerTier: 1, kind: 1,
           photos: { $cond: [
             { $and: [ { $isArray: '$photos' }, { $gt: [ { $size: '$photos' }, 0 ] } ] },
@@ -184,7 +201,6 @@ router.get('/api/farms/rent', async (req, res) => {
 
     let rows = await Farm.aggregate(pipe).allowDiskUse(true);
 
-    // 3) تصغير صور Cloudinary سيرفر-سايد (خفيف للعميل)
     const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
       ? u.replace('/upload/', '/upload/f_auto,q_auto,w_480/')
       : u;
@@ -194,14 +210,13 @@ router.get('/api/farms/rent', async (req, res) => {
       photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
     }));
 
-    res.set('Cache-Control', 'public, max-age=30');   // كاش بسيط 30s
+    res.set('Cache-Control', 'public, max-age=30');
     return res.json({ ok: true, data: rows });
   } catch (e) {
     console.error('api/farms/rent', e);
     return res.status(500).json({ ok: false, data: [] });
   }
 });
-
 
 // ===== Pages: Farm Single (details) + views counter =====
 
@@ -372,10 +387,25 @@ router.get('/contractors', async (req, res, next) => {
      const bannersDoc = await PromoBanner.findOne({ key:'contractors-banners' }).lean();
 const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' }).lean();
     // 1) اجلب المقاولين واملأ user.subscriptionTier
-   const contractorsRaw = await Contractor
-  .find({ status: 'approved', isSuspended: { $ne: true }, deletedAt: null })
-  .populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
-  .lean();
+   const contractorsRaw = await Contractor.find({
+  status: 'approved',
+  isSuspended: { $ne: true },
+  deletedAt: null
+}).limit(24) 
+.select({
+  name: 1,
+  services: 1,
+  city: 1,
+  region: 1,
+  avatar: 1,
+  photos: { $slice: 1 },     // ✅ فقط أول صورة (بدل كل الألبوم)
+  subscriptionTier: 1,
+  ratingAvg: 1,
+  ratingCount: 1,
+  user: 1
+})
+.populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
+.lean();
 
     // 2) اشتق الخطة الفعالة وضعها داخل subscriptionTier لضمان التوافق مع القالب الحالي
     const contractors = contractorsRaw.map(c => {
@@ -390,14 +420,55 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
     // 3) ترتيب يدعم VIP ثم Premium ثم Basic
     const weight = t => (t === 'VIP' ? 3 : t === 'Premium' ? 2 : 1);
     contractors.sort((a, b) => weight(b.subscriptionTier || 'Basic') - weight(a.subscriptionTier || 'Basic'));
+   
 
     // 4) الرندر (لا تغييرات على القالب)
     res.render('contractors', {
       contractors,
       bannersDoc,promoBottom,
     });
+    
   } catch (err) {
     next(err);
+  }
+});
+// GET /api/contractors?vipOnly=1|0&limit=40
+router.get('/api/contractors', async (req, res) => {
+  try {
+    const vipOnly = String(req.query.vipOnly || '') === '1';
+    const limit = Math.min(parseInt(req.query.limit || '40', 10), 96);
+
+    const q = {
+      status: 'approved',
+      isSuspended: { $ne: true },
+      deletedAt: null,
+      ...(vipOnly ? { subscriptionTier: 'VIP' } : {})
+    };
+
+    // ✅ select خفيف + slice للصور
+    let rows = await Contractor.find(q)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount')
+      .lean();
+
+    // ✅ فقط أول صورة من الأعمال
+    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
+  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
+  : u;
+
+rows = rows.map(r => ({
+  ...r,
+  avatar: r.avatar ? small(r.avatar) : r.avatar,
+  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
+}));
+
+
+    res.set('Cache-Control', 'public, max-age=30');
+    return res.json({ ok: true, data: rows });
+  } catch (e) {
+    console.error('api/contractors', e);
+    return res.status(500).json({ ok: false, data: [] });
   }
 });
 
@@ -509,4 +580,30 @@ router.get('/plans',(req,res)=>{
 router.get('/about',(req,res)=>{
 res.render('aboutUs')
 })
+router.get('/best-practices', (req, res) => {
+  res.render('best-practice', {
+    user: req.session?.user || null,
+    isAuth: !!req.session?.user
+  });
+});
+router.get('/rates', (req, res) => {
+  res.render('rates');
+});
+// تتبع نقرات واتساب للمقاول
+router.post('/contractor/:id/whatsapp-click', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    // زيادة العدّاد 1 بدون ما نجيب الدوك كامل
+    const updated = await Contractor.findByIdAndUpdate(
+      id,
+      { $inc: { whatsappClicks: 1 } },
+      { new: false }
+    );
+
+    if (!updated) return res.status(404).json({ ok:false, msg:'Contractor not found' });
+    return res.json({ ok:true });
+  } catch (e) { next(e); }
+});
+
 module.exports = router;

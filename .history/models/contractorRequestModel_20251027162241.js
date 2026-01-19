@@ -9,7 +9,7 @@ const ContractorRequestSchema = new mongoose.Schema({
   phone: String,
   region: String,
   bio: String,
-  whatsappClicks: { type: Number, default: 0 },
+
   companyName: { type: String, required: true },
   services: { type: [String], default: [] },
   city: String,

@@ -433,6 +433,147 @@
 .lb .swiper-button-prev,.lb .swiper-button-next{ color:#fff; filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)); transform:scale(1.05); }
 .lb .swiper-pagination-bullet{ background:rgba(255,255,255,.85); }
 @media (max-width:640px){ .lb-swiper{ width:100vw; height:78vh; } }
+/* ===== Top Rated section: match contractors page cards ===== */
+.toprated-swiper .swiper-wrapper{ align-items: stretch !important; }
+.toprated-swiper .swiper-slide{ height:auto !important; }
+
+/* استعمل نفس كرت contractors.ejs */
+.toprated-swiper .contractor-card{
+  position:relative !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+  padding:14px 12px 12px !important;
+  padding-top:42px !important;
+  border-radius:18px !important;
+  border:1px solid #e5e7eb !important;
+  background:linear-gradient(135deg,#ffffff,#f9fafb) !important;
+  box-shadow:0 4px 14px rgba(15,23,42,.06) !important;
+  height:100% !important;
+  min-height:240px !important;
+  overflow:hidden !important;
+}
+
+/* شارة الخطة مثل صفحة المقاولين */
+.toprated-swiper .badge--tier{
+  position:absolute !important;
+  top:10px !important;
+  inset-inline-end:10px !important;
+  background:#0f172a !important;
+  color:#fff !important;
+  border-radius:999px !important;
+  font-size:.78rem !important;
+  padding:.18rem .7rem !important;
+  line-height:1 !important;
+  font-weight:700 !important;
+}
+
+/* رأس الكرت: صورة + معلومات */
+.toprated-swiper .contractor-head{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  padding:0 !important;
+}
+.toprated-swiper .avatar{
+  width:68px !important;
+  height:68px !important;
+  border-radius:999px !important;
+  overflow:hidden !important;
+  border:3px solid #e5e7eb !important;
+  flex-shrink:0 !important;
+}
+.toprated-swiper .avatar img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+/* النصوص */
+.toprated-swiper .head-info{ min-width:0 !important; }
+.toprated-swiper .head-info .name{
+  margin:0 !important;
+  font-weight:800 !important;
+  font-size:1.02rem !important;
+  color:#0f172a !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.toprated-swiper .specialization,
+.toprated-swiper .region{
+  margin:0 !important;
+  color:#64748b !important;
+  font-size:.88rem !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+/* سطر التقييم */
+.toprated-swiper .muted{
+  margin:.25rem 0 0 !important;
+  color:#6b7280 !important;
+  font-weight:600 !important;
+  font-size:.9rem !important;
+}
+
+/* زر أسفل الكرت */
+.toprated-swiper .contractor-body{
+  margin-top:auto !important;
+  padding:0 !important;
+  border:0 !important;
+}
+.toprated-swiper .contractor-body .btn.btn-outline{
+  margin-top:auto !important;
+  width:100% !important;
+  text-align:center !important;
+  border:1px solid #0f172a !important;
+  border-radius:12px !important;
+  padding:.5rem .85rem !important;
+  color:#0f172a !important;
+  font-weight:700 !important;
+  background:#fff !important;
+}
+
+/* موبايل: نفس قواعد صفحة المقاولين */
+@media (max-width:640px){
+  .toprated-swiper .contractor-card{
+    padding:12px 10px 10px !important;
+    border-radius:14px !important;
+    min-height:210px !important;
+    box-shadow:0 3px 12px rgba(15,23,42,.08) !important;
+  }
+  .toprated-swiper .contractor-head{
+    flex-direction:column !important;
+    align-items:center !important;
+    text-align:center !important;
+    gap:8px !important;
+  }
+  .toprated-swiper .avatar{
+    width:60px !important;
+    height:60px !important;
+    border-width:2px !important;
+  }
+  .toprated-swiper .specialization,
+  .toprated-swiper .region{
+    white-space:normal !important;
+    text-overflow:clip !important;
+    font-size:.8rem !important;
+  }
+  .toprated-swiper .contractor-body .btn.btn-outline{
+    font-size:.86rem !important;
+    padding:.42rem .7rem !important;
+    border-radius:10px !important;
+  }
+  .toprated-swiper .badge--tier{
+    font-size:.72rem !important;
+    padding:.16rem .5rem !important;
+    top:8px !important;
+    inset-inline-end:8px !important;
+  }
+}
 
 </style>
 
@@ -630,7 +771,8 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
 
           <% if (waMsisdn) { %>
             <!-- زر واتساب احتياطي مباشرةً -->
-            <a class="btn btn-outline"
+            <a class="btn btn-outline"  data-act="wa-click"
+   data-id="<%= contractor._id %>"
                href="https://wa.me/<%= waMsisdn %>?text=<%= encodeURIComponent('أحتاج خدمة من المقاول: '+name) %>"
                target="_blank" rel="noopener">واتساب مباشر</a>
           <% } %>
@@ -915,6 +1057,23 @@ function nl2brSafe(s) { return esc(s).replace(/\r?\n/g, '<br>'); }
   activeTab: 'contractors',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
+<script>
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-act="wa-click"]');
+  if (!a) return;
+
+  const id = a.dataset.id;
+  if (!id) return;
+
+  // نرسل “زيادة 1” بدون انتظار (حتى لا نعطل فتح واتساب)
+  fetch(`/contractor/${encodeURIComponent(id)}/whatsapp-click`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json' },
+    keepalive: true
+  }).catch(()=>{});
+});
+</script>
+
 </body>
 </html>
 
