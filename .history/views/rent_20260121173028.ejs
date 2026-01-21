@@ -94,14 +94,17 @@
 
   /* بطاقة المزرعة (النسخة النهائية الموحّدة) */
   .farm-card{
-    display:block;
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    overflow:hidden;
-    background:#fff;
-    box-shadow:0 2px 10px rgba(2,6,23,.05);
-    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  }
+  display:flex;               /* بدل block */
+  flex-direction:column;      /* صورة فوق + جسم تحت */
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 2px 10px rgba(2,6,23,.05);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  height:100%;                /* يملى السلايد بالكامل */
+}
+
   .farm-card:hover{
     transform:translateY(-2px);
     box-shadow:0 10px 24px rgba(2,6,23,.08);
@@ -123,10 +126,11 @@
 
   /* جسم البطاقة */
   .farm-body{
-    display:grid;
-    row-gap:.45rem;
-    padding:.7rem .75rem;
-  }
+  display:grid;
+  row-gap:.45rem;
+  padding:.7rem .75rem;
+  flex:1;                 /* يملأ المساحة تحت الصورة */
+}
 
   .farm-title{
     margin:0;
@@ -176,10 +180,11 @@
   }
   /* داخل جسم البطاقة: بعرض كامل */
   .farm-body .btn.btn-outline{
-    width:100%;
-    padding:.48rem .85rem;
-    font-weight:700;
-  }
+  width:100%;
+  padding:.48rem .85rem;
+  font-weight:700;
+  margin-top:auto;        /* يخلي الزر دائماً في أسفل الكرت */
+}
 
   .empty{
     padding:2rem;
@@ -958,7 +963,7 @@ async function init(){
     // لاحقًا: أكمل البيانات وضعها بهدوء
     requestIdleCallback(async () => {
       try{
-        const rest = await fetchJSON('/api/farms/rent?limit=60');
+        const rest = await fetchJSON('/api/farms/rent?limit=90');
         allRent = rest;
         nonVipRent = allRent.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
         renderRent(nonVipRent);
@@ -968,7 +973,7 @@ async function init(){
 
   // VIP بشكل منفصل (عدد أقل)
   try {
-    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1&limit=24');
+    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1&limit=90');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 
@@ -998,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', init);
   };
 </script>
 <script>
-/* ======== Rent Location Gate — يظهر في كل زيارة ======== */
+/* ======== Rent Location Gate — يظهر في Reload فقط، ولا يظهر عند الرجوع من التفاصيل ======== */
 (function(){
   const gate       = document.getElementById('rent-location-gate');
   const gateCity   = document.getElementById('rent-gate-city');
@@ -1009,8 +1014,21 @@ document.addEventListener('DOMContentLoaded', init);
   const filterCity = document.getElementById('city');
   const filterArea = document.getElementById('area');
 
+  function navType(){
+    const nav = performance.getEntriesByType?.('navigation')?.[0];
+    if (nav?.type) return nav.type; // 'navigate' | 'reload' | 'back_forward'
+
+    // fallback قديم
+    if (performance?.navigation) {
+      const t = performance.navigation.type; // 0,1,2
+      if (t === 1) return 'reload';
+      if (t === 2) return 'back_forward';
+    }
+    return 'navigate';
+  }
+
   function openGate(){ gate?.setAttribute('aria-hidden','false'); }
-  function closeGate(){ gate?.setAttribute('aria-hidden','true'); }
+  function closeGate(){ gate?.setAttribute('aria-hidden','true'); } // ✅ بدون localStorage
 
   // إغلاق بالضغط على الخلفية/زر ×/تخطّي
   document.addEventListener('click', (e)=>{
@@ -1033,12 +1051,21 @@ document.addEventListener('DOMContentLoaded', init);
     document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
   });
 
-  // افتح الحارس دائمًا عند كل زيارة/تحميل
-  window.addEventListener('DOMContentLoaded', openGate);
+  // ✅ افتح البوابة فقط عند: فتح جديد أو Reload
+  window.addEventListener('DOMContentLoaded', ()=>{
+    const t = navType();
+    if (t === 'back_forward') return; // رجوع من التفاصيل: لا تفتح
+    openGate();                        // navigate أو reload: افتح دائمًا
+  });
 
-  // وعند الرجوع من الكاش الخلفي (BFCache) افتحه أيضًا
-  window.addEventListener('pageshow', (e)=>{ if (e.persisted) openGate(); });
+  // ✅ عند الرجوع من BFCache: تأكد أنها لا تفتح
+  window.addEventListener('pageshow', (e)=>{
+    if (e.persisted || navType() === 'back_forward') closeGate();
+  });
+
 })();
+
+
 </script>
 
 

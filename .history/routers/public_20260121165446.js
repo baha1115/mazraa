@@ -391,7 +391,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   status: 'approved',
   isSuspended: { $ne: true },
   deletedAt: null
-}).limit(50) 
+}).limit(24) 
 .select({
   name: 1,
   services: 1,

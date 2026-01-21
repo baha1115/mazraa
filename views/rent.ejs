@@ -963,7 +963,7 @@ async function init(){
     // لاحقًا: أكمل البيانات وضعها بهدوء
     requestIdleCallback(async () => {
       try{
-        const rest = await fetchJSON('/api/farms/rent?limit=60');
+        const rest = await fetchJSON('/api/farms/rent?limit=90');
         allRent = rest;
         nonVipRent = allRent.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
         renderRent(nonVipRent);
@@ -973,7 +973,7 @@ async function init(){
 
   // VIP بشكل منفصل (عدد أقل)
   try {
-    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1&limit=24');
+    vipAll = await fetchJSON('/api/farms/rent?vipOnly=1&limit=90');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 

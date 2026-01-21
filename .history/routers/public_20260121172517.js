@@ -391,7 +391,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   status: 'approved',
   isSuspended: { $ne: true },
   deletedAt: null
-}).limit(50) 
+}).limit(24) 
 .select({
   name: 1,
   services: 1,
@@ -433,42 +433,55 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   }
 });
 // GET /api/contractors?vipOnly=1|0&limit=40
+// GET /api/contractors?page=1&limit=24
+// GET /api/contractors?page=1&limit=24
 router.get('/api/contractors', async (req, res) => {
   try {
-    const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit = Math.min(parseInt(req.query.limit || '40', 10), 96);
+    const page  = Math.max(parseInt(req.query.page  || '1', 10), 1);
+    const limit = Math.min(parseInt(req.query.limit || '24', 10), 96);
+    const skip  = (page - 1) * limit;
 
+    // ✅ نفس شروط الصفحة + معالجة Approved + deletedAt غير موجود
     const q = {
-      status: 'approved',
+      status: { $in: ['approved', 'Approved'] },
       isSuspended: { $ne: true },
-      deletedAt: null,
-      ...(vipOnly ? { subscriptionTier: 'VIP' } : {})
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
     };
 
-    // ✅ select خفيف + slice للصور
+    // ✅ نجيب limit+1 لمعرفة هل يوجد المزيد
     let rows = await Contractor.find(q)
       .sort({ createdAt: -1 })
-      .limit(limit)
-      .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount')
+      .skip(skip)
+      .limit(limit + 1)
+      .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount user')
+      .populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
       .lean();
 
-    // ✅ فقط أول صورة من الأعمال
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-  : u;
+    const hasMore = rows.length > limit;
+    rows = rows.slice(0, limit);
 
-rows = rows.map(r => ({
-  ...r,
-  avatar: r.avatar ? small(r.avatar) : r.avatar,
-  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-}));
+    // ✅ طبّع الخطة الفعالة على نفس الحقل الذي يقرأه القالب (subscriptionTier)
+    const normalizeTier = (s = '') => {
+      s = String(s).trim().toLowerCase();
+      if (s === 'vip') return 'VIP';
+      if (s === 'premium') return 'Premium';
+      return 'Basic';
+    };
 
+    rows = rows.map(r => {
+      const effective = normalizeTier(r?.user?.subscriptionTier || r.subscriptionTier || 'Basic');
+      return {
+        ...r,
+        subscriptionTier: effective,
+        photos: Array.isArray(r.photos) && r.photos.length ? [r.photos[0]] : []
+      };
+    });
 
     res.set('Cache-Control', 'public, max-age=30');
-    return res.json({ ok: true, data: rows });
+    return res.json({ ok: true, data: rows, page, limit, hasMore });
   } catch (e) {
     console.error('api/contractors', e);
-    return res.status(500).json({ ok: false, data: [] });
+    return res.status(500).json({ ok: false, data: [], page: 1, limit: 24, hasMore: false });
   }
 });
 

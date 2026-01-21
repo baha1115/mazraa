@@ -85,16 +85,23 @@
 
   /* ===== Sale swiper & farm cards ===== */
   .sale-swiper .swiper-slide{ height:auto; }
+/* نجعل السلايدات تشد الكروت لنفس الارتفاع */
+.sale-swiper .swiper-wrapper{
+  align-items: stretch;
+}
 
-  .farm-card{
-    display:block;
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    overflow:hidden;
-    background:#fff;
-    box-shadow:0 2px 10px rgba(2,6,23,.05);
-    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  }
+ .farm-card{
+  display:flex;              /* بدل block */
+  flex-direction:column;     /* الصورة فوق، النص والزر تحت */
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 2px 10px rgba(2,6,23,.05);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  height:100%;               /* يملى ارتفاع السلايد */
+}
+
   .farm-card:hover{
     transform:translateY(-2px);
     box-shadow:0 10px 24px rgba(2,6,23,.08);
@@ -114,10 +121,12 @@
   }
 
   .farm-body{
-    padding:.7rem .75rem;
-    display:grid;
-    row-gap:.45rem;
-  }
+  padding:.7rem .75rem;
+  display:grid;
+  row-gap:.45rem;
+  flex:1;                     /* يملأ المساحة المتبقية تحت الصورة */
+}
+
 
   .farm-title{
     margin:0;
@@ -167,11 +176,12 @@
     background:#fff;
     color:#0f172a;
   }
-  .farm-body .btn.btn-outline{
-    width:100%;
-    padding:.48rem .85rem;
-    font-weight:700;
-  }
+ .farm-body .btn.btn-outline{
+  width:100%;
+  padding:.48rem .85rem;
+  font-weight:700;
+  margin-top:auto;            /* يبقى الزر دائمًا في أسفل الكرت */
+}
 
   .empty{
     padding:2rem;
@@ -484,6 +494,44 @@
 .sale-swiper .swiper-pagination,
 .vip-swiper .swiper-pagination{
   display: none !important;
+}
+/* ===== Normal cards look like VIP (style only) ===== */
+.sale-swiper .swiper-wrapper{ align-items: stretch; }
+.sale-swiper .swiper-slide{ height:auto; }
+
+.sale-swiper .farm-card,
+.sale-swiper .farm-link{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+
+.sale-swiper .farm-media{
+  aspect-ratio:16/10;          /* نفس إحساس VIP */
+  overflow:hidden;
+}
+
+.sale-swiper .farm-media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.sale-swiper .farm-body{
+  display:grid;
+  row-gap:.45rem;
+  flex:1;
+}
+
+.sale-swiper .farm-body .btn.btn-outline{
+  margin-top:auto;             /* الزر ثابت تحت */
+  width:100%;
+}
+
+/* موبايل */
+@media (max-width:640px){
+  .sale-swiper .farm-media{ aspect-ratio:16/10; }
+  .sale-swiper .farm-body{ padding:.6rem; }
 }
 
 </style>
@@ -995,6 +1043,11 @@ renderVip(filteredVip);
 
 }
 
+  const ric = window.requestIdleCallback || function(cb){
+    return setTimeout(() => cb({ timeRemaining: () => 0, didTimeout: true }), 1);
+  };
+
+
 /* ======= بدء ======= */
 async function init(){
   try {
@@ -1006,9 +1059,9 @@ async function init(){
   } catch(e){ console.warn('sale fetch error (first):', e); renderSale([]); }
 
   // أكمل لاحقًا بهدوء
-  requestIdleCallback(async () => {
+  ric(async () => {
     try{
-      const rest = await fetchJSON('/api/farms/sale?limit=60');
+      const rest = await fetchJSON('/api/farms/sale?limit=90');
       allSale = Array.isArray(rest) ? rest : [];
       const nonVip = allSale.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
       renderSale(nonVip);
@@ -1017,7 +1070,7 @@ async function init(){
 
   // VIP منفصل بعد العرض الأول
   try {
-    vipAll = await fetchJSON('/api/farms/sale?vipOnly=1&limit=24');
+    vipAll = await fetchJSON('/api/farms/sale?vipOnly=1&limit=90');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 
@@ -1048,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', init);
   };
 </script>
 <script>
-/* ======== حارس اختيار الموقع — يظهر في كل زيارة ======== */
+/* ======== حارس اختيار الموقع ======== */
 (function(){
   const gate     = document.getElementById('location-gate');
   const gateCity = document.getElementById('gate-city');
@@ -1058,10 +1111,24 @@ document.addEventListener('DOMContentLoaded', init);
   const filterCity = document.getElementById('city');
   const filterArea = document.getElementById('area');
 
-  function openGate(){ if (gate) gate.setAttribute('aria-hidden','false'); }
-  function closeGate(){ if (gate) gate.setAttribute('aria-hidden','true'); }
+  function navType(){
+    const nav = performance.getEntriesByType?.('navigation')?.[0];
+    // values: 'navigate' | 'reload' | 'back_forward' | 'prerender'
+    if (nav?.type) return nav.type;
 
-  // إغلاق بالضغط على الخلفية/زر ×/تخطّي
+    // fallback قديم
+    if (performance?.navigation) {
+      const t = performance.navigation.type; // 0,1,2
+      if (t === 1) return 'reload';
+      if (t === 2) return 'back_forward';
+    }
+    return 'navigate';
+  }
+
+  function openGate(){ gate?.setAttribute('aria-hidden','false'); }
+  function closeGate(){ gate?.setAttribute('aria-hidden','true'); } // ✅ لا تخزّن في localStorage
+
+  // إغلاق بالضغط على الخلفية/زر ×/تخطّي (كما عندك)
   document.addEventListener('click', (e)=>{
     const t = e.target;
     if (t && (t.dataset?.close || t.classList?.contains('gate-backdrop'))){
@@ -1069,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', init);
     }
   });
 
-  // تطبيق الاختيار: املأ الفلاتر ونفّذ الترشيح
+  // تطبيق الاختيار (كما عندك)
   btnApply?.addEventListener('click', ()=>{
     const c = (gateCity?.value || '').trim();
     const a = (gateArea?.value || '').trim();
@@ -1077,24 +1144,27 @@ document.addEventListener('DOMContentLoaded', init);
     if (filterCity) filterCity.value = c;
     if (filterArea) filterArea.value = a;
 
-    // نادِ دوال الفلترة المعرّضة من سكربت الموديول
     if (window.setSaleFilters)      window.setSaleFilters(c, a);
     else if (window.applyFilters)   window.applyFilters();
 
     closeGate();
-
-    // مرّر لمنطقة النتائج
     document.getElementById('results')?.scrollIntoView({ behavior:'smooth', block:'start' });
   });
 
-  // افتح الحارس دائمًا عند كل زيارة/تحميل
-  window.addEventListener('DOMContentLoaded', openGate);
-
-  // عند الرجوع من تاريخ المتصفح (BFCache) — أعد الفتح أيضًا
-  window.addEventListener('pageshow', (e)=>{
-    if (e.persisted) openGate();
+  // ✅ افتح البوابة فقط عند (فتح جديد أو Reload)
+  window.addEventListener('DOMContentLoaded', ()=>{
+    const t = navType();
+    if (t === 'back_forward') return;  // رجوع من التفاصيل: لا تفتح
+    openGate();                         // navigate أو reload: افتح دائمًا
   });
+
+  // ✅ لو رجع من الـ BFCache (بعض المتصفحات) تأكد أنها لا تفتح
+  window.addEventListener('pageshow', (e)=>{
+    if (e.persisted || navType() === 'back_forward') closeGate();
+  });
+
 })();
+
 </script>
 
 <%- include('partials/mobile-nav', { 

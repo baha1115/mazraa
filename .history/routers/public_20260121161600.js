@@ -391,7 +391,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   status: 'approved',
   isSuspended: { $ne: true },
   deletedAt: null
-}).limit(50) 
+}).limit(24) 
 .select({
   name: 1,
   services: 1,
@@ -433,44 +433,52 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   }
 });
 // GET /api/contractors?vipOnly=1|0&limit=40
+// GET /api/contractors?page=1&limit=24
 router.get('/api/contractors', async (req, res) => {
   try {
-    const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit = Math.min(parseInt(req.query.limit || '40', 10), 96);
+    const page  = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '24', 10), 1), 60); // لا نرفعها كثير
+    const skip  = (page - 1) * limit;
 
     const q = {
       status: 'approved',
       isSuspended: { $ne: true },
       deletedAt: null,
-      ...(vipOnly ? { subscriptionTier: 'VIP' } : {})
     };
 
-    // ✅ select خفيف + slice للصور
     let rows = await Contractor.find(q)
       .sort({ createdAt: -1 })
+      .skip(skip)
       .limit(limit)
-      .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount')
+      // نحتاج user Tier حتى نطابق منطق SSR
+      .populate({ path: 'user', select: 'subscriptionTier', model: 'User' })
+      .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount user')
       .lean();
 
-    // ✅ فقط أول صورة من الأعمال
-    const small = u => /^https?:\/\/res\.cloudinary\.com\//.test(u)
-  ? u.replace('/upload/', '/upload/f_auto,q_auto,w_160,h_160,c_fill,g_face/')
-  : u;
+    // ✅ نفس منطق SSR: اشتق الخطة الفعالة وضعها داخل subscriptionTier :contentReference[oaicite:2]{index=2}
+    rows = rows.map(r => {
+      const userTier = r?.user?.subscriptionTier;
+      const effective = userTier || r.subscriptionTier || 'Basic';
+      return { ...r, subscriptionTier: effective };
+    });
 
-rows = rows.map(r => ({
-  ...r,
-  avatar: r.avatar ? small(r.avatar) : r.avatar,
-  photos: Array.isArray(r.photos) && r.photos.length ? [ small(r.photos[0]) ] : []
-}));
+    // ✅ فقط أول صورة من الأعمال (لتخفيف البيانات) :contentReference[oaicite:3]{index=3}
+    rows = rows.map(r => ({
+      ...r,
+      photos: Array.isArray(r.photos) && r.photos.length ? [r.photos[0]] : []
+    }));
 
+    // hasMore بسيط بدون count (أخف وأسرع)
+    const hasMore = rows.length === limit;
 
-    res.set('Cache-Control', 'public, max-age=30');
-    return res.json({ ok: true, data: rows });
+    res.set('Cache-Control', 'public, max-age=15');
+    return res.json({ ok: true, data: rows, page, limit, hasMore });
   } catch (e) {
     console.error('api/contractors', e);
-    return res.status(500).json({ ok: false, data: [] });
+    return res.status(500).json({ ok: false, data: [], page: 1, limit: 24, hasMore: false });
   }
 });
+
 
 // صفحة مقاول فردية
 // routes/public.js

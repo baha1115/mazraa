@@ -1061,7 +1061,7 @@ async function init(){
   // أكمل لاحقًا بهدوء
   ric(async () => {
     try{
-      const rest = await fetchJSON('/api/farms/sale?limit=60');
+      const rest = await fetchJSON('/api/farms/sale?limit=90');
       allSale = Array.isArray(rest) ? rest : [];
       const nonVip = allSale.filter(f => ((f?.owner?.subscriptionTier) || f.ownerTier || 'Basic') !== 'VIP');
       renderSale(nonVip);
@@ -1070,7 +1070,7 @@ async function init(){
 
   // VIP منفصل بعد العرض الأول
   try {
-    vipAll = await fetchJSON('/api/farms/sale?vipOnly=1&limit=24');
+    vipAll = await fetchJSON('/api/farms/sale?vipOnly=1&limit=90');
     renderVip(vipAll);
   } catch(e){ console.warn('vip fetch error:', e); renderVip([]); }
 

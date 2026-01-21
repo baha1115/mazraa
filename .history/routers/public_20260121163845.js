@@ -110,8 +110,8 @@ router.get('/sale', async (req, res) => {
 router.get('/api/farms/sale', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
-
+   // const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
+const limit   =100;
     const match = {
       kind: { $regex: /^sale$/i },
       status: { $in: ['approved', 'Approved'] },
@@ -166,7 +166,8 @@ router.get('/api/farms/sale', async (req, res) => {
 router.get('/api/farms/rent', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
+    //const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
+    const limit   = 100;
 
     const match = {
       kind: { $regex: /^rent$/i },
@@ -391,7 +392,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
   status: 'approved',
   isSuspended: { $ne: true },
   deletedAt: null
-}).limit(50) 
+}).limit(24) 
 .select({
   name: 1,
   services: 1,
@@ -436,7 +437,7 @@ const promoBottom = await PromoConfig.findOne({ key: 'promo-bottom:contractors' 
 router.get('/api/contractors', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit = Math.min(parseInt(req.query.limit || '40', 10), 96);
+    //const limit = Math.min(parseInt(req.query.limit || '40', 10), 96);
 
     const q = {
       status: 'approved',
@@ -448,7 +449,7 @@ router.get('/api/contractors', async (req, res) => {
     // ✅ select خفيف + slice للصور
     let rows = await Contractor.find(q)
       .sort({ createdAt: -1 })
-      .limit(limit)
+      .limit(70)
       .select('name services city region avatar photos subscriptionTier ratingAvg ratingCount')
       .lean();
 
