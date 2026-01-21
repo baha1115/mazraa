@@ -1998,7 +1998,14 @@ async function openUserDetails(userId, label = 'تفاصيل المستخدم') 
 
     const farmsHtml = farms.length
       ? `<ul style="margin:8px 0 0; padding:0 18px; line-height:1.9">
-          ${farms.map(f => `<li><b>${esc2(f.title || 'بدون عنوان')}</b> — ${esc2(f.kind || '')} — ${esc2(f.status || '')}</li>`).join('')}
+          
+${farms.map(f => `<li>
+  <b>${esc2(f.title||'بدون عنوان')}</b>
+  — ${esc2(f.kind||'')}
+  — ${esc2(f.status||'')}
+  — <span style="color:#0b4e45;font-weight:900">واتساب: ${Number(f.whatsappClicks||0)}</span>
+</li>`).join('')}
+
         </ul> 
         <div class="stat">
   <div class="k">نقرات واتساب (أراضي)</div>

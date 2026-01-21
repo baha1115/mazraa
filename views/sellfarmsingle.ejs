@@ -687,7 +687,32 @@ if (/^https?:\/\//i.test(u)) {
         <p class="hero__meta"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
         <div class="hero__actions">
           <a class="btn btn-primary" href="#gallery">تصفّح الصور</a>
-          <a class="btn hero__cta" href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>" target="_blank" rel="noopener">واتساب</a>
+         <a
+  class="btn hero__cta js-wa-track"
+  data-farm-id="<%= farm?._id %>"
+  href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>"
+  target="_blank"
+  rel="noopener"
+>واتساب</a>
+<script>
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a.js-wa-track');
+    if (!a) return;
+
+    const id = a.dataset.farmId;
+    if (!id) return;
+
+    const url = `/farm/${id}/whatsapp-click`;
+
+    // الأفضل لأن الصفحة ستنتقل مباشرة إلى واتساب
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url);
+    } else {
+      fetch(url, { method: 'POST', keepalive: true }).catch(()=>{});
+    }
+  }, true);
+</script>
+
         </div>
       </div>
     </header>
@@ -1255,5 +1280,7 @@ openLB(idx);
   activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
+
+
 </body>
 </html>

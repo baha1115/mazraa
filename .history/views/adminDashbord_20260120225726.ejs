@@ -1999,12 +1999,7 @@ async function openUserDetails(userId, label = 'تفاصيل المستخدم') 
     const farmsHtml = farms.length
       ? `<ul style="margin:8px 0 0; padding:0 18px; line-height:1.9">
           ${farms.map(f => `<li><b>${esc2(f.title || 'بدون عنوان')}</b> — ${esc2(f.kind || '')} — ${esc2(f.status || '')}</li>`).join('')}
-        </ul> 
-        <div class="stat">
-  <div class="k">نقرات واتساب (أراضي)</div>
-  <div class="v">${farmsWaClicks}</div>
-</div>
-`
+        </ul>`
       : `<div style="color:#64748b;font-weight:800;margin-top:6px">لا توجد أراضي/مزارع لهذا المستخدم.</div>`;
 
     const contractorHtml = c

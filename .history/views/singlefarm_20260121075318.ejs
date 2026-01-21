@@ -137,37 +137,49 @@
       .gallery-grid .g-item.is-rect{ grid-column: span 3; aspect-ratio: 1/1; }
     }
 
-    /* ===== Gallery · ultra-mini on phones ===== */
-    @media (max-width:640px){
-      /* سكشن أخف */
-      #gallery.card{ padding:.45rem !important; }
-      #gallery h2{ margin:0 0 .35rem !important; font-size:.92rem !important; }
+   /* ===== Gallery · mobile small 2×2 ===== */
+@media (max-width:640px){
+  /* سكشن المعرض نفسه أصغر */
+  #gallery.card{
+    padding: .45rem !important;
+    border-radius: 14px !important;
+  }
+  #gallery h2{
+    margin: 0 0 .35rem !important;
+    font-size: .92rem !important;
+  }
 
-      /* شبكة مصغّرة جدًا: 6 أعمدة + فجوة 2px */
-      .gallery-grid{
-        grid-template-columns: repeat(6, 1fr) !important;
-        gap: 2px !important;
-      }
+  /* شبكتان في الصف (صور صغيرة ومنظمة) */
+  .gallery-grid{
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+  }
 
-      /* أول صورة تغطي الصف بالكامل لكن بنسبة أصغر بكثير */
-      .gallery-grid .g-item.is-hero{
-        grid-column: span 6 !important;
-        aspect-ratio: 3 / 2 !important;
-      }
+  /* جميع الصور مربعات صغيرة */
+  .gallery-grid .g-item{
+    grid-column: span 1 !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 10px !important;
+  }
 
-      /* باقي الصور مربعات صغيرة جدًا */
-      .gallery-grid .g-item{
-        aspect-ratio: 1 / 1 !important;
-      }
+  /* لا بطل كبير على الموبايل: نفس العرض للـ hero والـ rect */
+  .gallery-grid .g-item.is-hero,
+  .gallery-grid .g-item.is-rect{
+    grid-column: span 1 !important;
+  }
 
-      .gallery-grid .g-item img{
-        width:100% !important; height:100% !important;
-        object-fit:cover !important; object-position:center !important;
-      }
+  .gallery-grid .g-item img{
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
 
-      /* شارة +عدد أصغر */
-      .g-item .g-more{ font-size: clamp(11px, 4vw, 15px) !important; }
-    }
+  /* شارة "+ المزيد" بحجم مناسب */
+  .g-item .g-more{
+    font-size: clamp(12px, 4vw, 16px) !important;
+  }
+}
 
     /* ===== Owner farms · polished (two-up on phones) ===== */
     .owner-sale-swiper .swiper-slide{ height:auto; }
@@ -349,6 +361,121 @@
         to{ opacity:1; transform: none; }
       }
     }
+    /* ========== Owner farms (rent) match VIP cards (button + views always visible) ========== */
+.owner-sale-swiper .swiper-wrapper{ align-items: stretch !important; }
+.owner-sale-swiper .swiper-slide{ height: auto !important; }
+
+.owner-sale-swiper .farm-card{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.owner-sale-swiper .farm-link{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.owner-sale-swiper .farm-body{
+  display: grid !important;
+  row-gap: .45rem !important;
+  flex: 1 !important;
+}
+
+.owner-sale-swiper .meta-views{
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.owner-sale-swiper .btn.btn-outline{
+  margin-top: auto !important;
+  width: 100% !important;
+}
+
+/* موبايل: اخفِ الأسهم وخلي النقاط */
+@media (max-width:640px){
+  .owner-sale-swiper .swiper-button-prev,
+  .owner-sale-swiper .swiper-button-next{ display:none !important; }
+  .owner-sale-swiper .swiper-pagination{ display:block !important; }
+}
+/* ========== Top rent match VIP cards ========== */
+.top-rent-wrap .swiper-wrapper{ align-items: stretch !important; }
+.top-rent-wrap .swiper-slide{ height: auto !important; }
+
+.top-rent-wrap .farm-card{
+  display:flex !important;
+  flex-direction:column !important;
+  height:100% !important;
+}
+.top-rent-wrap .farm-link{
+  display:flex !important;
+  flex-direction:column !important;
+  height:100% !important;
+}
+.top-rent-wrap .farm-body{
+  display:grid !important;
+  row-gap:.45rem !important;
+  flex:1 !important;
+}
+.top-rent-wrap .meta-views{
+  display:inline-block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+.top-rent-wrap .btn.btn-outline{
+  margin-top:auto !important;
+  width:100% !important;
+}
+
+@media (max-width:640px){
+  .top-rent-wrap .swiper-button-prev,
+  .top-rent-wrap .swiper-button-next{ display:none !important; }
+  .top-rent-wrap .swiper-pagination{ display:block !important; }
+}
+/* Top rent = نفس كروت VIP */
+.top-rent-wrap .swiper-wrapper{ align-items: stretch !important; }
+.top-rent-wrap .swiper-slide{ height:auto !important; }
+
+.top-rent-wrap .farm-card,
+.top-rent-wrap .farm-link{
+  display:flex !important;
+  flex-direction:column !important;
+  height:100% !important;
+}
+
+.top-rent-wrap .farm-media{
+  aspect-ratio: 16/10 !important;
+  overflow:hidden !important;
+  border-radius: 14px 14px 0 0 !important;
+}
+
+.top-rent-wrap .farm-media img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+.top-rent-wrap .farm-body{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:.45rem !important;
+  flex:1 !important;
+}
+
+.top-rent-wrap .meta-views{
+  display:inline-block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+.top-rent-wrap .btn.btn-outline{
+  margin-top:auto !important;
+  width:100% !important;
+}
+
   </style>
 
 </head>
@@ -409,6 +536,7 @@ const cover  = assetPath(photos[0]);
 const ownerList     = Array.isArray(sameOwnerFarms) ? sameOwnerFarms : [];
 const hasOwnerFarms = ownerList.length > 0;
 
+
 const sym       = (farm?.currency === 'SYP') ? 'ل.س' : '$';
 const priceNum  = Number(farm?.price || 0);
 const isRent    = String(farm?.kind || '').toLowerCase() === 'rent';
@@ -455,12 +583,37 @@ const pStr = priceNum
         <p class="hero__meta"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
         <div class="hero__actions">
           <a class="btn btn-primary" href="#gallery">تصفّح الصور</a>
-          <a class="btn hero__cta" href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>" target="_blank" rel="noopener">واتساب</a>
-        </div>
+        <a
+  class="btn hero__cta js-wa-track"
+  data-farm-id="<%= farm?._id %>"
+  href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>"
+  target="_blank"
+  rel="noopener"
+>واتساب</a>
+ </div>
       </div>
     </header>
   </div>
 </section>
+<script>
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a.js-wa-track');
+    if (!a) return;
+
+    const id = a.dataset.farmId;
+    if (!id) return;
+
+    const url = `/farm/${id}/whatsapp-click`;
+
+    // الأفضل لأن الصفحة ستنتقل مباشرة إلى واتساب
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url);
+    } else {
+      fetch(url, { method: 'POST', keepalive: true }).catch(()=>{});
+    }
+  }, true);
+</script>
+
 
 <!-- ====== Main ====== -->
 <section class="section">
@@ -506,6 +659,7 @@ const pStr = priceNum
           </article>
         </div>
       </section>
+<!-- DEBUG -->
 
       <%
         // تجهيز نصوص المرافق/المسبح/البناء
@@ -590,11 +744,12 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
           loading="lazy" decoding="async" fetchpriority="low"
           onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
 
-        <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
+               <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
         <% if (i === __limit - 1 && __more > 0) { %>
-          <span class="g-more" aria-hidden="true">+<%= __more %></span>
-          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
+          <span class="g-more" aria-hidden="true">+ المزيد</span>
+          <span class="sr-only">اضغط لعرض باقي الصور</span>
         <% } %>
+
       </a>
     <% }) %>
   </div>
@@ -706,9 +861,21 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
 <% } %>
 
 <!-- Top Rent (لو عندك بارتشيال top-rent) -->
-<%- include('partials/top-rent', { items: (Array.isArray(topRent) ? topRent : []) }) %>
+<% if (Array.isArray(topRent) && topRent.length) { %>
+  <section class="section top-rent-wrap">
+    <%- include('partials/top-rent', { items: topRent, assetPath: assetPath }) %>
+  </section>
+<% } %>
+
+
 
 <% } /* end if farm */ %>
+<script>
+  // كل الصور (حتى لو الشبكة تعرض 4 فقط)
+  const ALL_PHOTOS = <%- JSON.stringify((photos || []).map(p => assetPath(p))) %>;
+</script>
+
+
 <!-- ===== Lightbox / Fullscreen Gallery ===== -->
 <div id="lb" class="lb" hidden aria-hidden="true">
   <button class="lb-close" aria-label="إغلاق">×</button>
@@ -735,7 +902,36 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
           breakpoints:{ 640:{slidesPerView:1.05,spaceBetween:20}, 1024:{slidesPerView:1.08,spaceBetween:22} }
         });
       }
-      
+      if (document.querySelector('.owner-sale-swiper')) {
+  new Swiper('.owner-sale-swiper', {
+    watchOverflow:true,
+    pagination:{ el:'.owner-sale-swiper .swiper-pagination', clickable:true },
+    navigation:{ nextEl:'.owner-sale-swiper .swiper-button-next', prevEl:'.owner-sale-swiper .swiper-button-prev' },
+    breakpoints:{
+      0:{slidesPerView:2.02,spaceBetween:10},
+      480:{slidesPerView:2.1,spaceBetween:12},
+      640:{slidesPerView:2.4,spaceBetween:14},
+      1024:{slidesPerView:3.2,spaceBetween:18},
+      1280:{slidesPerView:4.2,spaceBetween:20}
+    }
+  });
+}
+const topRentSwiperEl = document.querySelector('.top-rent-wrap .swiper');
+if (topRentSwiperEl) {
+  new Swiper(topRentSwiperEl, {
+    watchOverflow:true,
+    pagination:{ el:'.top-rent-wrap .swiper-pagination', clickable:true },
+    navigation:{ nextEl:'.top-rent-wrap .swiper-button-next', prevEl:'.top-rent-wrap .swiper-button-prev' },
+    breakpoints:{
+      0:{slidesPerView:2.02,spaceBetween:10},
+      480:{slidesPerView:2.1,spaceBetween:12},
+      640:{slidesPerView:2.4,spaceBetween:14},
+      1024:{slidesPerView:3.2,spaceBetween:18},
+      1280:{slidesPerView:4.2,spaceBetween:20}
+    }
+  });
+}
+
     });
   </script>
 <% } %>
@@ -823,24 +1019,7 @@ sizes="(max-width:640px) <%= isHero ? '92vw' : '14vw' %>, (max-width:1024px) <%=
   activeTab: 'rent',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  if (document.querySelector('.owner-sale-swiper')) {
-    new Swiper('.owner-sale-swiper', {
-      watchOverflow:true,
-      pagination:{ el:'.owner-sale-swiper .swiper-pagination', clickable:true },
-      navigation:{ nextEl:'.owner-sale-swiper .swiper-button-next', prevEl:'.owner-sale-swiper .swiper-button-prev' },
-      breakpoints:{
-        0:    { slidesPerView: 2.02, spaceBetween: 10 },   /* هاتف: كرتان */
-        480:  { slidesPerView: 2.10, spaceBetween: 12 },
-        640:  { slidesPerView: 2.4,  spaceBetween: 14 },
-        1024: { slidesPerView: 3.2,  spaceBetween: 18 },
-        1280: { slidesPerView: 4.2,  spaceBetween: 20 }
-      }
-    });
-  }
-});
-</script>
+
 <script>
 (function(){
   const grid = document.getElementById('galleryMain');          // شبكة المعرض لديك
@@ -848,9 +1027,15 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const anchors = Array.from(grid.querySelectorAll('a.g-item')); // كل صورة قابلة للنقر
   if(!anchors.length) return;
+console.log('ALL_PHOTOS length =', (typeof ALL_PHOTOS !== 'undefined' ? ALL_PHOTOS.length : 'UNDEFINED'));
+
 
   // مصادر الصور بالحجم الكامل من href
-  const sources = anchors.map(a => a.getAttribute('href'));
+const sources = (Array.isArray(ALL_PHOTOS) && ALL_PHOTOS.length)
+  ? ALL_PHOTOS
+  : anchors.map(a => a.getAttribute('href'));
+
+
 
   // عناصر اللايت بوكس
   const lb = document.getElementById('lb');
@@ -915,10 +1100,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   // اربط كل صورة
-  anchors.forEach((a,i)=>{
-    const img=a.querySelector('img'); if(img) img.style.cursor='zoom-in';
-    a.addEventListener('click', (ev)=>{ ev.preventDefault(); openLB(i); });
+ anchors.forEach((a,i)=>{
+  const img=a.querySelector('img'); if(img) img.style.cursor='zoom-in';
+  a.addEventListener('click', (ev)=>{
+    ev.preventDefault();
+    const idx = Number(a.dataset.index || i);
+    openLB(idx);
   });
+});
+
 
   closeBtn.addEventListener('click', closeLB);
 })();

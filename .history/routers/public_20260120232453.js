@@ -605,23 +605,20 @@ router.post('/contractor/:id/whatsapp-click', async (req, res, next) => {
     return res.json({ ok:true });
   } catch (e) { next(e); }
 });
-// ✅ تتبع نقرات واتساب للأراضي/المزارع
-router.post('/farm/:id/whatsapp-click', async (req, res) => {
+router.post('/api/farms/:id/whatsapp-click', async (req, res) => {
   try {
-    const id = String(req.params.id || '').trim();
-    if (!id) return res.status(400).json({ ok: false, msg: 'bad_id' });
+    const farmId = req.params.id;
 
-    await Farm.updateOne(
-      { _id: id },
-      { $inc: { whatsappClicks: 1 } }
+    await Farm.findByIdAndUpdate(
+      farmId,
+      { $inc: { whatsappClicks: 1 } },
+      { new: false }
     );
 
-    // sendBeacon غالباً لا يحتاج JSON
-    return res.status(204).end();
+    return res.json({ ok: true });
   } catch (e) {
-    console.error('farm whatsapp-click error:', e);
-    return res.status(500).json({ ok: false, msg: 'whatsapp_click_failed' });
+    console.error(e);
+    return res.status(500).json({ ok: false, msg: 'wa_click_failed' });
   }
 });
-
 module.exports = router;

@@ -7,6 +7,7 @@ const OwnerInfoSchema = new mongoose.Schema({
 }, {_id:false});
 const FarmSchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // أو اتركه كما عندك
+  ownerTier: { type: String, enum: ['Basic','Premium','VIP'], default: 'Basic' },
    ownerInfo: OwnerInfoSchema,
 currency: { type: String, enum: ['USD','SYP'], default: 'USD' }
 ,
@@ -18,12 +19,14 @@ currency: { type: String, enum: ['USD','SYP'], default: 'USD' }
   price: Number,
 // ضمن مخطط Farm
 views: { type: Number, default: 0 },
+  rentPeriod: { type:String, enum:['daily','monthly'], default:'monthly' },
+
 // أمّا تضيف حقل حالة أدق، أو حقول فلاغ:
 isSuspended: { type: Boolean, default: false }, // مُعلّق (خارج الظهور)
 suspendedReason: { type: String, default: '' },
-deletedAt: { type: Date, default: null }  // حذف ناعم بعد انتهاء المهلة
+deletedAt: { type: Date, default: null } , // حذف ناعم بعد انتهاء المهلة
+whatsappClicks: { type: Number, default: 0 },
 
-,
   photos: [String],
   poolDesc: { type: String, default: '' },       // وصف المسبح
   amenitiesDesc: { type: String, default: '' },  // وصف المرافق
@@ -47,5 +50,13 @@ deletedAt: { type: Date, default: null }  // حذف ناعم بعد انتهاء
 // فهرس TTL: يحذف الوثائق بعد 7 أيام من قيمة rejectedAt.
 // ملاحظة: TTL يعمل فقط عندما تكون rejectedAt != null
 FarmSchema.index({ rejectedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
+// فهارس أداء للقوائم/الفرز/التصفية:
+FarmSchema.index({ kind: 1, status: 1, isSuspended: 1, deletedAt: 1, createdAt: -1 });
+
+// لو تستخدم تمييز مالك VIP داخل وثيقة المزرعة (denormalized):
+FarmSchema.index({ ownerTier: 1, createdAt: -1 });
+
+// في حال التصفية بالمدينة/المنطقة:
+FarmSchema.index({ city: 1, area: 1 });
 
 module.exports = mongoose.model('Farm', FarmSchema);

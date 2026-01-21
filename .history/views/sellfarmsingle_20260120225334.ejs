@@ -145,48 +145,47 @@
     }
 
     /* ===== Gallery · Extra-compact on Mobile ===== */
-       /* ===== Gallery · mobile tidy ===== */
-    @media (max-width: 640px){
-      /* الكرت نفسه أصغر */
-      #gallery.card{
-        padding: .5rem .5rem .7rem !important;
-        border-radius: 14px !important;
-      }
-      #gallery h2{
-        margin: 0 0 .45rem !important;
-        font-size: .98rem !important;
-      }
+    /* ===== Gallery · mobile small 2×2 ===== */
+@media (max-width: 640px){
+  #gallery.card{
+    padding: .5rem .5rem .7rem !important;
+    border-radius: 14px !important;
+  }
+  #gallery h2{
+    margin: 0 0 .45rem !important;
+    font-size: .95rem !important;
+  }
 
-      /* شبكة مضغوطة أكثر */
-      .gallery-grid{
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 3px !important;
-      }
+  /* شبكتين في الصف (صور صغيرة) */
+  .gallery-grid{
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+  }
 
-      /* الصورة الأولى أعرض وأقصر قليلاً */
-      .gallery-grid .g-item.is-hero{
-        grid-column: span 4 !important;
-        aspect-ratio: 16 / 9 !important;  /* ارتفاع أقل من قبل */
-      }
+  /* كل الصور مربعات صغيرة */
+  .gallery-grid .g-item{
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 10px !important;
+  }
 
-      /* باقي الصور مربعات صغيرة منظمة */
-      .gallery-grid .g-item{
-        aspect-ratio: 1 / 1 !important;
-        border-radius: 10px !important;
-      }
+  /* لا يوجد بطل كبير في الموبايل: الكل نفس العرض */
+  .gallery-grid .g-item.is-hero,
+  .gallery-grid .g-item.is-rect{
+    grid-column: span 1 !important;
+  }
 
-      .gallery-grid .g-item img{
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-      }
+  .gallery-grid .g-item img{
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
 
-      /* شارة +N أصغر قليلاً */
-      .g-item .g-more{
-        font-size: clamp(13px, 4.5vw, 17px) !important;
-      }
-    }
+  .g-item .g-more{
+    font-size: clamp(12px, 4vw, 16px) !important;
+  }
+}
+
     /* إخفاء سكشن "التواصل السريع" على الموبايل */
     @media (max-width: 1023.98px){
       .aside-sticky{ display: none !important; }
@@ -422,6 +421,157 @@
     @media (max-width:640px){
       .lb-swiper{ width: 100vw; height: 78vh; }
     }
+    /* نفس منطق صفحة /sale: كروت بنفس الارتفاع والزر بأسفل الكرت */
+.owner-sale-swiper .swiper-wrapper{
+  align-items: stretch;
+}
+.owner-sale-swiper .swiper-slide{
+  height:auto;
+}
+.owner-sale-swiper .farm-card{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.owner-sale-swiper .farm-body{
+  flex:1;
+}
+.owner-sale-swiper .farm-body .btn.btn-outline{
+  margin-top:auto;
+}
+
+/* تحسين مكان الأسهم: على الديسكتوب خارج الكروت */
+.owner-sale-swiper{
+  position:relative;
+  padding-inline:34px; /* مساحة للأسهم */
+}
+.owner-sale-swiper .swiper-button-prev,
+.owner-sale-swiper .swiper-button-next{
+  color:#0f172a;
+}
+
+/* ✅ على الموبايل: اخفِ الأسهم مثل صفحة الأراضي/البيع وخلي النقاط فقط */
+@media (max-width:640px){
+  .owner-sale-swiper{
+    padding-inline:0;
+    padding-bottom:16px; /* مساحة للنقاط */
+  }
+  .owner-sale-swiper .swiper-button-prev,
+  .owner-sale-swiper .swiper-button-next{
+    display:none !important;
+  }
+  .owner-sale-swiper .swiper-pagination{
+    display:block !important;
+  }
+}
+/* ========== Fix: owner cards match /sale (no cut) ========== */
+.owner-sale-swiper .swiper-wrapper{ align-items: stretch; }
+
+.owner-sale-swiper .swiper-slide{
+  height: auto !important;
+}
+
+/* الكرت يصبح Flex مثل صفحة /sale */
+.owner-sale-swiper .farm-card{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* جسم الكرت يتمدد والزر ينزل تحت */
+.owner-sale-swiper .farm-body{
+  display: grid;
+  row-gap: .45rem;
+  flex: 1 !important;
+}
+
+/* اجعل زر التفاصيل آخر شيء دائمًا */
+.owner-sale-swiper .farm-body .btn.btn-outline{
+  margin-top: auto !important;
+  width: 100% !important;
+}
+
+/* لا تخفي عدّاد المشاهدات */
+.owner-sale-swiper .farm-body .meta-views{
+  display: inline-block !important;
+}
+/* اجعل كروت "نفس المالك" مطابقة 1:1 لسلوك /sale */
+.owner-sale-swiper .swiper-wrapper{ align-items: stretch !important; }
+.owner-sale-swiper .swiper-slide{ height: auto !important; }
+
+.owner-sale-swiper .farm-card{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* ⭐ الأهم: اجعل الرابط الداخلي يتمدد ويصبح flex */
+.owner-sale-swiper .farm-link{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* جسم الكرت يتمدد والزر يثبت أسفل */
+.owner-sale-swiper .farm-body{
+  display: grid !important;
+  row-gap: .45rem !important;
+  flex: 1 !important;
+}
+
+/* لا تخفي المشاهدات */
+.owner-sale-swiper .meta-views{
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* الزر دائمًا آخر شيء */
+.owner-sale-swiper .btn.btn-outline{
+  margin-top: auto !important;
+  width: 100% !important;
+}
+/* ========== Top Sale (Most viewed) match /sale VIP cards ========== */
+.top-sale-wrap .swiper-wrapper{ align-items: stretch !important; }
+.top-sale-wrap .swiper-slide{ height: auto !important; }
+
+/* نفس سلوك كروت /sale */
+.top-sale-wrap .farm-card{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+.top-sale-wrap .farm-link{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+.top-sale-wrap .farm-body{
+  display: grid !important;
+  row-gap: .45rem !important;
+  flex: 1 !important;
+}
+.top-sale-wrap .meta-views{
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.top-sale-wrap .btn.btn-outline{
+  margin-top: auto !important;
+  width: 100% !important;
+}
+
+/* على الموبايل: أخفِ الأسهم وخلي النقاط (مثل /sale) */
+@media (max-width:640px){
+  .top-sale-wrap .swiper-button-prev,
+  .top-sale-wrap .swiper-button-next{
+    display: none !important;
+  }
+  .top-sale-wrap .swiper-pagination{
+    display: block !important;
+  }
+}
+
 </style>
 
 </head>
@@ -537,7 +687,7 @@ if (/^https?:\/\//i.test(u)) {
         <p class="hero__meta"><%= farm.city ? (farm.area||'') + ' — ' + farm.city : (farm.area||'—') %></p>
         <div class="hero__actions">
           <a class="btn btn-primary" href="#gallery">تصفّح الصور</a>
-          <a class="btn hero__cta" href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>" target="_blank" rel="noopener">واتساب</a>
+          <a class="btn hero__cta" data-farm-id="<%= farm._id %>" href="https://wa.me/<%= ((farm?.ownerInfo?.whatsapp)||'').replace(/\D/g,'') %>?text=<%= encodeURIComponent('أنا مهتم بمزرعة: ' + farm.title) %>" target="_blank" rel="noopener">واتساب</a>
         </div>
       </div>
     </header>
@@ -705,13 +855,17 @@ if (/^https?:\/\//i.test(u)) {
           onerror="this.onerror=null;this.src='/public/assets/farm-default.jpg'">
         <% /* لو هذه آخر بلاطة معروضة ويوجد مزيد */ %>
         <% if (i === __limit - 1 && __more > 0) { %>
-          <span class="g-more" aria-hidden="true">+<%= __more %></span>
-          <span class="sr-only">هناك <%= __more %> صور إضافية</span>
+          <span class="g-more" aria-hidden="true">+ المزيد</span>
+          <span class="sr-only">اضغط لعرض باقي الصور</span>
         <% } %>
+
       </a>
     <% }) %>
   </div>
 </section>
+<script>
+  window.ALL_PHOTOS = <%- JSON.stringify((photos || []).map(p => assetPath(p))) %>;
+</script>
 
 
       <!-- فيديو (اختياري) -->
@@ -823,8 +977,11 @@ if (/^https?:\/\//i.test(u)) {
 
 
 <% if (Array.isArray(topSale) && topSale.length) { %>
-  <%- include('partials/top-sale', { items: topSale }) %>
+  <section class="section top-sale-wrap">
+    <%- include('partials/top-sale', { items: topSale }) %>
+  </section>
 <% } %>
+
 
 <% } /* end if farm */ %>
 
@@ -972,7 +1129,11 @@ document.addEventListener('DOMContentLoaded', function(){
   if(!anchors.length) return;
 
   // مصادر الصور بالحجم الكامل من href (نفس ما تعرضه بالبطاقة)
-  const sources = anchors.map(a => a.getAttribute('href'));
+ const sources = (Array.isArray(window.ALL_PHOTOS) && window.ALL_PHOTOS.length)
+  ? window.ALL_PHOTOS
+  : anchors.map(a => a.getAttribute('href'));
+console.log('sources length =', sources.length);
+
 
   // عناصر اللايت بوكس
   const lb     = document.getElementById('lb');
@@ -1049,10 +1210,11 @@ document.addEventListener('DOMContentLoaded', function(){
     if (img) img.style.cursor = 'zoom-in';
     a.addEventListener('click', function(ev){
       ev.preventDefault();
-      openLB(i);
+      const idx = Number(a.dataset.index || i);
+openLB(idx);
+
     });
   });
-
   // زر الإغلاق
   closeB.addEventListener('click', closeLB);
 })();
@@ -1093,5 +1255,28 @@ document.addEventListener('DOMContentLoaded', function(){
   activeTab: 'sale',   // غيّرها حسب الصفحة: 'home' | 'sale' | 'rent' | 'contractors' | 'dash'
   isAuth, isAdmin, isContractor, isOwner,
 }) %>
+<script>
+  (function () {
+    const btn = document.querySelector('.btn-wa[data-farm-id]');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      const farmId = btn.getAttribute('data-farm-id');
+      if (!farmId) return;
+
+      const url = `/api/farms/${farmId}/whatsapp-click`;
+
+      // الأفضل للموبايل (خصوصاً iPhone): sendBeacon لأنه يشتغل حتى لو الصفحة غادرت فوراً
+      if (navigator.sendBeacon) {
+        try { navigator.sendBeacon(url); } catch (e) {}
+      } else {
+        // fallback
+        fetch(url, { method: 'POST', keepalive: true, headers: { 'Accept': 'application/json' } })
+          .catch(()=>{});
+      }
+    }, { passive: true });
+  })();
+</script>
+
 </body>
 </html>
