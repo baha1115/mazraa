@@ -166,7 +166,7 @@ router.get('/api/farms/sale', async (req, res) => {
 router.get('/api/farms/rent', async (req, res) => {
   try {
     const vipOnly = String(req.query.vipOnly || '') === '1';
-    const limit   = 96;
+    const limit   = Math.min(parseInt(req.query.limit || '40', 10), 96);
 
     const match = {
       kind: { $regex: /^rent$/i },

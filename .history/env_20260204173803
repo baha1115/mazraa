@@ -1,0 +1,13 @@
+MONGODB_URI=mongodb+srv://alaa6520_db_user:xvEAKZI10zRwmpf9@cluster0.lsiilcj.mongodb.net/?appName=Cluster0
+PORT=3000
+SESSION_SECRET=supersecret_change_me
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=bahamnassri78@gmail.com
+SMTP_PASS=zicpkvtzarxqmexm
+SMTP_FROM="Farmers Support <bahamnassri78@gmail.com>"
+ADMIN_EMAILS=bahamnasri01@gmail.com,Alaa6520@hotmail.com
+CLOUDINARY_CLOUD_NAME=db4hk1kqr
+CLOUDINARY_API_KEY=925489968336829
+CLOUDINARY_API_SECRET=eoG7yMwV-msDPM5fcZ1ZD5vS1vA
+

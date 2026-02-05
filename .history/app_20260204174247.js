@@ -1,5 +1,6 @@
 // app.js
 require('dotenv').config();
+console.log("Check DB URL:", process.env.MONGODB_URI);
 const path           = require('path');
 const express        = require('express');
 const fs   = require('fs');
@@ -9,7 +10,7 @@ const MongoStore     = require('connect-mongo');
 const nodemailer     = require('nodemailer');
 const methodOverride = require('method-override');
 const cookieParser   = require('cookie-parser');
-const { randomUUID, generateKeySync } = require('crypto');
+const { randomUUID } = require('crypto');
 const compression = require('compression');
 const ContractorRequest = require('./models/contractorRequestModel');
 const SubscriptionConfig = require('./models/SubscriptionConfig');
@@ -30,35 +31,36 @@ const ownerRouter  = require('./routers/ownerRouter');  // إن وُجد
 //daily subs job
 async function applyContractorLimitsForUser(userId, tier) {
   try {
-   const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
-  const limitByTier = {
-    Basic:   cfg?.basicLimit   ?? 1,
-    Premium: cfg?.premiumLimit ?? 2,
-    VIP:     cfg?.vipLimit     ?? 999,
-  };
-  const allow = limitByTier[tier] ?? 1;
+    const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
+    const basicLimit   = cfg?.basicLimit   ?? 1;
+    const premiumLimit = cfg?.premiumLimit ?? 2;   // اختيارك هنا 2 تمام
+    const vipLimit     = cfg?.vipLimit     ?? 999;
 
-  // ✅ CORRECTION : Filtrer UNIQUEMENT les terres approved
-  const farms = await Farm.find({ 
-    owner: userId, 
-    deletedAt: null,
-    status: 'approved'  // ← LIGNE AJOUTÉE
-  }).sort({ createdAt: -1 });
-  
-  const keep = farms.slice(0, allow);
-  const suspend = farms.slice(allow);
+    const limitMap = { Basic: basicLimit, Premium: premiumLimit, VIP: vipLimit };
+    const allow = limitMap[tier] ?? basicLimit;
 
-  await Farm.updateMany(
-    { _id: { $in: keep.map(f => f._id) } },
-    { $set: { isSuspended: false, suspendedReason: '' } }
-  );
+    // pending + approved فقط، غير مؤرشفة
+    const reqs = await ContractorRequest
+      .find({ user: userId, status: { $in: ['pending','approved'] }, archivedAt: null })
+      .sort({ createdAt: -1 }); // أو approvedAt: -1 ثم createdAt: -1 لو أردت
 
-  await Farm.updateMany(
-    { _id: { $in: suspend.map(f => f._id) } },
-    { $set: { isSuspended: true, suspendedReason: 'limit' } }
-  );
-}
-  catch (e) {
+    const keep    = reqs.slice(0, allow);
+    const suspend = reqs.slice(allow);
+
+    if (keep.length) {
+      await ContractorRequest.updateMany(
+        { _id: { $in: keep.map(r => r._id) } },
+        { $set: { isSuspended: false, suspendedReason: '' } }
+      );
+    }
+
+    if (suspend.length) {
+      await ContractorRequest.updateMany(
+        { _id: { $in: suspend.map(r => r._id) } },
+        { $set: { isSuspended: true, suspendedReason: 'limit' } }
+      );
+    }
+  } catch (e) {
     console.error('applyContractorLimitsForUser error:', e);
   }
 }
@@ -143,14 +145,9 @@ if (!global.__subCleanupJobStarted) {
   }, 12 * 60 * 60 * 1000); // كل 12 ساعة
 }
 
-
-
-
 // App init
 const app  = express();
 const port = process.env.PORT || 3000;
-// GET /api/users/id-by-email?email=test@gmail.com
-
 
 // ---------------------------------------------------------------------------
 // إعدادات أساسية
@@ -254,34 +251,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.get("/id-by-email", async (req, res) => {
-  try {
-    const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        message: "Email is required",
-      });
-    }
-
-    const user = await User.findOne({ email }).select("_id");
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    res.status(200).json({
-      userId: user._id,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
-  }
-});
 // ---------------------------------------------------------------------------
 // الجلسات (تعمل لصفحات الواجهة فقط، وليس لراوتر /api)
 // ---------------------------------------------------------------------------
@@ -393,9 +363,6 @@ app.use('/admin', adminRouter);
 app.use('/', loginRouter);
 app.use('/', publicRouter);
 app.use('/', ownerRouter);
-
-
-
 
 // ✅ ملف التحقق من Google Search Console
 app.get('/google88fd5ddd67a71ece.html', (req, res) => {

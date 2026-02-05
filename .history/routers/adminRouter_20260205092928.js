@@ -20,26 +20,6 @@ const { sendMail: sendFarmMail } = require('../utils/mailer');   // SMTP للأ�
 const { sendMail: sendContractorMail } = require('../utils/mailer2'); // SMTP للمقاولين
 
 // === إضافة في أعلى adminRouter.js ===
-async function restoreFarmsAfterSubscription(userId) {
-  const now = new Date();
-
-  // رجّع فقط أراضي البيع المقبولة التي تم إخفاؤها/تعليقها
-  // IMPORTANT: لا نلمس user_deleted حتى لا نرجع محتوى محذوف إداريًا
-  return Farm.updateMany(
-    {
-      owner: userId,
-      kind: { $regex: /^sale$/i },
-      status: { $in: ['approved', 'Approved'] },
-      $or: [{ deletedAt: { $ne: null } }, { isSuspended: true }],
-      suspendedReason: { $ne: 'user_deleted' }, // حماية مهمة
-    },
-    {
-      $set: { deletedAt: null, isSuspended: false, suspendedReason: '' },
-      $currentDate: { updatedAt: true },
-    }
-  );
-}
-
 // يضبط المزارع المسموح بها حسب مستوى الاشتراك ويعلّق الباقي
 async function applyContractorPlanLimitsForUser(userId, tier) {
   const cfg = await SubscriptionConfig.findOne({ key:'sub-plans' }).lean().catch(()=>null);
@@ -98,50 +78,89 @@ async function applyPlanLimitsForUser(userId, tier) {
 );
 
 }
-/*router.post('/debug/users/:userId/restore-sale-farms', async (req, res) => {
+router.get('/debug/users/:userId/farms-audit', async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId)
-      .select('_id subscriptionTier subscriptionExpiresAt subscriptionUntil')
-      .lean();
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
 
-    if (!user) return res.status(404).json({ ok: false, msg: 'user_not_found' });
+    // عدّل أسماء حقول الاشتراك حسب مشروعك
+    const tier =
+      user.subscriptionTier ?? user.plan ?? user.subscriptionPlan ?? user.tier ?? null;
 
-    // 1) restore (undo soft-delete + unsuspend) ONLY for sale+approved
-    const r = await Farm.updateMany(
-      {
-        owner: userId,
-        kind: { $regex: /^sale$/i },
-        status: { $in: ['approved', 'Approved'] },
-        $or: [{ deletedAt: { $ne: null } }, { isSuspended: true }]
-      },
-      { $set: { deletedAt: null, isSuspended: false, suspendedReason: '' } }
-    );
+    const expiresAt =
+      user.subscriptionExpiresAt ?? user.subscriptionEndAt ?? user.expiresAt ?? null;
 
-    // 2) re-apply plan limits safely (keeps system rules)
-    // IMPORTANT: it uses deletedAt:null already inside applyPlanLimitsForUser :contentReference[oaicite:4]{index=4}
-    const tier = user.subscriptionTier || 'Basic';
-    await applyPlanLimitsForUser(userId, tier);
-
-    const afterCount = await Farm.countDocuments({
+    const approvedMatch = {
       owner: userId,
-      kind: { $regex: /^sale$/i },
       status: { $in: ['approved', 'Approved'] },
-      isSuspended: { $ne: true },
-      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }]
-    });
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
+    };
 
-    return res.json({
+    const [approvedFarms, suspendedApprovedFarms] = await Promise.all([
+      Farm.find(approvedMatch)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Farm.find({ ...approvedMatch, isSuspended: true })
+        .sort({ createdAt: -1 })
+        .lean(),
+    ]);
+
+    res.json({
       ok: true,
-      modified: r.modifiedCount,
-      visibleOnSalePageNow: afterCount,
+      user: { _id: user._id, name: user.name ?? null, email: user.email ?? null },
+      subscription: { tier, expiresAt },
+      counts: {
+        approvedTotal: approvedFarms.length,
+        approvedSuspended: suspendedApprovedFarms.length,
+      },
+      approvedFarms,
+      suspendedApprovedFarms,
     });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ ok: false, msg: 'restore_failed' });
+    res.status(500).json({ ok: false, message: 'Server error' });
   }
-});*/
+});
+router.get('/debug/farms/vip-approved', async (req, res) => {
+  try {
+    const now = new Date();
+
+    // عدّل أسماء الحقول حسب مشروعك
+    const vipUsers = await User.find({
+      $or: [
+        { subscriptionTier: 'VIP' },
+        { plan: 'VIP' },
+        { subscriptionPlan: 'VIP' },
+      ],
+      // إذا تريد فقط النشطين، اترك هذا الشرط:
+      $or: [
+        { subscriptionExpiresAt: { $gt: now } },
+        { subscriptionEndAt: { $gt: now } },
+        { expiresAt: { $gt: now } },
+      ],
+    }).select('_id').lean();
+
+    const vipUserIds = vipUsers.map(u => u._id);
+    if (vipUserIds.length === 0) return res.json({ ok: true, total: 0, farms: [] });
+
+    const farms = await Farm.find({
+      owner: { $in: vipUserIds },
+      status: { $in: ['approved', 'Approved'] },
+      isSuspended: { $ne: true },
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
+      // إذا تريد فقط للبيع:
+      // kind: { $regex: /^sale$/i },
+    }).sort({ createdAt: -1 }).lean();
+
+    res.json({ ok: true, total: farms.length, farms });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
 // داخل adminRouter.js قبل الراوتات (helper بسيط)
 function safeUrl(u){
   u = String(u || '').trim();
@@ -641,7 +660,6 @@ router.patch('/subscriptions/:id/approve', requireAdmin, async (req,res)=>{
         { user: doc.user._id },
         { $set: { subscriptionTier: doc.plan || 'Basic' } }
       );
-      await restoreFarmsAfterSubscription(doc.user._id);
        await applyPlanLimitsForUser(doc.user._id, doc.plan);
        await applyContractorPlanLimitsForUser(doc.user._id, doc.plan);
     }

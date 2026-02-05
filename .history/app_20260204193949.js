@@ -426,7 +426,58 @@ app.get('/sitemap.xml', (req, res) => {
   }
   res.status(404).send('Not found');
 });
+const run = async () => {
+  try {
+    
 
+    // 1️⃣ عدد الأراضي المعلقة
+    const count = await Farm.countDocuments({
+      status: "approved",
+      isSuspended: true,
+      deletedAt: null,
+    });
+
+    console.log("🟡 Suspended farms:", count);
+
+    // 2️⃣ جلب المالك بالاسم
+    const owner = await User.findOne(
+      { name: /غياث خندرية/i },
+      { _id:1, name: 1, subscriptionTier: 1 }
+    );
+
+    if (!owner) {
+      console.log("❌ Owner not found");
+      return;
+    }
+
+    console.log("👤 Owner:", owner);
+
+    // 3️⃣ تفعيل الأراضي
+    const result = await Farm.updateMany(
+      {
+        owner: owner._id,
+        status: "approved",
+        isSuspended: true,
+        deletedAt: null,
+      },
+      {
+        $set: {
+          isSuspended: false,
+          suspendedReason: "",
+        },
+      }
+    );
+
+    console.log("✅ Updated farms:", result.modifiedCount);
+
+    process.exit(0);
+  } catch (err) {
+    console.error("❌ Error:", err.message);
+    process.exit(1);
+  }
+};
+
+run();
 // ---------------------------------------------------------------------------
 // تشغيل السيرفر
 // ---------------------------------------------------------------------------

@@ -142,15 +142,42 @@ if (!global.__subCleanupJobStarted) {
     }
   }, 12 * 60 * 60 * 1000); // كل 12 ساعة
 }
+// routes/userRoutes.js
 
 
+// GET /api/users/id-by-email?email=test@gmail.com
+app.get("/id-by-email", async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ email }).select("_id");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      userId: user._id,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+});
 
 // App init
 const app  = express();
 const port = process.env.PORT || 3000;
-// GET /api/users/id-by-email?email=test@gmail.com
-
 
 // ---------------------------------------------------------------------------
 // إعدادات أساسية
@@ -254,34 +281,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.get("/id-by-email", async (req, res) => {
-  try {
-    const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        message: "Email is required",
-      });
-    }
-
-    const user = await User.findOne({ email }).select("_id");
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    res.status(200).json({
-      userId: user._id,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
-  }
-});
 // ---------------------------------------------------------------------------
 // الجلسات (تعمل لصفحات الواجهة فقط، وليس لراوتر /api)
 // ---------------------------------------------------------------------------
@@ -393,9 +393,6 @@ app.use('/admin', adminRouter);
 app.use('/', loginRouter);
 app.use('/', publicRouter);
 app.use('/', ownerRouter);
-
-
-
 
 // ✅ ملف التحقق من Google Search Console
 app.get('/google88fd5ddd67a71ece.html', (req, res) => {

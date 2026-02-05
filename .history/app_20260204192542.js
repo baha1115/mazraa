@@ -394,9 +394,6 @@ app.use('/', loginRouter);
 app.use('/', publicRouter);
 app.use('/', ownerRouter);
 
-
-
-
 // ✅ ملف التحقق من Google Search Console
 app.get('/google88fd5ddd67a71ece.html', (req, res) => {
   res.type('text/html');

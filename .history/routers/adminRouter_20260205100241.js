@@ -98,7 +98,7 @@ async function applyPlanLimitsForUser(userId, tier) {
 );
 
 }
-/*router.post('/debug/users/:userId/restore-sale-farms', async (req, res) => {
+router.post('/debug/users/:userId/restore-sale-farms', async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -141,7 +141,7 @@ async function applyPlanLimitsForUser(userId, tier) {
     console.error(e);
     return res.status(500).json({ ok: false, msg: 'restore_failed' });
   }
-});*/
+});
 // داخل adminRouter.js قبل الراوتات (helper بسيط)
 function safeUrl(u){
   u = String(u || '').trim();
@@ -641,7 +641,6 @@ router.patch('/subscriptions/:id/approve', requireAdmin, async (req,res)=>{
         { user: doc.user._id },
         { $set: { subscriptionTier: doc.plan || 'Basic' } }
       );
-      await restoreFarmsAfterSubscription(doc.user._id);
        await applyPlanLimitsForUser(doc.user._id, doc.plan);
        await applyContractorPlanLimitsForUser(doc.user._id, doc.plan);
     }

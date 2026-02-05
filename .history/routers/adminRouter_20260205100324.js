@@ -98,7 +98,7 @@ async function applyPlanLimitsForUser(userId, tier) {
 );
 
 }
-/*router.post('/debug/users/:userId/restore-sale-farms', async (req, res) => {
+router.post('/debug/users/:userId/restore-sale-farms', async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -141,7 +141,7 @@ async function applyPlanLimitsForUser(userId, tier) {
     console.error(e);
     return res.status(500).json({ ok: false, msg: 'restore_failed' });
   }
-});*/
+});
 // داخل adminRouter.js قبل الراوتات (helper بسيط)
 function safeUrl(u){
   u = String(u || '').trim();
